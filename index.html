@@ -1,1 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>jootubemusic</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #050510;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to bottom, rgba(5,5,16,0.95), rgba(5,5,16,0.85));
+    }
+    header .logo {
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: 18px;
+    }
+    header .logo span {
+      color: #ff4b9f;
+    }
+    main {
+      flex: 1;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .search-bar input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(12,12,32,0.9);
+      color: #f5f5f5;
+      outline: none;
+      font-size: 14px;
+    }
+    .search-bar input::placeholder {
+      color: rgba(255,255,255,0.4);
+    }
+    .search-bar button {
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      background: linear-gradient(135deg, #ff4b9f, #ffc857);
+      color: #050510;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+      white-space: nowrap;
+    }
+    .search-bar button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
 
+    .info {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .card {
+      background: radial-gradient(circle at top left, #201633, #080818);
+      border-radius: 16px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 26px rgba(0,0,0,0.55);
+      background: radial-gradient(circle at top left, #32204f, #080818);
+    }
+    .card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+      object-fit: cover;
+      background: #151525;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.35;
+      margin: 0;
+    }
+    .card-title span:hover {
+      text-decoration: underline;
+    }
+    .card-artist {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .empty {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    /* 미니 플레이어 자리만 먼저 확보 */
+    .mini-player {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 12px;
+      width: min(480px, 100% - 24px);
+      background: rgba(8,8,24,0.96);
+      border-radius: 999px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.65);
+      border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+    }
+    .mini-cover {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #151525;
+    }
+    .mini-meta {
+      flex: 1;
+      min-width: 0;
+    }
+    .mini-meta-title {
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mini-meta-artist {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+    }
+    .mini-btn {
+      border-radius: 999px;
+      border: none;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.09);
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 12px 14px;
+      }
+      main {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><span>joo</span>tubemusic</div>
+    <div style="font-size:12px; color:rgba(255,255,255,0.6);">
+      Last.fm + YouTube 플레이어
+    </div>
+  </header>
+
+  <main>
+    <div class="search-bar">
+      <input
+        id="searchInput"
+        type="text"
+        placeholder="앨범, 아티스트, 플레이리스트를 검색하세요"
+      />
+      <button id="searchBtn">검색</button>
+    </div>
+
+    <div class="info">
+      아직은 더미 UI입니다. 검색 버튼을 눌렀을 때 콘솔에만 로그가 찍히도록 먼저 흐름을 확인한 후,
+      여기 그리드에 Last.fm 검색 결과 카드들을 채워 넣을 예정입니다.
+    </div>
+
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty">검색어를 입력하고 엔터 또는 검색 버튼을 눌러보세요.</div>
+  </main>
+
+  <div class="mini-player" id="miniPlayer" style="display:none;">
+    <img id="miniCover" class="mini-cover" src="" alt="" />
+    <div class="mini-meta">
+      <div id="miniTitle" class="mini-meta-title"></div>
+      <div id="miniArtist" class="mini-meta-artist"></div>
+    </div>
+    <button class="mini-btn" id="miniToggle">▶</button>
+    <button class="mini-btn" id="miniHide">×</button>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn   = document.getElementById('searchBtn');
+    const grid        = document.getElementById('grid');
+    const empty       = document.getElementById('empty');
+
+    // 미니 플레이어 더미 데이터
+    const miniPlayer  = document.getElementById('miniPlayer');
+    const miniCover   = document.getElementById('miniCover');
+    const miniTitle   = document.getElementById('miniTitle');
+    const miniArtist  = document.getElementById('miniArtist');
+    const miniToggle  = document.getElementById('miniToggle');
+    const miniHide    = document.getElementById('miniHide');
+
+    let isPlaying = false;
+
+    function handleSearch() {
+      const q = searchInput.value.trim();
+      if (!q) return;
+
+      console.log('[jootubemusic] search:', q);
+
+      // 지금은 더미 카드만 생성
+      grid.innerHTML = '';
+      empty.style.display = 'none';
+
+      for (let i = 0; i < 8; i++) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="https://via.placeholder.com/300x300.png?text=Album" alt="album">
+          <div class="card-title"><span>${q} 결과 앨범 #${i + 1}</span></div>
+          <div class="card-artist">Artist #${i + 1}</div>
+        `;
+        card.addEventListener('click', () => {
+          // 나중에: 곡 재생 페이지 이동 / React Player 호출
+          console.log('card clicked:', q, i + 1);
+          showMiniPlayer({
+            title: q + ' 결과 앨범 #' + (i + 1),
+            artist: 'Artist #' + (i + 1),
+            cover: 'https://via.placeholder.com/300x300.png?text=Album'
+          });
+        });
+        grid.appendChild(card);
+      }
+    }
+
+    function showMiniPlayer(track) {
+      miniCover.src = track.cover;
+      miniTitle.textContent = track.title;
+      miniArtist.textContent = track.artist;
+      isPlaying = true;
+      miniToggle.textContent = '⏸';
+      miniPlayer.style.display = 'flex';
+    }
+
+    miniToggle.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      miniToggle.textContent = isPlaying ? '⏸' : '▶';
+      // 나중에: 여기서 실제 React Player / YouTube 제어
+    });
+
+    miniHide.addEventListener('click', () => {
+      miniPlayer.style.display = 'none';
+      isPlaying = false;
+    });
+
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleSearch();
+    });
+  </script>
+</body>
+</html>
