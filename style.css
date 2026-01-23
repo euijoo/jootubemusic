@@ -144,7 +144,7 @@ main {
   text-align: center;
 }
 
-/* 모달 */
+/* 모달 공통 */
 .modal {
   position: fixed;
   inset: 0;
@@ -186,6 +186,32 @@ main {
   color: rgba(255,255,255,0.8);
   font-size: 20px;
   cursor: pointer;
+}
+
+/* 트랙 리스트 모달 내용 */
+.track-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+.track-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 4px;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  cursor: pointer;
+}
+.track-list li:hover {
+  background: rgba(255,255,255,0.05);
+}
+.track-title {
+  flex: 1;
+  margin-right: 8px;
+}
+.track-duration {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
 }
 
 /* 미니 플레이어 */
@@ -239,32 +265,6 @@ main {
   cursor: pointer;
   font-size: 16px;
 }
-
-.track-list {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-}
-.track-list li {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 4px;
-  font-size: 13px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  cursor: pointer;
-}
-.track-list li:hover {
-  background: rgba(255,255,255,0.05);
-}
-.track-title {
-  flex: 1;
-  margin-right: 8px;
-}
-.track-duration {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
-}
-
 
 @media (max-width: 600px) {
   header {
