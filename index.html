@@ -48,6 +48,33 @@
     </div>
   </div>
 
+  <!-- 커버 입력 모달 -->
+  <div id="coverModal" class="modal" style="display:none;">
+    <div class="modal-backdrop" id="coverBackdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="coverModalTitle">앨범 커버 추가</span>
+        <button id="coverModalClose" class="modal-close">×</button>
+      </div>
+      <div class="info" id="coverInfo"></div>
+      <input
+        id="coverUrlInput"
+        type="text"
+        class="cover-input"
+        placeholder="이미지 URL을 붙여넣으세요 (https://...)"
+      />
+      <div class="cover-preview-wrap">
+        <img id="coverPreview" class="cover-preview" src="" alt="" />
+      </div>
+      <button id="coverSaveBtn" class="cover-save-btn">저장</button>
+    </div>
+  </div>
+
+
+
+
+
+  
   <!-- 앨범 트랙 모달 -->
   <div id="trackModal" class="modal" style="display:none;">
     <div class="modal-backdrop" id="trackBackdrop"></div>
