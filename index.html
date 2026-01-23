@@ -4,200 +4,12 @@
   <meta charset="UTF-8" />
   <title>jootubemusic</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #050510;
-      color: #f5f5f5;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      padding: 16px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      backdrop-filter: blur(12px);
-      background: linear-gradient(to bottom, rgba(5,5,16,0.95), rgba(5,5,16,0.85));
-    }
-    header .logo {
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      font-size: 18px;
-    }
-    header .logo span {
-      color: #ff4b9f;
-    }
-    main {
-      flex: 1;
-      padding: 20px;
-      max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
-    }
-    .search-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-    }
-    .search-bar input {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.14);
-      background: rgba(12,12,32,0.9);
-      color: #f5f5f5;
-      outline: none;
-      font-size: 14px;
-    }
-    .search-bar input::placeholder {
-      color: rgba(255,255,255,0.4);
-    }
-    .search-bar button {
-      padding: 10px 18px;
-      border-radius: 999px;
-      border: none;
-      background: linear-gradient(135deg, #ff4b9f, #ffc857);
-      color: #050510;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-      transition: transform 0.12s ease, box-shadow 0.12s ease;
-      white-space: nowrap;
-    }
-    .search-bar button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-    }
-
-    .info {
-      font-size: 13px;
-      color: rgba(255,255,255,0.6);
-      margin-bottom: 16px;
-    }
-
-    .grid {
-      display: grid;
-      gap: 16px;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-    .card {
-      background: radial-gradient(circle at top left, #201633, #080818);
-      border-radius: 16px;
-      padding: 12px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 12px 26px rgba(0,0,0,0.55);
-      background: radial-gradient(circle at top left, #32204f, #080818);
-    }
-    .card img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 12px;
-      object-fit: cover;
-      background: #151525;
-    }
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.35;
-      margin: 0;
-    }
-    .card-title span:hover {
-      text-decoration: underline;
-    }
-    .card-artist {
-      font-size: 12px;
-      color: rgba(255,255,255,0.7);
-    }
-
-    .empty {
-      font-size: 14px;
-      color: rgba(255,255,255,0.5);
-      margin-top: 40px;
-      text-align: center;
-    }
-
-    /* 미니 플레이어 자리만 먼저 확보 */
-    .mini-player {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 12px;
-      width: min(480px, 100% - 24px);
-      background: rgba(8,8,24,0.96);
-      border-radius: 999px;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.65);
-      border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(16px);
-    }
-    .mini-cover {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      background: #151525;
-    }
-    .mini-meta {
-      flex: 1;
-      min-width: 0;
-    }
-    .mini-meta-title {
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .mini-meta-artist {
-      font-size: 11px;
-      color: rgba(255,255,255,0.6);
-    }
-    .mini-btn {
-      border-radius: 999px;
-      border: none;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255,255,255,0.09);
-      color: #fff;
-      cursor: pointer;
-      font-size: 16px;
-    }
-
-    @media (max-width: 600px) {
-      header {
-        padding: 12px 14px;
-      }
-      main {
-        padding: 14px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <div class="logo"><span>joo</span>tubemusic</div>
-    <div style="font-size:12px; color:rgba(255,255,255,0.6);">
+    <div class="header-sub">
       Last.fm + YouTube 플레이어
     </div>
   </header>
@@ -213,14 +25,30 @@
     </div>
 
     <div class="info">
-      아직은 더미 UI입니다. 검색 버튼을 눌렀을 때 콘솔에만 로그가 찍히도록 먼저 흐름을 확인한 후,
-      여기 그리드에 Last.fm 검색 결과 카드들을 채워 넣을 예정입니다.
+      검색 버튼을 눌러 Last.fm에서 앨범을 찾고, 원하는 앨범을 선택해 내 그리드에 추가할 수 있습니다.
     </div>
 
-    <div id="grid" class="grid"></div>
-    <div id="empty" class="empty">검색어를 입력하고 엔터 또는 검색 버튼을 눌러보세요.</div>
+    <!-- 내가 고른 앨범 그리드 -->
+    <section class="section-my">
+      <h2 class="section-title">내 앨범</h2>
+      <div id="myGrid" class="grid"></div>
+      <div id="empty" class="empty">아직 선택한 앨범이 없습니다.</div>
+    </section>
   </main>
 
+  <!-- 검색 결과 모달 -->
+  <div id="searchModal" class="modal" style="display:none;">
+    <div class="modal-backdrop" id="modalBackdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="modalTitle">검색 결과</span>
+        <button id="modalClose" class="modal-close">×</button>
+      </div>
+      <div id="modalGrid" class="grid"></div>
+    </div>
+  </div>
+
+  <!-- 미니 플레이어 -->
   <div class="mini-player" id="miniPlayer" style="display:none;">
     <img id="miniCover" class="mini-cover" src="" alt="" />
     <div class="mini-meta">
@@ -232,135 +60,205 @@
   </div>
 
   <script>
-  // 🔑 발급받은 Last.fm API 키
-  const LASTFM_API_KEY = '7e0b8eb10fdc5cf81968b38fdd543cff';
+    const LASTFM_API_KEY = '7e0b8eb10fdc5cf81968b38fdd543cff';
 
-  const searchInput = document.getElementById('searchInput');
-  const searchBtn   = document.getElementById('searchBtn');
-  const grid        = document.getElementById('grid');
-  const empty       = document.getElementById('empty');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn   = document.getElementById('searchBtn');
 
-  // 미니 플레이어 요소
-  const miniPlayer  = document.getElementById('miniPlayer');
-  const miniCover   = document.getElementById('miniCover');
-  const miniTitle   = document.getElementById('miniTitle');
-  const miniArtist  = document.getElementById('miniArtist');
-  const miniToggle  = document.getElementById('miniToggle');
-  const miniHide    = document.getElementById('miniHide');
+    const myGrid      = document.getElementById('myGrid');
+    const empty       = document.getElementById('empty');
 
-  let isPlaying = false;
+    const searchModal   = document.getElementById('searchModal');
+    const modalGrid     = document.getElementById('modalGrid');
+    const modalClose    = document.getElementById('modalClose');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const modalTitle    = document.getElementById('modalTitle');
 
-  // Last.fm에서 앨범 검색
-  async function searchAlbums(query) {
-    const url = new URL('https://ws.audioscrobbler.com/2.0/');
-    url.searchParams.set('method', 'album.search');
-    url.searchParams.set('album', query);
-    url.searchParams.set('api_key', LASTFM_API_KEY);
-    url.searchParams.set('format', 'json');
-    url.searchParams.set('limit', '50');
+    const miniPlayer  = document.getElementById('miniPlayer');
+    const miniCover   = document.getElementById('miniCover');
+    const miniTitle   = document.getElementById('miniTitle');
+    const miniArtist  = document.getElementById('miniArtist');
+    const miniToggle  = document.getElementById('miniToggle');
+    const miniHide    = document.getElementById('miniHide');
 
-    const res = await fetch(url.toString());
-    if (!res.ok) {
-      throw new Error('Last.fm 요청 실패: ' + res.status);
-    }
-    const data = await res.json();
-    return data.results?.albummatches?.album || [];
-  }
+    let isPlaying = false;
+    let myAlbums = []; // 내가 선택한 앨범 목록
 
-  // 앨범 리스트를 카드로 렌더링
-  function renderAlbums(albums) {
-    grid.innerHTML = '';
-
-    if (!albums.length) {
-      empty.textContent = '검색 결과가 없습니다.';
-      empty.style.display = 'block';
-      return;
+    function openModal(query) {
+      modalTitle.textContent = `"${query}" 검색 결과`;
+      searchModal.style.display = 'flex';
     }
 
-    empty.style.display = 'none';
+    function closeModal() {
+      searchModal.style.display = 'none';
+      modalGrid.innerHTML = '';
+    }
 
-    albums.forEach((album, index) => {
-      const card = document.createElement('div');
-      card.className = 'card';
+    async function searchAlbums(query) {
+      const url = new URL('https://ws.audioscrobbler.com/2.0/');
+      url.searchParams.set('method', 'album.search');
+      url.searchParams.set('album', query);
+      url.searchParams.set('api_key', LASTFM_API_KEY);
+      url.searchParams.set('format', 'json');
+      url.searchParams.set('limit', '50');
 
-      // 이미지 (여러 크기 중 중간/큰 것 선택)
-      const images = album.image || [];
-      const imgObj =
-        images[3] || images[2] || images[1] || images[0] || { '#text': '' };
-      const imgUrl =
-        imgObj['#text'] || 'https://via.placeholder.com/300x300.png?text=Album';
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('Last.fm 요청 실패: ' + res.status);
+      const data = await res.json();
+      return data.results?.albummatches?.album || [];
+    }
 
-      const title = album.name || '제목 없음';
-      const artist = album.artist || '아티스트 없음';
+    function pickAlbumImage(album) {
+      const images = Array.isArray(album.image) ? album.image : [];
+      let imgUrl = '';
 
-      card.innerHTML = `
-        <img src="${imgUrl}" alt="${title}">
-        <div class="card-title"><span>${title}</span></div>
-        <div class="card-artist">${artist}</div>
-      `;
+      if (images.length) {
+        const preferSizes = ['extralarge', 'large', 'medium', 'small'];
+        for (const size of preferSizes) {
+          const found = images.find((img) => img.size === size && img['#text']);
+          if (found && found['#text']) {
+            imgUrl = found['#text'];
+            break;
+          }
+        }
+      }
+      if (!imgUrl) {
+        imgUrl = 'https://via.placeholder.com/300x300.png?text=%EC%9D%B4%EB%AF%B8%EC%A7%80+%EC%97%86%EC%9D%8C';
+      }
+      if (imgUrl.startsWith('http://')) {
+        imgUrl = imgUrl.replace('http://', 'https://');
+      }
+      return imgUrl;
+    }
 
-      card.addEventListener('click', () => {
-        // TODO: 나중에 이 앨범의 트랙을 불러와 재생 페이지로 이동
-        console.log('album clicked:', title, '-', artist);
-        showMiniPlayer({
-          title,
-          artist,
-          cover: imgUrl
+    // 검색 결과를 모달 안에 렌더링
+    function renderSearchResults(albums) {
+      modalGrid.innerHTML = '';
+
+      if (!albums.length) {
+        const div = document.createElement('div');
+        div.className = 'empty';
+        div.textContent = '검색 결과가 없습니다.';
+        modalGrid.appendChild(div);
+        return;
+      }
+
+      albums.forEach((album) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const title = album.name || '제목 없음';
+        const artist = album.artist || '아티스트 없음';
+        const imgUrl = pickAlbumImage(album);
+
+        card.innerHTML = `
+          <img src="${imgUrl}" alt="${title}">
+          <div class="card-title"><span>${title}</span></div>
+          <div class="card-artist">${artist}</div>
+        `;
+
+        card.addEventListener('click', () => {
+          const exists = myAlbums.some(
+            (a) => a.name === title && a.artist === artist
+          );
+          if (!exists) {
+            myAlbums.push({
+              name: title,
+              artist,
+              image: imgUrl,
+            });
+            renderMyAlbums();
+          }
+          showMiniPlayer({
+            title,
+            artist,
+            cover: imgUrl,
+          });
+          // 필요하면 여기서 모달을 닫아도 됨
+          // closeModal();
         });
+
+        modalGrid.appendChild(card);
       });
-
-      grid.appendChild(card);
-    });
-  }
-
-  // 검색 핸들러 (엔터/버튼 공통)
-  async function handleSearch() {
-    const q = searchInput.value.trim();
-    if (!q) return;
-
-    console.log('[jootubemusic] search:', q);
-    grid.innerHTML = '';
-    empty.textContent = '검색 중...';
-    empty.style.display = 'block';
-
-    try {
-      const albums = await searchAlbums(q);
-      console.log('Last.fm albums:', albums);
-      renderAlbums(albums);
-    } catch (err) {
-      console.error(err);
-      empty.textContent = '검색 중 오류가 발생했습니다.';
-      empty.style.display = 'block';
     }
-  }
 
-  // 미니 플레이어 표시
-  function showMiniPlayer(track) {
-    miniCover.src = track.cover;
-    miniTitle.textContent = track.title;
-    miniArtist.textContent = track.artist;
-    isPlaying = true;
-    miniToggle.textContent = '⏸';
-    miniPlayer.style.display = 'flex';
-  }
+    function renderMyAlbums() {
+      myGrid.innerHTML = '';
 
-  // 미니 플레이어 컨트롤 (지금은 UI만 토글)
-  miniToggle.addEventListener('click', () => {
-    isPlaying = !isPlaying;
-    miniToggle.textContent = isPlaying ? '⏸' : '▶';
-    // TODO: 나중에 YouTube / React Player 재생/일시정지 연결
-  });
+      if (!myAlbums.length) {
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
 
-  miniHide.addEventListener('click', () => {
-    miniPlayer.style.display = 'none';
-    isPlaying = false;
-  });
+      myAlbums.forEach((album, index) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${album.image}" alt="${album.name}">
+          <div class="card-title"><span>${album.name}</span></div>
+          <div class="card-artist">${album.artist}</div>
+        `;
+        card.addEventListener('click', () => {
+          showMiniPlayer({
+            title: album.name,
+            artist: album.artist,
+            cover: album.image,
+          });
+        });
+        myGrid.appendChild(card);
+      });
+    }
 
-  // 이벤트 바인딩
-  searchBtn.addEventListener('click', handleSearch);
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') handleSearch();
-  });
-</script>
+    async function handleSearch() {
+      const q = searchInput.value.trim();
+      if (!q) return;
+
+      console.log('[jootubemusic] search:', q);
+      openModal(q);
+      modalGrid.innerHTML = '<div class="empty">검색 중...</div>';
+
+      try {
+        const albums = await searchAlbums(q);
+        console.log('Last.fm albums:', albums);
+        renderSearchResults(albums);
+      } catch (err) {
+        console.error(err);
+        modalGrid.innerHTML = '<div class="empty">검색 중 오류가 발생했습니다.</div>';
+      }
+    }
+
+    function showMiniPlayer(track) {
+      miniCover.src = track.cover;
+      miniTitle.textContent = track.title;
+      miniArtist.textContent = track.artist;
+      isPlaying = true;
+      miniToggle.textContent = '⏸';
+      miniPlayer.style.display = 'flex';
+    }
+
+    miniToggle.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      miniToggle.textContent = isPlaying ? '⏸' : '▶';
+    });
+
+    miniHide.addEventListener('click', () => {
+      miniPlayer.style.display = 'none';
+      isPlaying = false;
+    });
+
+    searchBtn.addEventListener('click', handleSearch);
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') handleSearch();
+    });
+
+    modalClose.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', closeModal);
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    renderMyAlbums();
+  </script>
 </body>
 </html>
