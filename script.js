@@ -31,6 +31,16 @@ const miniArtist  = document.getElementById('miniArtist');
 const miniToggle  = document.getElementById('miniToggle');
 const miniHide    = document.getElementById('miniHide');
 
+// 커버 입력 모달
+const coverModal      = document.getElementById('coverModal');
+const coverBackdrop   = document.getElementById('coverBackdrop');
+const coverModalClose = document.getElementById('coverModalClose');
+const coverModalTitle = document.getElementById('coverModalTitle');
+const coverInfo       = document.getElementById('coverInfo');
+const coverUrlInput   = document.getElementById('coverUrlInput');
+const coverPreview    = document.getElementById('coverPreview');
+const coverSaveBtn    = document.getElementById('coverSaveBtn');
+
 let isPlaying = false;
 let myAlbums = []; // 내가 선택한 앨범 목록
 
@@ -57,6 +67,14 @@ function pickAlbumImage(album) {
     imgUrl = imgUrl.replace('http://', 'https://');
   }
   return imgUrl;
+}
+function hasRealCover(album) {
+  const images = Array.isArray(album.image) ? album.image : [];
+  if (!images.length) return false;
+  const preferSizes = ['extralarge', 'large', 'medium', 'small'];
+  return preferSizes.some(size =>
+    images.some(img => img.size === size && img['#text'])
+  );
 }
 
 /* ---------- Last.fm API ---------- */
@@ -127,25 +145,27 @@ function renderSearchResults(albums) {
     `;
 
     card.addEventListener('click', () => {
-      const exists = myAlbums.some(
-        (a) => a.name === title && a.artist === artist
-      );
-      if (!exists) {
-        myAlbums.push({
-          name: title,
-          artist,
-          image: imgUrl,
-        });
-        renderMyAlbums();
-      }
-      showMiniPlayer({
-        title,
-        artist,
-        cover: imgUrl,
-      });
-      // 필요하면 자동으로 닫을 수 있음
-      // closeModal();
+  const exists = myAlbums.some(
+    (a) => a.name === title && a.artist === artist
+  );
+  if (!exists) {
+    myAlbums.push({
+      name: title,
+      artist,
+      image: imgUrl,
+      hasCover: hasRealCover(album),
     });
+    renderMyAlbums();
+  }
+  showMiniPlayer({
+    title,
+    artist,
+    cover: imgUrl,
+  });
+  // 필요하면 자동으로 닫을 수 있음
+  // closeModal();
+});
+
 
     modalGrid.appendChild(card);
   });
@@ -189,11 +209,58 @@ function renderMyAlbums() {
       <div class="card-artist">${album.artist}</div>
     `;
     card.addEventListener('click', () => {
-      openTrackModal(album);
-    });
+  if (!album.hasCover) {
+    openCoverModal(album);   // 커버 없으면 커버 입력 모달
+  } else {
+    openTrackModal(album);   // 이미 커버 있으면 바로 트랙 모달
+  }
+});
     myGrid.appendChild(card);
   });
 }
+
+/* ---------- 커버 입력 모달 ---------- */
+
+let pendingCoverAlbum = null;
+
+function openCoverModal(album) {
+  pendingCoverAlbum = album;
+  coverModalTitle.textContent = `${album.artist} - ${album.name}`;
+  coverInfo.textContent = '이 앨범에는 공식 커버가 없어 보입니다. 사용할 커버 이미지 URL을 입력해 주세요.';
+  coverUrlInput.value = '';
+  coverPreview.src = album.image || '';
+  coverModal.style.display = 'flex';
+}
+
+function closeCoverModal() {
+  coverModal.style.display = 'none';
+  pendingCoverAlbum = null;
+}
+
+coverUrlInput.addEventListener('input', () => {
+  const url = coverUrlInput.value.trim();
+  coverPreview.src = url || '';
+});
+
+coverSaveBtn.addEventListener('click', () => {
+  if (!pendingCoverAlbum) return;
+  const url = coverUrlInput.value.trim();
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    alert('올바른 이미지 URL을 입력해 주세요.');
+    return;
+  }
+  pendingCoverAlbum.image = url;
+  pendingCoverAlbum.hasCover = true;
+  renderMyAlbums();
+  closeCoverModal();
+  openTrackModal(pendingCoverAlbum);  // 커버 저장 후 바로 트랙 모달
+});
+
+coverModalClose.addEventListener('click', closeCoverModal);
+coverBackdrop.addEventListener('click', closeCoverModal);
+
+
+
 
 /* ---------- 트랙 모달 ---------- */
 
@@ -285,6 +352,7 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeModal();
     closeTrackModal();
+    closeCoverModal();
   }
 });
 
