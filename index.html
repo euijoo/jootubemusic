@@ -232,78 +232,135 @@
   </div>
 
   <script>
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn   = document.getElementById('searchBtn');
-    const grid        = document.getElementById('grid');
-    const empty       = document.getElementById('empty');
-
-    // 미니 플레이어 더미 데이터
-    const miniPlayer  = document.getElementById('miniPlayer');
-    const miniCover   = document.getElementById('miniCover');
-    const miniTitle   = document.getElementById('miniTitle');
-    const miniArtist  = document.getElementById('miniArtist');
-    const miniToggle  = document.getElementById('miniToggle');
-    const miniHide    = document.getElementById('miniHide');
-
-    let isPlaying = false;
-
-    function handleSearch() {
-      const q = searchInput.value.trim();
-      if (!q) return;
-
-      console.log('[jootubemusic] search:', q);
-
-      // 지금은 더미 카드만 생성
-      grid.innerHTML = '';
-      empty.style.display = 'none';
-
-      for (let i = 0; i < 8; i++) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <img src="https://via.placeholder.com/300x300.png?text=Album" alt="album">
-          <div class="card-title"><span>${q} 결과 앨범 #${i + 1}</span></div>
-          <div class="card-artist">Artist #${i + 1}</div>
-        `;
-        card.addEventListener('click', () => {
-          // 나중에: 곡 재생 페이지 이동 / React Player 호출
-          console.log('card clicked:', q, i + 1);
-          showMiniPlayer({
-            title: q + ' 결과 앨범 #' + (i + 1),
-            artist: 'Artist #' + (i + 1),
-            cover: 'https://via.placeholder.com/300x300.png?text=Album'
-          });
-        });
-        grid.appendChild(card);
-      }
-    }
-
-    function showMiniPlayer(track) {
-      miniCover.src = track.cover;
-      miniTitle.textContent = track.title;
-      miniArtist.textContent = track.artist;
-      isPlaying = true;
-      miniToggle.textContent = '⏸';
-      miniPlayer.style.display = 'flex';
-    }
-
-    miniToggle.addEventListener('click', () => {
-      isPlaying = !isPlaying;
-      miniToggle.textContent = isPlaying ? '⏸' : '▶';
-      // 나중에: 여기서 실제 React Player / YouTube 제어
-    });
-
-    miniHide.addEventListener('click', () => {
-      miniPlayer.style.display = 'none';
-      isPlaying = false;
-    });
-
-    searchBtn.addEventListener('click', handleSearch);
-    searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleSearch();
-    });
-  
+  // 🔑 발급받은 Last.fm API 키
   const LASTFM_API_KEY = '7e0b8eb10fdc5cf81968b38fdd543cff';
-  </script>
+
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn   = document.getElementById('searchBtn');
+  const grid        = document.getElementById('grid');
+  const empty       = document.getElementById('empty');
+
+  // 미니 플레이어 요소
+  const miniPlayer  = document.getElementById('miniPlayer');
+  const miniCover   = document.getElementById('miniCover');
+  const miniTitle   = document.getElementById('miniTitle');
+  const miniArtist  = document.getElementById('miniArtist');
+  const miniToggle  = document.getElementById('miniToggle');
+  const miniHide    = document.getElementById('miniHide');
+
+  let isPlaying = false;
+
+  // Last.fm에서 앨범 검색
+  async function searchAlbums(query) {
+    const url = new URL('https://ws.audioscrobbler.com/2.0/');
+    url.searchParams.set('method', 'album.search');
+    url.searchParams.set('album', query);
+    url.searchParams.set('api_key', LASTFM_API_KEY);
+    url.searchParams.set('format', 'json');
+    url.searchParams.set('limit', '50');
+
+    const res = await fetch(url.toString());
+    if (!res.ok) {
+      throw new Error('Last.fm 요청 실패: ' + res.status);
+    }
+    const data = await res.json();
+    return data.results?.albummatches?.album || [];
+  }
+
+  // 앨범 리스트를 카드로 렌더링
+  function renderAlbums(albums) {
+    grid.innerHTML = '';
+
+    if (!albums.length) {
+      empty.textContent = '검색 결과가 없습니다.';
+      empty.style.display = 'block';
+      return;
+    }
+
+    empty.style.display = 'none';
+
+    albums.forEach((album, index) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      // 이미지 (여러 크기 중 중간/큰 것 선택)
+      const images = album.image || [];
+      const imgObj =
+        images[3] || images[2] || images[1] || images[0] || { '#text': '' };
+      const imgUrl =
+        imgObj['#text'] || 'https://via.placeholder.com/300x300.png?text=Album';
+
+      const title = album.name || '제목 없음';
+      const artist = album.artist || '아티스트 없음';
+
+      card.innerHTML = `
+        <img src="${imgUrl}" alt="${title}">
+        <div class="card-title"><span>${title}</span></div>
+        <div class="card-artist">${artist}</div>
+      `;
+
+      card.addEventListener('click', () => {
+        // TODO: 나중에 이 앨범의 트랙을 불러와 재생 페이지로 이동
+        console.log('album clicked:', title, '-', artist);
+        showMiniPlayer({
+          title,
+          artist,
+          cover: imgUrl
+        });
+      });
+
+      grid.appendChild(card);
+    });
+  }
+
+  // 검색 핸들러 (엔터/버튼 공통)
+  async function handleSearch() {
+    const q = searchInput.value.trim();
+    if (!q) return;
+
+    console.log('[jootubemusic] search:', q);
+    grid.innerHTML = '';
+    empty.textContent = '검색 중...';
+    empty.style.display = 'block';
+
+    try {
+      const albums = await searchAlbums(q);
+      console.log('Last.fm albums:', albums);
+      renderAlbums(albums);
+    } catch (err) {
+      console.error(err);
+      empty.textContent = '검색 중 오류가 발생했습니다.';
+      empty.style.display = 'block';
+    }
+  }
+
+  // 미니 플레이어 표시
+  function showMiniPlayer(track) {
+    miniCover.src = track.cover;
+    miniTitle.textContent = track.title;
+    miniArtist.textContent = track.artist;
+    isPlaying = true;
+    miniToggle.textContent = '⏸';
+    miniPlayer.style.display = 'flex';
+  }
+
+  // 미니 플레이어 컨트롤 (지금은 UI만 토글)
+  miniToggle.addEventListener('click', () => {
+    isPlaying = !isPlaying;
+    miniToggle.textContent = isPlaying ? '⏸' : '▶';
+    // TODO: 나중에 YouTube / React Player 재생/일시정지 연결
+  });
+
+  miniHide.addEventListener('click', () => {
+    miniPlayer.style.display = 'none';
+    isPlaying = false;
+  });
+
+  // 이벤트 바인딩
+  searchBtn.addEventListener('click', handleSearch);
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleSearch();
+  });
+</script>
 </body>
 </html>
