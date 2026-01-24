@@ -692,7 +692,7 @@ function openTrackModal(album) {
     .then((tracks) => {
       trackList.innerHTML = '';
       if (!tracks || (Array.isArray(tracks) && tracks.length === 0)) {
-        trackList.innerHTML = '<li>트랙 정보를 찾을 수 없습니다.</li>';
+       trackList.innerHTML = '<li class="empty-track-message">트랙 정보를 찾을 수 없습니다.</li>';
         return;
       }
 
