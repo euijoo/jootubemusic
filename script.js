@@ -329,6 +329,21 @@ function closeModal() {
   searchModal.style.display = 'none';
   modalGrid.innerHTML = '';
 }
+function askCategoryAndReturnValue() {
+  const category = prompt(
+    '카테고리를 입력하세요 (kpop / pop / ost / etc 중 하나):',
+    'kpop'
+  );
+  if (!category) return null;
+
+  const normalized = category.trim().toLowerCase();
+  const allowed = ['kpop', 'pop', 'ost', 'etc'];
+  if (!allowed.includes(normalized)) {
+    alert('kpop / pop / ost / etc 중 하나만 입력할 수 있습니다.');
+    return null;
+  }
+  return normalized;
+}
 
 function renderSearchResults(albums) {
   modalGrid.innerHTML = '';
@@ -355,29 +370,41 @@ function renderSearchResults(albums) {
       <div class="card-artist">${artist}</div>
     `;
 
-    card.addEventListener('click', () => {
-  const exists = myAlbums.some(
-    (a) => a.name === title && a.artist === artist
-  );
-  if (!exists) {
-    myAlbums.push({
-      name: title,
-      artist,
-      image: imgUrl,
-      hasCover: hasRealCover(album),
-      category: 'kpop', // 기본 카테고리
-    });
-    renderMyAlbums();
-    saveMyAlbumsToStorage();
-    if (currentUser) syncMyAlbumsToFirestore();
-  }
+        card.addEventListener('click', () => {
+      const exists = myAlbums.some(
+        (a) => a.name === title && a.artist === artist
+      );
 
-  showMiniPlayer({
-    title,
-    artist,
-    cover: imgUrl,
-  });
-});
+      let category = 'kpop';
+
+      // 이미 등록되지 않은 경우에만 카테고리 선택
+      if (!exists) {
+        const selected = askCategoryAndReturnValue();
+        if (!selected) {
+          // 취소 또는 잘못 입력하면 추가/재생 둘 다 취소
+          return;
+        }
+        category = selected;
+
+        myAlbums.push({
+          name: title,
+          artist,
+          image: imgUrl,
+          hasCover: hasRealCover(album),
+          category,
+        });
+        renderMyAlbums();
+        saveMyAlbumsToStorage();
+        if (currentUser) syncMyAlbumsToFirestore();
+      }
+
+      showMiniPlayer({
+        title,
+        artist,
+        cover: imgUrl,
+      });
+    });
+
 
 
 
