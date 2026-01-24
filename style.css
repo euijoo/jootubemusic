@@ -355,3 +355,40 @@ main {
   cursor: pointer;
 }
 
+.album-delete-btn {
+  margin-top: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 77, 109, 0.15);
+  color: #ff4d6d;
+  cursor: pointer;
+}
+
+.album-delete-btn:hover {
+  background: rgba(255, 77, 109, 0.25);
+}
+
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.category-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.8);
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, #ff4b9f, #ffc857);
+  color: #050510;
+  font-weight: 600;
+}
