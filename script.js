@@ -67,6 +67,7 @@ const trackModalClose = document.getElementById('trackModalClose');
 const trackModalTitle = document.getElementById('trackModalTitle');
 const trackList       = document.getElementById('trackList');
 const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn');
+const trackAddBtn     = document.getElementById('trackAddBtn'); // ⬅ 여기
 
 
 
@@ -587,31 +588,11 @@ coverModalClose.addEventListener('click', closeCoverModal);
 coverBackdrop.addEventListener('click', closeCoverModal);
 
 /* ---------- 트랙 모달 ---------- */
+/* ---------- 트랙 모달 ---------- */
 
-let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
-let currentTrack = null;      // 현재 선택한 트랙 정보
-
-function openTrackModal(album) {
-  currentTrackAlbum = album;  // ⬅ 추가
-  
-  trackModalTitle.textContent = `${album.artist} - ${album.name}`;
-  trackList.innerHTML = '<li>트랙 불러오는 중...</li>';
-  trackModal.style.display = 'flex';
-
-  fetchAlbumTracks(album.artist, album.name)
-    .then((tracks) => {
-      trackList.innerHTML = '';
-      if (!tracks || (Array.isArray(tracks) && tracks.length === 0)) {
-        trackList.innerHTML = '<li>트랙 정보를 찾을 수 없습니다.</li>';
-        return;
-      }
-
-      const arr = Array.isArray(tracks) ? tracks : [tracks];
-
-      arr.forEach((t) => {
+function createTrackListItem(album, title, durationSeconds = 0) {
   const li = document.createElement('li');
-  const title = typeof t.name === 'string' ? t.name : (t.name?.[0] || '제목 없음');
-  const seconds = Number(t.duration || 0);
+  const seconds = Number(durationSeconds || 0);
   const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
   const ss = String(seconds % 60).padStart(2, '0');
 
@@ -623,14 +604,12 @@ function openTrackModal(album) {
 
   // 트랙 클릭 → 재생
   li.addEventListener('click', (e) => {
-    // 수정 버튼 클릭일 때는 여기서 막기
     if (e.target.classList.contains('track-stream-edit')) return;
 
     currentTrack = {
       title,
       artist: album.artist,
       cover: album.image,
-      // 같은 곡이면 이전에 설정한 customVideoId 유지
       customVideoId:
         currentTrack &&
         currentTrack.title === title &&
@@ -651,7 +630,6 @@ function openTrackModal(album) {
   editBtn.addEventListener('click', (e) => {
     e.stopPropagation();
 
-    // 현재 곡 기준으로 currentTrack 보정
     if (!currentTrack || currentTrack.title !== title || currentTrack.artist !== album.artist) {
       currentTrack = {
         title,
@@ -688,7 +666,6 @@ function openTrackModal(album) {
 
     currentTrack.customVideoId = videoId;
 
-    // 바로 이 트랙 재생
     showMiniPlayer({
       title: currentTrack.title,
       artist: currentTrack.artist,
@@ -698,8 +675,39 @@ function openTrackModal(album) {
     alert('이 트랙의 스트리밍 주소를 변경했습니다.');
   });
 
+  return li;
+}
+
+let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
+let currentTrack = null;      // 현재 선택한 트랙 정보
+let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
+let currentTrack = null;      // 현재 선택한 트랙 정보
+
+function openTrackModal(album) {
+  currentTrackAlbum = album;  // ⬅ 추가
+  
+  trackModalTitle.textContent = `${album.artist} - ${album.name}`;
+  trackList.innerHTML = '<li>트랙 불러오는 중...</li>';
+  trackModal.style.display = 'flex';
+
+  fetchAlbumTracks(album.artist, album.name)
+    .then((tracks) => {
+      trackList.innerHTML = '';
+      if (!tracks || (Array.isArray(tracks) && tracks.length === 0)) {
+        trackList.innerHTML = '<li>트랙 정보를 찾을 수 없습니다.</li>';
+        return;
+      }
+
+      const arr = Array.isArray(tracks) ? tracks : [tracks];
+
+arr.forEach((t) => {
+  const title = typeof t.name === 'string' ? t.name : (t.name?.[0] || '제목 없음');
+  const seconds = Number(t.duration || 0);
+
+  const li = createTrackListItem(album, title, seconds);
   trackList.appendChild(li);
 });
+
 
     })
     .catch((err) => {
@@ -927,6 +935,38 @@ trackCoverChangeBtn.addEventListener('click', () => {
   // 다음에 트랙 모달을 열 때는 새 이미지가 반영된다.
   alert('커버 이미지가 변경되었습니다.');
 });
+
+trackAddBtn.addEventListener('click', () => {
+  if (!currentTrackAlbum) {
+    alert('먼저 앨범을 선택해 주세요.');
+    return;
+  }
+
+  const title = prompt('추가할 트랙 제목을 입력해 주세요.');
+  if (!title || !title.trim()) {
+    alert('트랙 제목은 필수입니다.');
+    return;
+  }
+
+  const durationInput = prompt('트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210');
+  let durationSeconds = 0;
+  if (durationInput && durationInput.trim()) {
+    const n = Number(durationInput.trim());
+    if (Number.isFinite(n) && n >= 0) {
+      durationSeconds = n;
+    }
+  }
+
+  const li = createTrackListItem(currentTrackAlbum, title.trim(), durationSeconds);
+  trackList.appendChild(li);
+
+  // “트랙 정보를 찾을 수 없습니다.” 문구가 있으면 제거
+  const firstLi = trackList.querySelector('li');
+  if (firstLi && firstLi.textContent === '트랙 정보를 찾을 수 없습니다.') {
+    trackList.removeChild(firstLi);
+  }
+});
+
 
 
 window.addEventListener('keydown', (e) => {
