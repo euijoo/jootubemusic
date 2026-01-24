@@ -450,6 +450,7 @@ main {
   padding: 0 0 8px;
 }
 
+
 /* 각 트랙 행 */
 #trackList li {
   display: flex;
@@ -460,10 +461,12 @@ main {
   cursor: pointer;
 }
 
+/* 마지막 줄 테두리 제거 */
 #trackList li:last-child {
   border-bottom: none;
 }
 
+/* 호버 시 배경 강조 */
 #trackList li:hover {
   background: rgba(255,255,255,0.08);
 }
@@ -477,14 +480,14 @@ main {
   text-overflow: ellipsis;
 }
 
-/* 오른쪽 영역: ⋯ + 시간 */
-#trackList .track-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* 길이 (오른쪽 정렬) */
+#trackList .track-duration {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: rgba(245,245,247,0.7);
 }
 
-/* ⋯ 버튼 */
+/* ⋯ 버튼 (아이콘 버튼 느낌으로) */
 #trackList .track-stream-edit {
   border: none;
   background: transparent;
@@ -498,14 +501,6 @@ main {
   color: #ffffff;
 }
 
-/* 길이 */
-#trackList .track-duration {
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  color: rgba(245,245,247,0.7);
-}
-
-/* “트랙 없음” 문구 */
 #trackList li.empty-track-message {
   text-align: center;
   justify-content: center;
@@ -515,3 +510,8 @@ main {
   cursor: default;
 }
 
+#trackList .track-right {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* ⋯ 버튼과 시간 사이 간격 */
+}
