@@ -87,7 +87,7 @@
     </div>
   </div>
 
-      <!-- 미니 플레이어 -->
+            <!-- 미니 플레이어 -->
   <div class="mini-player" id="miniPlayer" style="display:none;">
     <img id="miniCover" class="mini-cover" src="" alt="" />
     <div class="mini-meta">
@@ -112,11 +112,12 @@
 
     <button class="mini-btn" id="miniToggle">▶</button>
     <button class="mini-btn" id="miniHide">×</button>
-
-    <!-- 실제 재생용 오디오 (UI는 숨김) -->
-    <audio id="miniAudio" preload="metadata"></audio>
   </div>
 
+  <!-- 숨겨진 YouTube 플레이어 (실제 재생 담당) -->
+  <div id="ytPlayer" style="width:0;height:0;overflow:hidden;"></div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script src="script.js"></script>
 </body>
 </html>
