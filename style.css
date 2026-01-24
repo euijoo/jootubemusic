@@ -313,14 +313,45 @@ main {
   font-size: 13px;
 }
 
-.mini-video-wrap {
+.mini-timeline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 6px;
 }
 
-.mini-youtube {
-  width: 100%;
-  height: 180px;
-  border-radius: 12px;
-  border: none;
+.mini-time {
+  font-size: 11px;
+  color: #ccc;
+  width: 40px;
+  text-align: center;
+}
+
+.mini-seek {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+/* WebKit thumb */
+.mini-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Firefox */
+.mini-seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
 }
 
