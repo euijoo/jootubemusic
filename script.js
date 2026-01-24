@@ -934,36 +934,38 @@ trackCoverChangeBtn.addEventListener('click', () => {
   alert('커버 이미지가 변경되었습니다.');
 });
 
-trackAddBtn.addEventListener('click', () => {
-  if (!currentTrackAlbum) {
-    alert('먼저 앨범을 선택해 주세요.');
-    return;
-  }
-
-  const title = prompt('추가할 트랙 제목을 입력해 주세요.');
-  if (!title || !title.trim()) {
-    alert('트랙 제목은 필수입니다.');
-    return;
-  }
-
-  const durationInput = prompt('트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210');
-  let durationSeconds = 0;
-  if (durationInput && durationInput.trim()) {
-    const n = Number(durationInput.trim());
-    if (Number.isFinite(n) && n >= 0) {
-      durationSeconds = n;
+if (trackAddBtn) {
+  trackAddBtn.addEventListener('click', () => {
+    if (!currentTrackAlbum) {
+      alert('먼저 앨범을 선택해 주세요.');
+      return;
     }
-  }
 
-  const li = createTrackListItem(currentTrackAlbum, title.trim(), durationSeconds);
-  trackList.appendChild(li);
+    const title = prompt('추가할 트랙 제목을 입력해 주세요.');
+    if (!title || !title.trim()) {
+      alert('트랙 제목은 필수입니다.');
+      return;
+    }
 
-  // “트랙 정보를 찾을 수 없습니다.” 문구가 있으면 제거
-  const firstLi = trackList.querySelector('li');
-  if (firstLi && firstLi.textContent === '트랙 정보를 찾을 수 없습니다.') {
-    trackList.removeChild(firstLi);
-  }
-});
+    const durationInput = prompt('트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210');
+    let durationSeconds = 0;
+    if (durationInput && durationInput.trim()) {
+      const n = Number(durationInput.trim());
+      if (Number.isFinite(n) && n >= 0) {
+        durationSeconds = n;
+      }
+    }
+
+    const li = createTrackListItem(currentTrackAlbum, title.trim(), durationSeconds);
+    trackList.appendChild(li);
+
+    const firstLi = trackList.querySelector('li');
+    if (firstLi && firstLi.textContent === '트랙 정보를 찾을 수 없습니다.') {
+      trackList.removeChild(firstLi);
+    }
+  });
+}
+
 
 
 
