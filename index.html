@@ -24,14 +24,13 @@
       <button id="searchBtn">검색</button>
     </div>
 
- <!-- Google 로그인 영역 -->
+    <!-- Google 로그인 영역 -->
     <div id="authBar" class="info">
       <span id="authStatus">로그인하지 않은 상태입니다.</span>
       <button id="loginBtn">Google로 로그인</button>
       <button id="logoutBtn" style="display:none;">로그아웃</button>
     </div>
 
-    
     <div class="info">
       검색 버튼을 눌러 Last.fm에서 앨범을 찾고, 원하는 앨범을 선택해 내 그리드에 추가할 수 있습니다.
     </div>
@@ -39,17 +38,17 @@
     <!-- 내가 고른 앨범 그리드 -->
     <section class="section-my">
       <h2 class="section-title">내 앨범</h2>
-      
-        <!-- 카테고리 필터 -->
-  <div id="categoryBar" class="category-bar">
-    <button class="category-btn active" data-category="all">All</button>
-    <button class="category-btn" data-category="kpop">K‑Pop</button>
-    <button class="category-btn" data-category="pop">Pop</button>
-    <button class="category-btn" data-category="jazz">Jazz</button>
-    <button class="category-btn" data-category="classic">Classic</button>
-    <button class="category-btn" data-category="etc">Etc</button>
-  </div>
-      
+
+      <!-- 카테고리 필터 -->
+      <div id="categoryBar" class="category-bar">
+        <button class="category-btn active" data-category="all">All</button>
+        <button class="category-btn" data-category="kpop">K‑Pop</button>
+        <button class="category-btn" data-category="pop">Pop</button>
+        <button class="category-btn" data-category="jazz">Jazz</button>
+        <button class="category-btn" data-category="classic">Classic</button>
+        <button class="category-btn" data-category="etc">Etc</button>
+      </div>
+
       <div id="myGrid" class="grid"></div>
       <div id="empty" class="empty">아직 선택한 앨범이 없습니다.</div>
     </section>
@@ -89,27 +88,25 @@
     </div>
   </div>
 
+  <!-- 앨범 트랙 모달 (backdrop 포함 버전) -->
+  <div id="trackModal" class="modal" style="display:none;">
+    <div class="modal-backdrop" id="trackBackdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="trackModalTitle"></h2>
+        <div>
+          <button id="trackCoverChangeBtn" class="track-add-btn">커버 변경</button>
+          <button id="trackModalClose">닫기</button>
+        </div>
+      </div>
 
+      <ul id="trackList"></ul>
 
-
-
-  
- <!-- 앨범 트랙 모달 -->
-<div id="trackModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 id="trackModalTitle"></h2>
-      <button id="trackModalClose">닫기</button>
+      <button id="trackAddBtn" class="track-add-btn">트랙 추가</button>
     </div>
-
-    <ul id="trackList"></ul>
-
-    <button id="trackAddBtn" class="track-add-btn">트랙 추가</button>
   </div>
-</div>
 
-
-            <!-- 미니 플레이어 -->
+  <!-- 미니 플레이어 -->
   <div class="mini-player" id="miniPlayer" style="display:none;">
     <img id="miniCover" class="mini-cover" src="" alt="" />
     <div class="mini-meta">
@@ -118,30 +115,25 @@
 
       <!-- 타임라인 + 시간 -->
       <div class="mini-timeline">
-  <span id="miniCurrentTime" class="mini-time">00:00</span>
-  <input
-    type="range"
-    id="miniSeek"
-    class="mini-seek"
-    min="0"
-    max="100"
-    step="0.1"
-    value="0"
-  />
-  <span id="miniDuration" class="mini-time">00:00</span>
-</div>
-
-
+        <span id="miniCurrentTime" class="mini-time">00:00</span>
+        <input
+          type="range"
+          id="miniSeek"
+          class="mini-seek"
+          min="0"
+          max="100"
+          step="0.1"
+          value="0"
+        />
+        <span id="miniDuration" class="mini-time">00:00</span>
+      </div>
+    </div>
     <button class="mini-btn" id="miniToggle">▶</button>
     <button class="mini-btn" id="miniHide">×</button>
   </div>
 
-   <!-- 숨겨진 YouTube 플레이어 (실제 재생 담당) -->
+  <!-- 숨겨진 YouTube 플레이어 (실제 재생 담당) -->
   <div id="ytPlayer" style="width:0;height:0;overflow:hidden;"></div>
-
-  <!-- 기존 이 줄은 삭제
-  <script src="https://www.youtube.com/iframe_api"></script>
-  -->
 
   <script type="module" src="script.js"></script>
 </body>
