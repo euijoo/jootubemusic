@@ -609,35 +609,98 @@ function openTrackModal(album) {
       const arr = Array.isArray(tracks) ? tracks : [tracks];
 
       arr.forEach((t) => {
-        const li = document.createElement('li');
-        const title = typeof t.name === 'string' ? t.name : (t.name?.[0] || '제목 없음');
-        const seconds = Number(t.duration || 0);
-        const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
-        const ss = String(seconds % 60).padStart(2, '0');
+  const li = document.createElement('li');
+  const title = typeof t.name === 'string' ? t.name : (t.name?.[0] || '제목 없음');
+  const seconds = Number(t.duration || 0);
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
 
-        li.innerHTML = `
-  <span class="track-title">${title}</span>
-  <span class="track-duration">${mm}:${ss}</span>
-  <button class="track-stream-edit">⋯</button>
-`;
+  li.innerHTML = `
+    <span class="track-title">${title}</span>
+    <span class="track-duration">${mm}:${ss}</span>
+    <button class="track-stream-edit">⋯</button>
+  `;
 
-        li.addEventListener('click', () => {
-          currentTrack = {               // ⬅ 추가
-    title,
-    artist: album.artist,
-    cover: album.image,
-    customVideoId: null,
-  };
-                
-          showMiniPlayer({
-            title,
-            artist: album.artist,
-            cover: album.image,
-          });
-        });
+  // 트랙 클릭 → 재생
+  li.addEventListener('click', (e) => {
+    // 수정 버튼 클릭일 때는 여기서 막기
+    if (e.target.classList.contains('track-stream-edit')) return;
 
-        trackList.appendChild(li);
-      });
+    currentTrack = {
+      title,
+      artist: album.artist,
+      cover: album.image,
+      // 같은 곡이면 이전에 설정한 customVideoId 유지
+      customVideoId:
+        currentTrack &&
+        currentTrack.title === title &&
+        currentTrack.artist === album.artist
+          ? currentTrack.customVideoId
+          : null,
+    };
+
+    showMiniPlayer({
+      title,
+      artist: album.artist,
+      cover: album.image,
+    });
+  });
+
+  // 스트리밍 주소 수정 버튼
+  const editBtn = li.querySelector('.track-stream-edit');
+  editBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // 현재 곡 기준으로 currentTrack 보정
+    if (!currentTrack || currentTrack.title !== title || currentTrack.artist !== album.artist) {
+      currentTrack = {
+        title,
+        artist: album.artist,
+        cover: album.image,
+        customVideoId: null,
+      };
+    }
+
+    const currentId = currentTrack.customVideoId || '';
+    const input = prompt(
+      '이 트랙에 사용할 YouTube 링크 또는 videoId를 입력해 주세요.\n(비워 두고 취소하면 자동 링크를 사용합니다.)',
+      currentId
+    );
+    if (input === null) return;
+
+    const trimmed = input.trim();
+    if (!trimmed) {
+      currentTrack.customVideoId = null;
+      alert('이 트랙의 커스텀 스트리밍 주소를 제거했습니다 (자동 링크 사용).');
+      return;
+    }
+
+    let videoId = trimmed;
+    const vMatch = trimmed.match(/[?&]v=([^&]+)/); // URL이면 v= 추출[web:396]
+    if (vMatch && vMatch[1]) {
+      videoId = vMatch[1];
+    }
+
+    if (videoId.length < 8) {
+      alert('올바른 YouTube videoId 또는 링크를 입력해 주세요.');
+      return;
+    }
+
+    currentTrack.customVideoId = videoId;
+
+    // 바로 이 트랙 재생
+    showMiniPlayer({
+      title: currentTrack.title,
+      artist: currentTrack.artist,
+      cover: currentTrack.cover,
+    });
+
+    alert('이 트랙의 스트리밍 주소를 변경했습니다.');
+  });
+
+  trackList.appendChild(li);
+});
+
     })
     .catch((err) => {
       console.error(err);
