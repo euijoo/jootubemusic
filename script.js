@@ -1,64 +1,3 @@
-// 맨 위 어딘가에 딱 한 번만
-let myAlbums = [];
-let currentTrackAlbum = null;
-let currentTrack = null;
-// (필요하면 let currentUser = null; 도 여기)
-
-// 1) DOM 캐싱 (한 번에 몰아서)
-const searchInput = document.getElementById('searchInput');
-const searchBtn   = document.getElementById('searchBtn');
-
-const authStatus = document.getElementById('authStatus');
-const loginBtn   = document.getElementById('loginBtn');
-const logoutBtn  = document.getElementById('logoutBtn');
-
-const myGrid = document.getElementById('myGrid');
-const empty  = document.getElementById('empty');
-
-const categoryBar = document.getElementById('categoryBar');
-
-const searchModal   = document.getElementById('searchModal');
-const modalGrid     = document.getElementById('modalGrid');
-const modalClose    = document.getElementById('modalClose');
-const modalBackdrop = document.getElementById('modalBackdrop');
-const modalTitle    = document.getElementById('modalTitle');
-
-const trackModal      = document.getElementById('trackModal');
-const trackBackdrop   = document.getElementById('trackBackdrop');
-const trackModalClose = document.getElementById('trackModalClose');
-const trackModalTitle = document.getElementById('trackModalTitle');
-const trackList       = document.getElementById('trackList');
-const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn');
-const trackAddBtn     = document.getElementById('trackAddBtn');
-
-const coverModal      = document.getElementById('coverModal');
-const coverBackdrop   = document.getElementById('coverBackdrop');
-const coverModalClose = document.getElementById('coverModalClose');
-const coverModalTitle = document.getElementById('coverModalTitle');
-const coverInfo       = document.getElementById('coverInfo');
-const coverUrlInput   = document.getElementById('coverUrlInput');
-const coverPreview    = document.getElementById('coverPreview');
-const coverSaveBtn    = document.getElementById('coverSaveBtn');
-
-const miniPlayer  = document.getElementById('miniPlayer');
-const miniCover   = document.getElementById('miniCover');
-const miniTitle   = document.getElementById('miniTitle');
-const miniArtist  = document.getElementById('miniArtist');
-const miniToggle  = document.getElementById('miniToggle');
-const miniHide    = document.getElementById('miniHide');
-const miniSeek    = document.getElementById('miniSeek');
-const miniCurrentTime = document.getElementById('miniCurrentTime');
-const miniDuration    = document.getElementById('miniDuration');
-
-console.log('script loaded');
-console.log('loginBtn =', loginBtn);
-console.log('searchBtn =', searchBtn);
-
-// 2) 여기서부터 Firebase import/초기화 + 이벤트 핸들러 + 나머지 함수들
-// (import, initializeApp, getAuth, onAuthStateChanged, fetchAlbumTracks, search 클릭, login 클릭 등)
-
-
-
 // Firestore에서 유저 앨범 모두 불러오기
 async function loadMyAlbumsFromFirestore() {
   if (!currentUser) return;
@@ -115,15 +54,6 @@ async function syncMyAlbumsToFirestore() {
   await Promise.all(ops);
   console.log('[sync] done');
 }
-
-loginBtn.addEventListener('click', () => {
-  console.log('[auth] login clicked');
-  // 여기에 signInWithPopup(auth, provider) 등 실제 로그인 코드
-});
-
-
-
-
 /* ---------- 트랙 모달 ---------- */
 
 function createTrackListItem(album, title, durationSeconds = 0, customVideoId = null) {
@@ -134,10 +64,8 @@ function createTrackListItem(album, title, durationSeconds = 0, customVideoId = 
 
   li.innerHTML = `
     <span class="track-title">${title}</span>
-    <div class="track-right">
-      <button class="track-stream-edit">⋯</button>
-      <span class="track-duration">${mm}:${ss}</span>
-    </div>
+    <span class="track-duration">${mm}:${ss}</span>
+    <button class="track-stream-edit">⋯</button>
   `;
 
   li.addEventListener('click', (e) => {
@@ -235,6 +163,9 @@ function createTrackListItem(album, title, durationSeconds = 0, customVideoId = 
 
   return li;
 }
+
+let currentTrackAlbum = null;
+let currentTrack = null;
 
 function openTrackModal(album) {
   currentTrackAlbum = album;
@@ -336,8 +267,16 @@ if (trackAddBtn) {
       return;
     }
 
-    // duration은 0으로, 나중에 스트리밍 길이로 채울 예정
-    const durationSeconds = 0;
+    const durationInput = prompt(
+      '트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210'
+    );
+    let durationSeconds = 0;
+    if (durationInput && durationInput.trim()) {
+      const n = Number(durationInput.trim());
+      if (Number.isFinite(n) && n >= 0) {
+        durationSeconds = n;
+      }
+    }
 
     if (!Array.isArray(currentTrackAlbum.tracks)) {
       currentTrackAlbum.tracks = [];
@@ -364,4 +303,16 @@ if (trackAddBtn) {
     if (currentUser) syncMyAlbumsToFirestore();
   });
 }
+// 검색 결과 카드 클릭 안에서 myAlbums.push(...) 부분만 교체
 
+myAlbums.push({
+  name: title,
+  artist,
+  image: imgUrl,
+  hasCover: hasRealCover(album),
+  category,
+  tracks: [], // 트랙 리스트 초기화
+});
+renderMyAlbums();
+saveMyAlbumsToStorage();
+if (currentUser) syncMyAlbumsToFirestore();
