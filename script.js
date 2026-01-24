@@ -1,5 +1,7 @@
 // 🔑 Last.fm API 키
 const LASTFM_API_KEY = '7e0b8eb10fdc5cf81968b38fdd543cff';
+// YouTube Data API 키
+const YOUTUBE_API_KEY = 'AIzaSyBysIkRsY2eIwHAqv2oSA8uh6XLiBvXtQ4';
 
 // 검색창 / 버튼
 const searchInput = document.getElementById('searchInput');
@@ -30,6 +32,7 @@ const miniTitle   = document.getElementById('miniTitle');
 const miniArtist  = document.getElementById('miniArtist');
 const miniToggle  = document.getElementById('miniToggle');
 const miniHide    = document.getElementById('miniHide');
+const miniYoutube = document.getElementById('miniYoutube');
 
 // 커버 입력 모달
 const coverModal      = document.getElementById('coverModal');
@@ -68,6 +71,7 @@ function pickAlbumImage(album) {
   }
   return imgUrl;
 }
+
 function hasRealCover(album) {
   const images = Array.isArray(album.image) ? album.image : [];
   if (!images.length) return false;
@@ -105,6 +109,54 @@ async function fetchAlbumTracks(artist, albumName) {
   if (!res.ok) throw new Error('album.getInfo 실패: ' + res.status);
   const data = await res.json();
   return data.album?.tracks?.track || [];
+}
+
+/* ---------- YouTube 검색 유틸 ---------- */
+
+// (아티스트 + 곡명)으로 검색 쿼리 생성
+function buildYoutubeQuery(title, artist) {
+  return `${artist} ${title} official audio`;
+}
+
+// YouTube Data API v3 search.list로 videoId 하나 가져오기[web:109][web:133]
+async function fetchYoutubeVideoId(title, artist) {
+  if (!YOUTUBE_API_KEY) {
+    console.error('YouTube API key not set');
+    return null;
+  }
+
+  const query = encodeURIComponent(buildYoutubeQuery(title, artist));
+  const url =
+    `https://www.googleapis.com/youtube/v3/search` +
+    `?part=snippet` +
+    `&type=video` +
+    `&maxResults=1` +
+    `&q=${query}` +
+    `&key=${YOUTUBE_API_KEY}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error('YouTube API error', res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    const items = data.items || [];
+    if (!items.length) return null;
+
+    const videoId = items[0].id.videoId;
+    return videoId || null;
+  } catch (err) {
+    console.error('YouTube API fetch failed', err);
+    return null;
+  }
+}
+
+// iframe embed URL 만들기[web:82]
+function buildYoutubeEmbedUrl(videoId) {
+  if (!videoId) return '';
+  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
 }
 
 /* ---------- 검색 모달 ---------- */
@@ -145,27 +197,25 @@ function renderSearchResults(albums) {
     `;
 
     card.addEventListener('click', () => {
-  const exists = myAlbums.some(
-    (a) => a.name === title && a.artist === artist
-  );
-  if (!exists) {
-    myAlbums.push({
-      name: title,
-      artist,
-      image: imgUrl,
-      hasCover: hasRealCover(album),
+      const exists = myAlbums.some(
+        (a) => a.name === title && a.artist === artist
+      );
+      if (!exists) {
+        myAlbums.push({
+          name: title,
+          artist,
+          image: imgUrl,
+          hasCover: hasRealCover(album),
+        });
+        renderMyAlbums();
+      }
+      showMiniPlayer({
+        title,
+        artist,
+        cover: imgUrl,
+      });
+      // closeModal();  // 필요하면 자동 닫기
     });
-    renderMyAlbums();
-  }
-  showMiniPlayer({
-    title,
-    artist,
-    cover: imgUrl,
-  });
-  // 필요하면 자동으로 닫을 수 있음
-  // closeModal();
-});
-
 
     modalGrid.appendChild(card);
   });
@@ -209,12 +259,12 @@ function renderMyAlbums() {
       <div class="card-artist">${album.artist}</div>
     `;
     card.addEventListener('click', () => {
-  if (!album.hasCover) {
-    openCoverModal(album);   // 커버 없으면 커버 입력 모달
-  } else {
-    openTrackModal(album);   // 이미 커버 있으면 바로 트랙 모달
-  }
-});
+      if (!album.hasCover) {
+        openCoverModal(album);
+      } else {
+        openTrackModal(album);
+      }
+    });
     myGrid.appendChild(card);
   });
 }
@@ -253,14 +303,11 @@ coverSaveBtn.addEventListener('click', () => {
   pendingCoverAlbum.hasCover = true;
   renderMyAlbums();
   closeCoverModal();
-  openTrackModal(pendingCoverAlbum);  // 커버 저장 후 바로 트랙 모달
+  openTrackModal(pendingCoverAlbum);
 });
 
 coverModalClose.addEventListener('click', closeCoverModal);
 coverBackdrop.addEventListener('click', closeCoverModal);
-
-
-
 
 /* ---------- 트랙 모달 ---------- */
 
@@ -292,7 +339,6 @@ function openTrackModal(album) {
         `;
 
         li.addEventListener('click', () => {
-          // TODO: 나중에 YouTube 검색/재생 연결
           showMiniPlayer({
             title,
             artist: album.artist,
@@ -316,10 +362,23 @@ function closeTrackModal() {
 
 /* ---------- 미니 플레이어 ---------- */
 
-function showMiniPlayer(track) {
+async function showMiniPlayer(track) {
   miniCover.src = track.cover;
   miniTitle.textContent = track.title;
   miniArtist.textContent = track.artist;
+
+  // 이전 곡 멈추기
+  miniYoutube.src = '';
+
+  // YouTube에서 검색해서 videoId 가져오기
+  const videoId = await fetchYoutubeVideoId(track.title, track.artist);
+  if (videoId) {
+    const embedUrl = buildYoutubeEmbedUrl(videoId);
+    miniYoutube.src = embedUrl;
+  } else {
+    console.warn('No YouTube video found for track', track.title, track.artist);
+  }
+
   isPlaying = true;
   miniToggle.textContent = '⏸';
   miniPlayer.style.display = 'flex';
