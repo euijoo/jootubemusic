@@ -934,6 +934,7 @@ trackCoverChangeBtn.addEventListener('click', () => {
   alert('커버 이미지가 변경되었습니다.');
 });
 
+
 if (trackAddBtn) {
   trackAddBtn.addEventListener('click', () => {
     if (!currentTrackAlbum) {
@@ -965,6 +966,7 @@ if (trackAddBtn) {
     }
   });
 }
+
 
 
 
