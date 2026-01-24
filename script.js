@@ -64,8 +64,10 @@ function createTrackListItem(album, title, durationSeconds = 0, customVideoId = 
 
   li.innerHTML = `
     <span class="track-title">${title}</span>
-    <span class="track-duration">${mm}:${ss}</span>
-    <button class="track-stream-edit">⋯</button>
+    <div class="track-right">
+      <button class="track-stream-edit">⋯</button>
+      <span class="track-duration">${mm}:${ss}</span>
+    </div>
   `;
 
   li.addEventListener('click', (e) => {
@@ -267,16 +269,8 @@ if (trackAddBtn) {
       return;
     }
 
-    const durationInput = prompt(
-      '트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210'
-    );
-    let durationSeconds = 0;
-    if (durationInput && durationInput.trim()) {
-      const n = Number(durationInput.trim());
-      if (Number.isFinite(n) && n >= 0) {
-        durationSeconds = n;
-      }
-    }
+    // duration은 0으로, 나중에 스트리밍 길이로 채울 예정
+    const durationSeconds = 0;
 
     if (!Array.isArray(currentTrackAlbum.tracks)) {
       currentTrackAlbum.tracks = [];
@@ -303,6 +297,7 @@ if (trackAddBtn) {
     if (currentUser) syncMyAlbumsToFirestore();
   });
 }
+
 // 검색 결과 카드 클릭 안에서 myAlbums.push(...) 부분만 교체
 
 myAlbums.push({
