@@ -94,17 +94,19 @@
 
 
   
-  <!-- 앨범 트랙 모달 -->
-  <div id="trackModal" class="modal">
+ <!-- 앨범 트랙 모달 -->
+<div id="trackModal" class="modal" style="display:none;">
+  <div class="modal-backdrop" id="trackBackdrop"></div>
   <div class="modal-content">
     <div class="modal-header">
       <h2 id="trackModalTitle"></h2>
       <button id="trackCoverChangeBtn" class="triangle-btn">▲</button>
       <button id="trackModalClose" class="modal-close">&times;</button>
     </div>
-    <!-- ... 이하 생략 ... -->
+    <ul id="trackList" class="track-list"></ul>
   </div>
 </div>
+
 
             <!-- 미니 플레이어 -->
   <div class="mini-player" id="miniPlayer" style="display:none;">
