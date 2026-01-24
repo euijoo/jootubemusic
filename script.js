@@ -109,6 +109,15 @@ async function syncMyAlbumsToFirestore() {
   await Promise.all(ops);
   console.log('[sync] done');
 }
+
+loginBtn.addEventListener('click', () => {
+  console.log('[auth] login clicked');
+  // 여기에 signInWithPopup(auth, provider) 등 실제 로그인 코드
+});
+
+
+
+
 /* ---------- 트랙 모달 ---------- */
 
 function createTrackListItem(album, title, durationSeconds = 0, customVideoId = null) {
