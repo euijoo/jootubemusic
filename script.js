@@ -680,8 +680,6 @@ function createTrackListItem(album, title, durationSeconds = 0) {
 
 let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
 let currentTrack = null;      // 현재 선택한 트랙 정보
-let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
-let currentTrack = null;      // 현재 선택한 트랙 정보
 
 function openTrackModal(album) {
   currentTrackAlbum = album;  // ⬅ 추가
