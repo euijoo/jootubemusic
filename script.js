@@ -1,3 +1,57 @@
+// 검색창 / 버튼
+const searchInput = document.getElementById('searchInput');
+const searchBtn   = document.getElementById('searchBtn');
+
+// 로그인 UI
+const authStatus = document.getElementById('authStatus');
+const loginBtn   = document.getElementById('loginBtn');
+const logoutBtn  = document.getElementById('logoutBtn');
+
+// 내 앨범 그리드
+const myGrid = document.getElementById('myGrid');
+const empty  = document.getElementById('empty');
+
+// 카테고리 바
+const categoryBar = document.getElementById('categoryBar');
+
+// 검색 결과 모달
+const searchModal   = document.getElementById('searchModal');
+const modalGrid     = document.getElementById('modalGrid');
+const modalClose    = document.getElementById('modalClose');
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalTitle    = document.getElementById('modalTitle');
+
+// 트랙 모달
+const trackModal      = document.getElementById('trackModal');
+const trackBackdrop   = document.getElementById('trackBackdrop');
+const trackModalClose = document.getElementById('trackModalClose');
+const trackModalTitle = document.getElementById('trackModalTitle');
+const trackList       = document.getElementById('trackList');
+const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn');
+const trackAddBtn     = document.getElementById('trackAddBtn');
+
+// 커버 입력 모달
+const coverModal      = document.getElementById('coverModal');
+const coverBackdrop   = document.getElementById('coverBackdrop');
+const coverModalClose = document.getElementById('coverModalClose');
+const coverModalTitle = document.getElementById('coverModalTitle');
+const coverInfo       = document.getElementById('coverInfo');
+const coverUrlInput   = document.getElementById('coverUrlInput');
+const coverPreview    = document.getElementById('coverPreview');
+const coverSaveBtn    = document.getElementById('coverSaveBtn');
+
+// 미니 플레이어
+const miniPlayer  = document.getElementById('miniPlayer');
+const miniCover   = document.getElementById('miniCover');
+const miniTitle   = document.getElementById('miniTitle');
+const miniArtist  = document.getElementById('miniArtist');
+const miniToggle  = document.getElementById('miniToggle');
+const miniHide    = document.getElementById('miniHide');
+const miniSeek    = document.getElementById('miniSeek');
+const miniCurrentTime = document.getElementById('miniCurrentTime');
+const miniDuration    = document.getElementById('miniDuration');
+
+
 // Firestore에서 유저 앨범 모두 불러오기
 async function loadMyAlbumsFromFirestore() {
   if (!currentUser) return;
