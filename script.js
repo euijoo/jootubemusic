@@ -66,6 +66,10 @@ const trackBackdrop   = document.getElementById('trackBackdrop');
 const trackModalClose = document.getElementById('trackModalClose');
 const trackModalTitle = document.getElementById('trackModalTitle');
 const trackList       = document.getElementById('trackList');
+const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn');
+
+
+
 
 // 미니 플레이어
 const miniPlayer  = document.getElementById('miniPlayer');
@@ -581,7 +585,11 @@ coverBackdrop.addEventListener('click', closeCoverModal);
 
 /* ---------- 트랙 모달 ---------- */
 
+let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
+
 function openTrackModal(album) {
+  currentTrackAlbum = album;  // ⬅ 추가
+  
   trackModalTitle.textContent = `${album.artist} - ${album.name}`;
   trackList.innerHTML = '<li>트랙 불러오는 중...</li>';
   trackModal.style.display = 'flex';
@@ -628,6 +636,7 @@ function openTrackModal(album) {
 function closeTrackModal() {
   trackModal.style.display = 'none';
   trackList.innerHTML = '';
+  currentTrackAlbum = null;
 }
 /* ---------- YouTube IFrame Player 설정 ---------- */
 
@@ -809,6 +818,31 @@ modalBackdrop.addEventListener('click', closeModal);
 
 trackModalClose.addEventListener('click', closeTrackModal);
 trackBackdrop.addEventListener('click', closeTrackModal);
+
+trackCoverChangeBtn.addEventListener('click', () => {
+  if (!currentTrackAlbum) return;
+
+  const url = prompt('새 커버 이미지 URL을 입력해 주세요.', currentTrackAlbum.image || '');
+  if (!url) return;
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    alert('올바른 이미지 URL을 입력해 주세요.');
+    return;
+  }
+
+  // 앨범 객체 업데이트
+  currentTrackAlbum.image = url;
+  currentTrackAlbum.hasCover = true;
+
+  // myAlbums 쪽도 같은 객체를 참조하고 있으니, 그냥 렌더/저장만 호출
+  renderMyAlbums();
+  saveMyAlbumsToStorage();
+  if (currentUser) syncMyAlbumsToFirestore();
+
+  // 트랙 모달 안에서 사용하는 커버는 album.image를 쓰고 있으니,
+  // 다음에 트랙 모달을 열 때는 새 이미지가 반영된다.
+  alert('커버 이미지가 변경되었습니다.');
+});
+
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
