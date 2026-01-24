@@ -397,10 +397,22 @@ main {
   background: transparent;
   border: none;
   font-size: 10px;
+  color: #888;
   cursor: pointer;
   margin-right: 8px;
 }
 
+.track-stream-edit {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  color: #888;
+  cursor: pointer;
+  margin-left: 6px;
+}
+.track-stream-edit:hover {
+  color: #ccc;
+}
 
 
 
