@@ -96,6 +96,23 @@ let myAlbums = []; // 내가 선택한 앨범 목록
 // YouTube IFrame Player & 진행 상태
 let ytPlayer = null;
 let ytUpdateTimer = null;
+
+
+
+
+// YouTube IFrame API 동적 로드
+function injectYouTubeAPI() {
+  if (document.getElementById('yt-iframe-api')) return;
+  const tag = document.createElement('script');
+  tag.id = 'yt-iframe-api';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+// 모듈 로드 시점에 API 주입
+injectYouTubeAPI();
+
+
 /* ---------- 공통 유틸 ---------- */
 
 function pickAlbumImage(album) {
