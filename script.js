@@ -899,42 +899,49 @@ if (categoryBar) {
 
 /* ---------- 이벤트 바인딩 ---------- */
 
+// 검색
 searchBtn.addEventListener('click', handleSearch);
 searchInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') handleSearch();
 });
 
+// 검색 모달 닫기
 modalClose.addEventListener('click', closeModal);
 modalBackdrop.addEventListener('click', closeModal);
 
+// 트랙 모달 닫기
 trackModalClose.addEventListener('click', closeTrackModal);
-trackBackdrop.addEventListener('click', closeTrackModal);
+if (trackBackdrop) {
+  trackBackdrop.addEventListener('click', closeTrackModal);
+}
 
-trackCoverChangeBtn.addEventListener('click', () => {
-  if (!currentTrackAlbum) return;
+// 트랙 모달 내 커버 변경 버튼
+if (trackCoverChangeBtn) {
+  trackCoverChangeBtn.addEventListener('click', () => {
+    if (!currentTrackAlbum) return;
 
-  const url = prompt('새 커버 이미지 URL을 입력해 주세요.', currentTrackAlbum.image || '');
-  if (!url) return;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    alert('올바른 이미지 URL을 입력해 주세요.');
-    return;
-  }
+    const url = prompt(
+      '새 커버 이미지 URL을 입력해 주세요.',
+      currentTrackAlbum.image || ''
+    );
+    if (!url) return;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      alert('올바른 이미지 URL을 입력해 주세요.');
+      return;
+    }
 
-  // 앨범 객체 업데이트
-  currentTrackAlbum.image = url;
-  currentTrackAlbum.hasCover = true;
+    currentTrackAlbum.image = url;
+    currentTrackAlbum.hasCover = true;
 
-  // myAlbums 쪽도 같은 객체를 참조하고 있으니, 그냥 렌더/저장만 호출
-  renderMyAlbums();
-  saveMyAlbumsToStorage();
-  if (currentUser) syncMyAlbumsToFirestore();
+    renderMyAlbums();
+    saveMyAlbumsToStorage();
+    if (currentUser) syncMyAlbumsToFirestore();
 
-  // 트랙 모달 안에서 사용하는 커버는 album.image를 쓰고 있으니,
-  // 다음에 트랙 모달을 열 때는 새 이미지가 반영된다.
-  alert('커버 이미지가 변경되었습니다.');
-});
+    alert('커버 이미지가 변경되었습니다.');
+  });
+}
 
-
+// 트랙 추가 버튼
 if (trackAddBtn) {
   trackAddBtn.addEventListener('click', () => {
     if (!currentTrackAlbum) {
@@ -948,7 +955,9 @@ if (trackAddBtn) {
       return;
     }
 
-    const durationInput = prompt('트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210');
+    const durationInput = prompt(
+      '트랙 길이(초 단위, 선택사항)를 입력해 주세요. 예: 210'
+    );
     let durationSeconds = 0;
     if (durationInput && durationInput.trim()) {
       const n = Number(durationInput.trim());
@@ -957,7 +966,11 @@ if (trackAddBtn) {
       }
     }
 
-    const li = createTrackListItem(currentTrackAlbum, title.trim(), durationSeconds);
+    const li = createTrackListItem(
+      currentTrackAlbum,
+      title.trim(),
+      durationSeconds
+    );
     trackList.appendChild(li);
 
     const firstLi = trackList.querySelector('li');
@@ -967,10 +980,80 @@ if (trackAddBtn) {
   });
 }
 
+// 미니 플레이어 버튼들
+miniToggle.addEventListener('click', () => {
+  if (!ytPlayer) return;
+  const state = ytPlayer.getPlayerState();
+  if (state === YT.PlayerState.PLAYING) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.playVideo();
+  }
+});
 
+miniHide.addEventListener('click', () => {
+  miniPlayer.style.display = 'none';
+  if (ytPlayer) ytPlayer.pauseVideo();
+  isPlaying = false;
+  stopYtProgressLoop();
+});
 
+// 타임라인 드래그
+miniSeek.addEventListener('input', () => {
+  if (!ytPlayer) return;
+  const duration = ytPlayer.getDuration() || 0;
+  if (!duration) return;
+  const pct = miniSeek.value / 100;
+  const previewTime = duration * pct;
+  miniCurrentTime.textContent = formatTime(previewTime);
+});
 
+miniSeek.addEventListener('change', () => {
+  if (!ytPlayer) return;
+  const duration = ytPlayer.getDuration() || 0;
+  if (!duration) return;
+  const pct = miniSeek.value / 100;
+  const newTime = duration * pct;
+  ytPlayer.seekTo(newTime, true);
+});
 
+// 로그인 / 로그아웃
+loginBtn.addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    console.error('Google login error', e);
+    alert('로그인 중 오류가 발생했습니다.');
+  }
+});
+
+logoutBtn.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.error('Logout error', e);
+    alert('로그아웃 중 오류가 발생했습니다.');
+  }
+});
+
+// 카테고리 필터 클릭
+if (categoryBar) {
+  categoryBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.category-btn');
+    if (!btn) return;
+
+    const cat = btn.dataset.category || 'all';
+    currentCategory = cat;
+
+    categoryBar.querySelectorAll('.category-btn').forEach((b) => {
+      b.classList.toggle('active', b === btn);
+    });
+
+    renderMyAlbums();
+  });
+}
+
+// ESC 키로 모달 닫기
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeModal();
@@ -978,6 +1061,7 @@ window.addEventListener('keydown', (e) => {
     closeCoverModal();
   }
 });
+
 
 // 초기: localStorage에서 먼저 로드
 loadMyAlbumsFromStorage();
