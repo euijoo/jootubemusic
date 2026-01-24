@@ -1,3 +1,6 @@
+console.log('script loaded');
+console.log('loginBtn =', loginBtn);
+
 let myAlbums = [];  // ← 추가
 // 검색창 / 버튼
 const searchInput = document.getElementById('searchInput');
