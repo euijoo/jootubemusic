@@ -87,17 +87,28 @@
     </div>
   </div>
 
-  <!-- 미니 플레이어 -->
+    <!-- 미니 플레이어 -->
   <div class="mini-player" id="miniPlayer" style="display:none;">
     <img id="miniCover" class="mini-cover" src="" alt="" />
     <div class="mini-meta">
       <div id="miniTitle" class="mini-meta-title"></div>
       <div id="miniArtist" class="mini-meta-artist"></div>
+      <!-- YouTube 플레이어 영역 -->
+      <div class="mini-video-wrap">
+        <iframe
+          id="miniYoutube"
+          class="mini-youtube"
+          src=""
+          title="YouTube video player"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+        ></iframe>
+      </div>
     </div>
     <button class="mini-btn" id="miniToggle">▶</button>
     <button class="mini-btn" id="miniHide">×</button>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
