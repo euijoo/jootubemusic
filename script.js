@@ -1,3 +1,13 @@
+const trackModal      = document.getElementById('trackModal');
+const trackBackdrop   = document.getElementById('trackBackdrop');
+const trackModalClose = document.getElementById('trackModalClose');
+const trackModalTitle = document.getElementById('trackModalTitle');
+const trackList       = document.getElementById('trackList');
+const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn'); // ← 이 줄 추가
+const trackAddBtn     = document.getElementById('trackAddBtn');
+
+
+
 // Firestore에서 유저 앨범 모두 불러오기
 async function loadMyAlbumsFromFirestore() {
   if (!currentUser) return;
