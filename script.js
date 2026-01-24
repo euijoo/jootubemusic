@@ -1,3 +1,35 @@
+// Firebase SDK imports (v9+ modular)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCfS2MkP2m6I669bIJ9UUrkaG5GvO7E_x4",
+  authDomain: "jootubemusic-b7157.firebaseapp.com",
+  projectId: "jootubemusic-b7157",
+  storageBucket: "jootubemusic-b7157.firebasestorage.app",
+  messagingSenderId: "1090987417503",
+  appId: "1:1090987417503:web:ff95ac7181a2c0e1eda7aa",
+  measurementId: "G-VQHP01ZXKM"
+};
+
+// Initialize Firebase
+const app       = initializeApp(firebaseConfig);
+const auth      = getAuth(app);
+const db        = getFirestore(app);
+const provider  = new GoogleAuthProvider();
+
+
+
 // 🔑 Last.fm API 키
 const LASTFM_API_KEY = '7e0b8eb10fdc5cf81968b38fdd543cff';
 // YouTube Data API 키
@@ -6,6 +38,12 @@ const YOUTUBE_API_KEY = 'AIzaSyBysIkRsY2eIwHAqv2oSA8uh6XLiBvXtQ4';
 // 검색창 / 버튼
 const searchInput = document.getElementById('searchInput');
 const searchBtn   = document.getElementById('searchBtn');
+
+// 로그인 UI
+const authStatus = document.getElementById('authStatus');
+const loginBtn   = document.getElementById('loginBtn');
+const logoutBtn  = document.getElementById('logoutBtn');
+
 
 // 내 앨범 그리드
 const myGrid      = document.getElementById('myGrid');
@@ -94,6 +132,92 @@ function formatTime(secs) {
   const s = Math.floor(secs % 60);
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
+
+// 로컬 저장 키
+const LOCAL_KEY_ALBUMS = 'jootubemusic.myAlbums';
+
+// 현재 로그인한 Firebase 유저
+let currentUser = null;
+
+/* ---------- LocalStorage 유틸 ---------- */
+
+function saveMyAlbumsToStorage() {
+  try {
+    const json = JSON.stringify(myAlbums);
+    localStorage.setItem(LOCAL_KEY_ALBUMS, json);
+  } catch (e) {
+    console.error('saveMyAlbumsToStorage error', e);
+  }
+}
+
+function loadMyAlbumsFromStorage() {
+  try {
+    const json = localStorage.getItem(LOCAL_KEY_ALBUMS);
+    if (!json) return;
+    const arr = JSON.parse(json);
+    if (Array.isArray(arr)) {
+      myAlbums = arr;
+      renderMyAlbums();
+    }
+  } catch (e) {
+    console.error('loadMyAlbumsFromStorage error', e);
+  }
+}
+
+/* ---------- Firestore 유틸 ---------- */
+
+// 유저별 albums 컬렉션 참조
+function userAlbumsColRef(uid) {
+  return collection(db, 'users', uid, 'albums');
+}
+
+// myAlbums를 Firestore에 전체 업로드 (최초 동기화용)
+async function syncMyAlbumsToFirestore() {
+  if (!currentUser) return;
+  const uid = currentUser.uid;
+  const colRef = userAlbumsColRef(uid);
+
+  // 간단하게: myAlbums 기준으로 setDoc (덮어쓰기)
+  const ops = myAlbums.map((album) => {
+    const albumId = `${album.artist} - ${album.name}`;
+    const docRef = doc(colRef, albumId);
+    return setDoc(docRef, {
+      name: album.name,
+      artist: album.artist,
+      image: album.image,
+      hasCover: album.hasCover ?? true,
+      createdAt: Date.now(),
+    }, { merge: true });
+  });
+  await Promise.all(ops);
+}
+
+// Firestore에서 유저 앨범 모두 불러오기
+async function loadMyAlbumsFromFirestore() {
+  if (!currentUser) return;
+  const uid = currentUser.uid;
+  const colRef = userAlbumsColRef(uid);
+
+  const snap = await getDocs(colRef);
+  const list = [];
+  snap.forEach((docSnap) => {
+    const d = docSnap.data();
+    list.push({
+      name: d.name,
+      artist: d.artist,
+      image: d.image,
+      hasCover: d.hasCover,
+    });
+  });
+
+  myAlbums = list;
+  renderMyAlbums();
+  saveMyAlbumsToStorage(); // 캐시도 함께 업데이트
+}
+
+
+
+
 
 /* ---------- Last.fm API ---------- */
 
@@ -204,25 +328,27 @@ function renderSearchResults(albums) {
     `;
 
     card.addEventListener('click', () => {
-      const exists = myAlbums.some(
-        (a) => a.name === title && a.artist === artist
-      );
-      if (!exists) {
-        myAlbums.push({
-          name: title,
-          artist,
-          image: imgUrl,
-          hasCover: hasRealCover(album),
-        });
-        renderMyAlbums();
-      }
-      showMiniPlayer({
-        title,
-        artist,
-        cover: imgUrl,
-      });
-      // closeModal();
+  const exists = myAlbums.some(
+    (a) => a.name === title && a.artist === artist
+  );
+  if (!exists) {
+    myAlbums.push({
+      name: title,
+      artist,
+      image: imgUrl,
+      hasCover: hasRealCover(album),
     });
+    renderMyAlbums();
+    saveMyAlbumsToStorage();
+    if (currentUser) syncMyAlbumsToFirestore();
+  }
+  showMiniPlayer({
+    title,
+    artist,
+    cover: imgUrl,
+  });
+});
+
 
     modalGrid.appendChild(card);
   });
@@ -246,6 +372,34 @@ async function handleSearch() {
   }
 }
 
+
+async function deleteAlbumAtIndex(index) {
+  const album = myAlbums[index];
+  if (!album) return;
+
+  // 1) myAlbums에서 제거
+  myAlbums.splice(index, 1);
+
+  // 2) 화면 갱신 + localStorage 저장
+  renderMyAlbums();
+  saveMyAlbumsToStorage();
+
+  // 3) 로그인 상태면 Firestore에서도 삭제
+  if (currentUser) {
+    try {
+      const uid = currentUser.uid;
+      const colRef = userAlbumsColRef(uid);
+      const albumId = `${album.artist} - ${album.name}`;
+      const docRef = doc(colRef, albumId);
+      await deleteDoc(docRef); // 문서 삭제[web:213][web:251]
+    } catch (e) {
+      console.error('delete album from Firestore error', e);
+    }
+  }
+}
+
+
+
 /* ---------- 내 앨범 그리드 ---------- */
 
 function renderMyAlbums() {
@@ -257,24 +411,40 @@ function renderMyAlbums() {
   }
   empty.style.display = 'none';
 
-  myAlbums.forEach((album) => {
+  myAlbums.forEach((album, index) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <img src="${album.image}" alt="${album.name}">
       <div class="card-title"><span>${album.name}</span></div>
       <div class="card-artist">${album.artist}</div>
+      <button class="album-delete-btn" data-index="${index}">삭제</button>
     `;
-    card.addEventListener('click', () => {
+
+    // 카드 클릭 → 트랙/커버 모달
+    card.addEventListener('click', (e) => {
+      // 삭제 버튼 클릭은 무시
+      if (e.target.matches('.album-delete-btn')) return;
+
       if (!album.hasCover) {
         openCoverModal(album);
       } else {
         openTrackModal(album);
       }
     });
+
+    // 삭제 버튼 클릭 핸들러
+    const deleteBtn = card.querySelector('.album-delete-btn');
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = Number(deleteBtn.dataset.index);
+      deleteAlbumAtIndex(idx);
+    });
+
     myGrid.appendChild(card);
   });
 }
+
 
 /* ---------- 커버 입력 모달 ---------- */
 
@@ -309,9 +479,13 @@ coverSaveBtn.addEventListener('click', () => {
   pendingCoverAlbum.image = url;
   pendingCoverAlbum.hasCover = true;
   renderMyAlbums();
+  saveMyAlbumsToStorage();
+  if (currentUser) syncMyAlbumsToFirestore();
+
   closeCoverModal();
   openTrackModal(pendingCoverAlbum);
 });
+
 
 coverModalClose.addEventListener('click', closeCoverModal);
 coverBackdrop.addEventListener('click', closeCoverModal);
@@ -496,6 +670,27 @@ miniSeek.addEventListener('change', () => {
   ytPlayer.seekTo(newTime, true);
 });
 
+// 로그인 / 로그아웃
+loginBtn.addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    console.error('Google login error', e);
+    alert('로그인 중 오류가 발생했습니다.');
+  }
+});
+
+logoutBtn.addEventListener('click', async () => {
+  try {
+    await signOut(auth);
+  } catch (e) {
+    console.error('Logout error', e);
+    alert('로그아웃 중 오류가 발생했습니다.');
+  }
+});
+
+
+
 /* ---------- 이벤트 바인딩 ---------- */
 
 searchBtn.addEventListener('click', handleSearch);
@@ -517,5 +712,31 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// 초기 상태 렌더
-renderMyAlbums();
+// 초기: localStorage에서 먼저 로드
+loadMyAlbumsFromStorage();
+
+// Firebase Auth 상태 감시
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user;
+
+  if (user) {
+    authStatus.textContent = `${user.displayName || '사용자'} 님이 로그인했습니다.`;
+    loginBtn.style.display  = 'inline-block';
+    logoutBtn.style.display = 'inline-block';
+
+    try {
+      // Firestore에서 유저 앨범 가져와서 myAlbums 교체
+      await loadMyAlbumsFromFirestore();
+    } catch (e) {
+      console.error('loadMyAlbumsFromFirestore error', e);
+    }
+  } else {
+    authStatus.textContent = '로그인하지 않은 상태입니다.';
+    loginBtn.style.display  = 'inline-block';
+    logoutBtn.style.display = 'none';
+
+    // 로그아웃 후에는 localStorage 기준으로 다시 로드
+    myAlbums = [];
+    loadMyAlbumsFromStorage();
+  }
+});
