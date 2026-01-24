@@ -429,6 +429,33 @@ async function deleteAlbumAtIndex(index) {
   }
 }
 
+async function updateAlbumCategory(index, newCategory) {
+  const album = myAlbums[index];
+  if (!album) return;
+
+  // 1) 메모리 업데이트
+  album.category = newCategory;
+
+  // 2) 화면, localStorage 반영
+  renderMyAlbums();
+  saveMyAlbumsToStorage();
+
+  // 3) Firestore 동기화 (로그인 상태일 때만)
+  if (currentUser) {
+    try {
+      const uid = currentUser.uid;
+      const colRef = userAlbumsColRef(uid);
+      const albumId = `${album.artist} - ${album.name}`;
+      const docRef = doc(colRef, albumId);
+
+      await setDoc(docRef, { category: newCategory }, { merge: true }); // category 필드만 업데이트[web:328]
+
+      console.log('category updated:', albumId, '->', newCategory);
+    } catch (e) {
+      console.error('updateAlbumCategory Firestore error', e);
+    }
+  }
+}
 
 
 /* ---------- 내 앨범 그리드 ---------- */
@@ -448,14 +475,30 @@ function renderMyAlbums() {
   empty.style.display = 'none';
 
   filtered.forEach((album, index) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.innerHTML = `
-      <img src="${album.image}" alt="${album.name}">
-      <div class="card-title"><span>${album.name}</span></div>
-      <div class="card-artist">${album.artist}</div>
-      <button class="album-delete-btn" data-index="${index}">삭제</button>
-    `;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <img src="${album.image}" alt="${album.name}">
+    <div class="card-title"><span>${album.name}</span></div>
+    <div class="card-artist">${album.artist}</div>
+    <div class="album-category">
+      <select class="category-select" data-index="${index}">
+        <option value="kpop" ${album.category === 'kpop' ? 'selected' : ''}>K-POP</option>
+        <option value="pop"  ${album.category === 'pop'  ? 'selected' : ''}>POP</option>
+        <option value="ost"  ${album.category === 'ost'  ? 'selected' : ''}>OST</option>
+        <option value="etc"  ${album.category === 'etc'  ? 'selected' : ''}>기타</option>
+      </select>
+    </div>
+    <button class="album-delete-btn" data-index="${index}">삭제</button>
+  `;
+
+  const selectEl = card.querySelector('.category-select');
+  selectEl.addEventListener('change', async (e) => {
+    const idx = Number(e.target.dataset.index);
+    const newCategory = e.target.value;
+    await updateAlbumCategory(idx, newCategory);
+  });
+
 
     card.addEventListener('click', (e) => {
       if (e.target.matches('.album-delete-btn')) return;
