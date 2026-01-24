@@ -1,33 +1,28 @@
-console.log('script loaded');
+// 0) 가장 맨 위: 전역 변수
+let myAlbums = [];
+let currentTrackAlbum = null;
+let currentTrack = null;
+// (currentUser, auth 등도 여기서 let으로 선언)
 
-let myAlbums = [];  // ← 추가
-// 검색창 / 버튼
+// 1) DOM 캐싱 (한 번에 몰아서)
 const searchInput = document.getElementById('searchInput');
 const searchBtn   = document.getElementById('searchBtn');
 
-// 로그인 UI
 const authStatus = document.getElementById('authStatus');
 const loginBtn   = document.getElementById('loginBtn');
 const logoutBtn  = document.getElementById('logoutBtn');
 
-console.log('loginBtn =', loginBtn);  
-
-
-// 내 앨범 그리드
 const myGrid = document.getElementById('myGrid');
 const empty  = document.getElementById('empty');
 
-// 카테고리 바
 const categoryBar = document.getElementById('categoryBar');
 
-// 검색 결과 모달
 const searchModal   = document.getElementById('searchModal');
 const modalGrid     = document.getElementById('modalGrid');
 const modalClose    = document.getElementById('modalClose');
 const modalBackdrop = document.getElementById('modalBackdrop');
 const modalTitle    = document.getElementById('modalTitle');
 
-// 트랙 모달
 const trackModal      = document.getElementById('trackModal');
 const trackBackdrop   = document.getElementById('trackBackdrop');
 const trackModalClose = document.getElementById('trackModalClose');
@@ -36,7 +31,6 @@ const trackList       = document.getElementById('trackList');
 const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn');
 const trackAddBtn     = document.getElementById('trackAddBtn');
 
-// 커버 입력 모달
 const coverModal      = document.getElementById('coverModal');
 const coverBackdrop   = document.getElementById('coverBackdrop');
 const coverModalClose = document.getElementById('coverModalClose');
@@ -46,7 +40,6 @@ const coverUrlInput   = document.getElementById('coverUrlInput');
 const coverPreview    = document.getElementById('coverPreview');
 const coverSaveBtn    = document.getElementById('coverSaveBtn');
 
-// 미니 플레이어
 const miniPlayer  = document.getElementById('miniPlayer');
 const miniCover   = document.getElementById('miniCover');
 const miniTitle   = document.getElementById('miniTitle');
@@ -56,6 +49,14 @@ const miniHide    = document.getElementById('miniHide');
 const miniSeek    = document.getElementById('miniSeek');
 const miniCurrentTime = document.getElementById('miniCurrentTime');
 const miniDuration    = document.getElementById('miniDuration');
+
+console.log('script loaded');
+console.log('loginBtn =', loginBtn);
+console.log('searchBtn =', searchBtn);
+
+// 2) 여기서부터 Firebase import/초기화 + 이벤트 핸들러 + 나머지 함수들
+// (import, initializeApp, getAuth, onAuthStateChanged, fetchAlbumTracks, search 클릭, login 클릭 등)
+
 
 
 // Firestore에서 유저 앨범 모두 불러오기
