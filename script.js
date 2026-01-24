@@ -177,24 +177,29 @@ function userAlbumsColRef(uid) {
 
 // myAlbums를 Firestore에 전체 업로드 (최초 동기화용)
 async function syncMyAlbumsToFirestore() {
-  if (!currentUser) return;
+  if (!currentUser) {
+    console.log('[sync] no currentUser, skip Firestore');
+    return;
+  }
+  console.log('[sync] start, myAlbums.length =', myAlbums.length);
+
   const uid = currentUser.uid;
   const colRef = userAlbumsColRef(uid);
 
-  // 간단하게: myAlbums 기준으로 setDoc (덮어쓰기)
   const ops = myAlbums.map((album) => {
     const albumId = `${album.artist} - ${album.name}`;
     const docRef = doc(colRef, albumId);
     return setDoc(docRef, {
-  name: album.name,
-  artist: album.artist,
-  image: album.image,
-  hasCover: album.hasCover ?? true,
-  category: album.category || 'etc',
-  createdAt: Date.now(),
-}, { merge: true });
+      name: album.name,
+      artist: album.artist,
+      image: album.image,
+      hasCover: album.hasCover ?? true,
+      category: album.category || 'etc',
+      createdAt: Date.now(),
+    }, { merge: true });
   });
   await Promise.all(ops);
+  console.log('[sync] done');
 }
 
 // Firestore에서 유저 앨범 모두 불러오기
@@ -337,13 +342,13 @@ function renderSearchResults(albums) {
   const exists = myAlbums.some(
     (a) => a.name === title && a.artist === artist
   );
-    if (!exists) {
+  if (!exists) {
     myAlbums.push({
       name: title,
       artist,
       image: imgUrl,
       hasCover: hasRealCover(album),
-      category: 'kpop', // 기본 카테고리 (나중에 선택 UI로 바꿔도 됨)
+      category: 'kpop', // 기본 카테고리
     });
     renderMyAlbums();
     saveMyAlbumsToStorage();
