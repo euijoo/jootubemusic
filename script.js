@@ -236,9 +236,6 @@ function createTrackListItem(album, title, durationSeconds = 0, customVideoId = 
   return li;
 }
 
-let currentTrackAlbum = null;
-let currentTrack = null;
-
 function openTrackModal(album) {
   currentTrackAlbum = album;
 
