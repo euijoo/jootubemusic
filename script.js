@@ -505,27 +505,12 @@ function renderMyAlbums() {
   const card = document.createElement('div');
   card.className = 'card';
   card.innerHTML = `
-    <img src="${album.image}" alt="${album.name}">
-    <div class="card-title"><span>${album.name}</span></div>
-    <div class="card-artist">${album.artist}</div>
-    <div class="album-category">
-      <select class="category-select" data-index="${index}">
-        <option value="kpop" ${album.category === 'kpop' ? 'selected' : ''}>K-POP</option>
-        <option value="pop"  ${album.category === 'pop'  ? 'selected' : ''}>POP</option>
-        <option value="ost"  ${album.category === 'ost'  ? 'selected' : ''}>OST</option>
-        <option value="etc"  ${album.category === 'etc'  ? 'selected' : ''}>기타</option>
-      </select>
-    </div>
-    <button class="album-delete-btn" data-index="${index}">삭제</button>
-  `;
-
-  const selectEl = card.querySelector('.category-select');
-  selectEl.addEventListener('change', async (e) => {
-    const idx = Number(e.target.dataset.index);
-    const newCategory = e.target.value;
-    await updateAlbumCategory(idx, newCategory);
-  });
-
+  <img src="${album.image}" alt="${album.name}">
+  <div class="card-title"><span>${album.name}</span></div>
+  <div class="card-artist">${album.artist}</div>
+  <button class="album-delete-btn" data-index="${index}">삭제</button>
+`;
+;
 
     card.addEventListener('click', (e) => {
       if (e.target.matches('.album-delete-btn')) return;
