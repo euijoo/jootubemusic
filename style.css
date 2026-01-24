@@ -415,5 +415,11 @@ main {
 }
 
 
+.track-add-btn {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
 
 
