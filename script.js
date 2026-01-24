@@ -895,7 +895,7 @@ if (categoryBar) {
     renderMyAlbums();
   });
 }
-
+ 
 
 /* ---------- 이벤트 바인딩 ---------- */
 
