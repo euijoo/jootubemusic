@@ -1,8 +1,8 @@
-// 0) 가장 맨 위: 전역 변수
+// 맨 위 어딘가에 딱 한 번만
 let myAlbums = [];
 let currentTrackAlbum = null;
 let currentTrack = null;
-// (currentUser, auth 등도 여기서 let으로 선언)
+// (필요하면 let currentUser = null; 도 여기)
 
 // 1) DOM 캐싱 (한 번에 몰아서)
 const searchInput = document.getElementById('searchInput');
