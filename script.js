@@ -1,5 +1,4 @@
 console.log('script loaded');
-console.log('loginBtn =', loginBtn);
 
 let myAlbums = [];  // ← 추가
 // 검색창 / 버튼
@@ -10,6 +9,9 @@ const searchBtn   = document.getElementById('searchBtn');
 const authStatus = document.getElementById('authStatus');
 const loginBtn   = document.getElementById('loginBtn');
 const logoutBtn  = document.getElementById('logoutBtn');
+
+console.log('loginBtn =', loginBtn);  
+
 
 // 내 앨범 그리드
 const myGrid = document.getElementById('myGrid');
