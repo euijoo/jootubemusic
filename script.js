@@ -32,7 +32,11 @@ const miniTitle   = document.getElementById('miniTitle');
 const miniArtist  = document.getElementById('miniArtist');
 const miniToggle  = document.getElementById('miniToggle');
 const miniHide    = document.getElementById('miniHide');
-const miniYoutube = document.getElementById('miniYoutube');
+
+// 오디오 타임라인 UI (YouTube 시간과 동기화)
+const miniSeek        = document.getElementById('miniSeek');
+const miniCurrentTime = document.getElementById('miniCurrentTime');
+const miniDuration    = document.getElementById('miniDuration');
 
 // 커버 입력 모달
 const coverModal      = document.getElementById('coverModal');
@@ -47,6 +51,9 @@ const coverSaveBtn    = document.getElementById('coverSaveBtn');
 let isPlaying = false;
 let myAlbums = []; // 내가 선택한 앨범 목록
 
+// YouTube IFrame Player & 진행 상태
+let ytPlayer = null;
+let ytUpdateTimer = null;
 /* ---------- 공통 유틸 ---------- */
 
 function pickAlbumImage(album) {
@@ -79,6 +86,13 @@ function hasRealCover(album) {
   return preferSizes.some(size =>
     images.some(img => img.size === size && img['#text'])
   );
+}
+
+function formatTime(secs) {
+  if (!Number.isFinite(secs) || secs < 0) return '00:00';
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 /* ---------- Last.fm API ---------- */
@@ -118,7 +132,7 @@ function buildYoutubeQuery(title, artist) {
   return `${artist} ${title} official audio`;
 }
 
-// YouTube Data API v3 search.list로 videoId 하나 가져오기[web:109][web:133]
+// YouTube Data API v3 search.list로 videoId 하나 가져오기
 async function fetchYoutubeVideoId(title, artist) {
   if (!YOUTUBE_API_KEY) {
     console.error('YouTube API key not set');
@@ -152,13 +166,6 @@ async function fetchYoutubeVideoId(title, artist) {
     return null;
   }
 }
-
-// iframe embed URL 만들기[web:82]
-function buildYoutubeEmbedUrl(videoId) {
-  if (!videoId) return '';
-  return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1`;
-}
-
 /* ---------- 검색 모달 ---------- */
 
 function openModal(query) {
@@ -214,7 +221,7 @@ function renderSearchResults(albums) {
         artist,
         cover: imgUrl,
       });
-      // closeModal();  // 필요하면 자동 닫기
+      // closeModal();
     });
 
     modalGrid.appendChild(card);
@@ -359,39 +366,134 @@ function closeTrackModal() {
   trackModal.style.display = 'none';
   trackList.innerHTML = '';
 }
+/* ---------- YouTube IFrame Player 설정 ---------- */
+
+function onYouTubeIframeAPIReady() {
+  ytPlayer = new YT.Player('ytPlayer', {
+    height: '0',
+    width: '0',
+    videoId: '',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      modestbranding: 1,
+      rel: 0,
+      playsinline: 1,
+    },
+    events: {
+      onReady: onPlayerReady,
+      onStateChange: onPlayerStateChange,
+    },
+  });
+}
+
+function onPlayerReady(event) {
+  console.log('[jootubemusic] YouTube player ready');
+}
+
+function onPlayerStateChange(event) {
+  const state = event.data;
+  if (state === YT.PlayerState.PLAYING) {
+    isPlaying = true;
+    miniToggle.textContent = '⏸';
+    startYtProgressLoop();
+  }
+  if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.ENDED) {
+    isPlaying = false;
+    miniToggle.textContent = '▶';
+    if (state === YT.PlayerState.ENDED) {
+      stopYtProgressLoop();
+      miniSeek.value = 0;
+      miniCurrentTime.textContent = '00:00';
+    }
+  }
+}
+
+function startYtProgressLoop() {
+  if (ytUpdateTimer) return;
+  ytUpdateTimer = setInterval(() => {
+    if (!ytPlayer || typeof ytPlayer.getDuration !== 'function') return;
+
+    const duration = ytPlayer.getDuration() || 0;
+    const current  = ytPlayer.getCurrentTime() || 0;
+
+    if (duration > 0) {
+      const pct = (current / duration) * 100;
+      miniSeek.value = pct;
+      miniCurrentTime.textContent = formatTime(current);
+      miniDuration.textContent    = formatTime(duration);
+    }
+  }, 500);
+}
+
+function stopYtProgressLoop() {
+  if (ytUpdateTimer) {
+    clearInterval(ytUpdateTimer);
+    ytUpdateTimer = null;
+  }
+}
 
 /* ---------- 미니 플레이어 ---------- */
 
+// track: { title, artist, cover }
 async function showMiniPlayer(track) {
   miniCover.src = track.cover;
   miniTitle.textContent = track.title;
   miniArtist.textContent = track.artist;
 
-  // 이전 곡 멈추기
-  miniYoutube.src = '';
+  miniSeek.value = 0;
+  miniCurrentTime.textContent = '00:00';
+  miniDuration.textContent    = '00:00';
+  miniPlayer.style.display = 'flex';
 
-  // YouTube에서 검색해서 videoId 가져오기
-  const videoId = await fetchYoutubeVideoId(track.title, track.artist);
-  if (videoId) {
-    const embedUrl = buildYoutubeEmbedUrl(videoId);
-    miniYoutube.src = embedUrl;
-  } else {
-    console.warn('No YouTube video found for track', track.title, track.artist);
+  if (!ytPlayer) {
+    console.warn('YouTube player not ready yet');
+    return;
   }
 
-  isPlaying = true;
-  miniToggle.textContent = '⏸';
-  miniPlayer.style.display = 'flex';
+  const videoId = await fetchYoutubeVideoId(track.title, track.artist);
+  if (!videoId) {
+    console.warn('No YouTube video found for track', track.title, track.artist);
+    return;
+  }
+
+  ytPlayer.loadVideoById(videoId);
 }
 
 miniToggle.addEventListener('click', () => {
-  isPlaying = !isPlaying;
-  miniToggle.textContent = isPlaying ? '⏸' : '▶';
+  if (!ytPlayer) return;
+  const state = ytPlayer.getPlayerState();
+  if (state === YT.PlayerState.PLAYING) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.playVideo();
+  }
 });
 
 miniHide.addEventListener('click', () => {
   miniPlayer.style.display = 'none';
+  if (ytPlayer) ytPlayer.pauseVideo();
   isPlaying = false;
+  stopYtProgressLoop();
+});
+
+// 타임라인 드래그
+miniSeek.addEventListener('input', () => {
+  if (!ytPlayer) return;
+  const duration = ytPlayer.getDuration() || 0;
+  if (!duration) return;
+  const pct = miniSeek.value / 100;
+  const previewTime = duration * pct;
+  miniCurrentTime.textContent = formatTime(previewTime);
+});
+
+miniSeek.addEventListener('change', () => {
+  if (!ytPlayer) return;
+  const duration = ytPlayer.getDuration() || 0;
+  if (!duration) return;
+  const pct = miniSeek.value / 100;
+  const newTime = duration * pct;
+  ytPlayer.seekTo(newTime, true);
 });
 
 /* ---------- 이벤트 바인딩 ---------- */
