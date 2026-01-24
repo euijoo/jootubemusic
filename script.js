@@ -49,6 +49,10 @@ const logoutBtn  = document.getElementById('logoutBtn');
 const myGrid      = document.getElementById('myGrid');
 const empty       = document.getElementById('empty');
 
+// 카테고리 바
+const categoryBar = document.getElementById('categoryBar');
+let currentCategory = 'all';
+
 // 검색 결과 모달
 const searchModal   = document.getElementById('searchModal');
 const modalGrid     = document.getElementById('modalGrid');
@@ -182,12 +186,13 @@ async function syncMyAlbumsToFirestore() {
     const albumId = `${album.artist} - ${album.name}`;
     const docRef = doc(colRef, albumId);
     return setDoc(docRef, {
-      name: album.name,
-      artist: album.artist,
-      image: album.image,
-      hasCover: album.hasCover ?? true,
-      createdAt: Date.now(),
-    }, { merge: true });
+  name: album.name,
+  artist: album.artist,
+  image: album.image,
+  hasCover: album.hasCover ?? true,
+  category: album.category || 'etc',
+  createdAt: Date.now(),
+}, { merge: true });
   });
   await Promise.all(ops);
 }
@@ -203,11 +208,12 @@ async function loadMyAlbumsFromFirestore() {
   snap.forEach((docSnap) => {
     const d = docSnap.data();
     list.push({
-      name: d.name,
-      artist: d.artist,
-      image: d.image,
-      hasCover: d.hasCover,
-    });
+  name: d.name,
+  artist: d.artist,
+  image: d.image,
+  hasCover: d.hasCover,
+  category: d.category || 'etc',
+});
   });
 
   myAlbums = list;
@@ -331,23 +337,26 @@ function renderSearchResults(albums) {
   const exists = myAlbums.some(
     (a) => a.name === title && a.artist === artist
   );
-  if (!exists) {
+    if (!exists) {
     myAlbums.push({
       name: title,
       artist,
       image: imgUrl,
       hasCover: hasRealCover(album),
+      category: 'kpop', // 기본 카테고리 (나중에 선택 UI로 바꿔도 됨)
     });
     renderMyAlbums();
     saveMyAlbumsToStorage();
     if (currentUser) syncMyAlbumsToFirestore();
   }
+
   showMiniPlayer({
     title,
     artist,
     cover: imgUrl,
   });
 });
+
 
 
     modalGrid.appendChild(card);
@@ -405,13 +414,18 @@ async function deleteAlbumAtIndex(index) {
 function renderMyAlbums() {
   myGrid.innerHTML = '';
 
-  if (!myAlbums.length) {
+  // 현재 카테고리 기준으로 필터링
+  const filtered = currentCategory === 'all'
+    ? myAlbums
+    : myAlbums.filter(a => (a.category || 'etc') === currentCategory);
+
+  if (!filtered.length) {
     empty.style.display = 'block';
     return;
   }
   empty.style.display = 'none';
 
-  myAlbums.forEach((album, index) => {
+  filtered.forEach((album, index) => {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -421,9 +435,7 @@ function renderMyAlbums() {
       <button class="album-delete-btn" data-index="${index}">삭제</button>
     `;
 
-    // 카드 클릭 → 트랙/커버 모달
     card.addEventListener('click', (e) => {
-      // 삭제 버튼 클릭은 무시
       if (e.target.matches('.album-delete-btn')) return;
 
       if (!album.hasCover) {
@@ -433,7 +445,6 @@ function renderMyAlbums() {
       }
     });
 
-    // 삭제 버튼 클릭 핸들러
     const deleteBtn = card.querySelector('.album-delete-btn');
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -444,6 +455,7 @@ function renderMyAlbums() {
     myGrid.appendChild(card);
   });
 }
+
 
 
 /* ---------- 커버 입력 모달 ---------- */
@@ -689,6 +701,23 @@ logoutBtn.addEventListener('click', async () => {
   }
 });
 
+// 카테고리 필터 클릭
+if (categoryBar) {
+  categoryBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.category-btn');
+    if (!btn) return;
+
+    const cat = btn.dataset.category || 'all';
+    currentCategory = cat;
+
+    // active 클래스 토글
+    categoryBar.querySelectorAll('.category-btn').forEach((b) => {
+      b.classList.toggle('active', b === btn);
+    });
+
+    renderMyAlbums();
+  });
+}
 
 
 /* ---------- 이벤트 바인딩 ---------- */
