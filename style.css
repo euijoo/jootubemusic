@@ -401,3 +401,16 @@ main {
   margin-right: 8px;
 }
 
+
+.mini-stream-edit {
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  color: #888;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.mini-stream-edit:hover {
+  color: #ccc;
+}
+
