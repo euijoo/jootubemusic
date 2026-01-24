@@ -83,6 +83,9 @@ const miniHide    = document.getElementById('miniHide');
 const miniSeek        = document.getElementById('miniSeek');
 const miniCurrentTime = document.getElementById('miniCurrentTime');
 const miniDuration    = document.getElementById('miniDuration');
+const miniStreamEditBtn = document.getElementById('miniStreamEditBtn'); // ⬅ 추가
+
+
 
 // 커버 입력 모달
 const coverModal      = document.getElementById('coverModal');
@@ -731,7 +734,14 @@ async function showMiniPlayer(track) {
     return;
   }
 
-  const videoId = await fetchYoutubeVideoId(track.title, track.artist);
+  // currentTrack에 customVideoId가 있으면 그걸 우선 사용
+  let videoId = null;
+  if (currentTrack && currentTrack.customVideoId) {
+    videoId = currentTrack.customVideoId;
+  } else {
+    videoId = await fetchYoutubeVideoId(track.title, track.artist);
+  }
+
   if (!videoId) {
     console.warn('No YouTube video found for track', track.title, track.artist);
     return;
@@ -739,6 +749,7 @@ async function showMiniPlayer(track) {
 
   ytPlayer.loadVideoById(videoId);
 }
+
 
 miniToggle.addEventListener('click', () => {
   if (!ytPlayer) return;
@@ -775,6 +786,53 @@ miniSeek.addEventListener('change', () => {
   const newTime = duration * pct;
   ytPlayer.seekTo(newTime, true);
 });
+
+
+miniStreamEditBtn.addEventListener('click', () => {
+  if (!currentTrack) {
+    alert('먼저 트랙을 선택해 주세요.');
+    return;
+  }
+
+  const currentId = currentTrack.customVideoId || '';
+  const input = prompt(
+    'YouTube 링크 또는 videoId를 입력해 주세요.\n(자동 링크를 쓰려면 비워 두고 취소하면 됩니다.)',
+    currentId
+  );
+  if (input === null) return; // 취소
+
+  const trimmed = input.trim();
+  if (!trimmed) {
+    // 비우면 커스텀 링크 제거, 다시 자동 검색 사용
+    currentTrack.customVideoId = null;
+    alert('커스텀 스트리밍 주소를 제거했습니다 (자동 링크 사용).');
+    return;
+  }
+
+  // URL이면 videoId 추출
+  let videoId = trimmed;
+  const vMatch = trimmed.match(/[?&]v=([^&]+)/);
+  if (vMatch && vMatch[1]) {
+    videoId = vMatch[1];
+  }
+
+  if (videoId.length < 8) {
+    alert('올바른 YouTube videoId 또는 링크를 입력해 주세요.');
+    return;
+  }
+
+  currentTrack.customVideoId = videoId;
+
+  // 바로 현재 트랙 다시 로드
+  showMiniPlayer({
+    title: currentTrack.title,
+    artist: currentTrack.artist,
+    cover: currentTrack.cover,
+  });
+
+  alert('스트리밍 주소를 변경했습니다.');
+});
+
 
 // 로그인 / 로그아웃
 loginBtn.addEventListener('click', async () => {
