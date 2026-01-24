@@ -554,7 +554,7 @@ function closeTrackModal() {
 }
 /* ---------- YouTube IFrame Player 설정 ---------- */
 
-function onYouTubeIframeAPIReady() {
+window.onYouTubeIframeAPIReady = function () {
   ytPlayer = new YT.Player('ytPlayer', {
     height: '0',
     width: '0',
@@ -571,7 +571,7 @@ function onYouTubeIframeAPIReady() {
       onStateChange: onPlayerStateChange,
     },
   });
-}
+};
 
 function onPlayerReady(event) {
   console.log('[jootubemusic] YouTube player ready');
