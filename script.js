@@ -1,3 +1,4 @@
+let myAlbums = [];  // ← 추가
 // 검색창 / 버튼
 const searchInput = document.getElementById('searchInput');
 const searchBtn   = document.getElementById('searchBtn');
@@ -352,16 +353,3 @@ if (trackAddBtn) {
   });
 }
 
-// 검색 결과 카드 클릭 안에서 myAlbums.push(...) 부분만 교체
-
-myAlbums.push({
-  name: title,
-  artist,
-  image: imgUrl,
-  hasCover: hasRealCover(album),
-  category,
-  tracks: [], // 트랙 리스트 초기화
-});
-renderMyAlbums();
-saveMyAlbumsToStorage();
-if (currentUser) syncMyAlbumsToFirestore();
