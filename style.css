@@ -453,17 +453,12 @@ main {
 
 /* 각 트랙 행 */
 #trackList li {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
-  column-gap: 12px;
-
+  justify-content: space-between;
   padding: 8px 20px;
-  font-size: 14px;
-  cursor: pointer;
-  color: #f5f5f7;
-
   border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
 }
 
 /* 마지막 줄 테두리 제거 */
@@ -478,7 +473,8 @@ main {
 
 /* 제목 */
 #trackList .track-title {
-  font-weight: 500;
+  flex: 1 1 auto;
+  margin-right: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -514,4 +510,8 @@ main {
   cursor: default;
 }
 
-
+#trackList .track-right {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* ⋯ 버튼과 시간 사이 간격 */
+}
