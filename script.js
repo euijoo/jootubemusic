@@ -604,26 +604,35 @@ function createTrackListItem(album, title, durationSeconds = 0) {
 
   // 트랙 클릭 → 재생
   li.addEventListener('click', (e) => {
-    if (e.target.classList.contains('track-stream-edit')) return;
+  if (e.target.classList.contains('track-stream-edit')) return;
 
-    currentTrack = {
-      title,
-      artist: album.artist,
-      cover: album.image,
-      customVideoId:
-        currentTrack &&
-        currentTrack.title === title &&
-        currentTrack.artist === album.artist
-          ? currentTrack.customVideoId
-          : null,
-    };
+  // 1) 기존 선택 해제
+  document.querySelectorAll('#trackModal #trackList li.selected-track')
+    .forEach((item) => item.classList.remove('selected-track'));
 
-    showMiniPlayer({
-      title,
-      artist: album.artist,
-      cover: album.image,
-    });
+  // 2) 현재 클릭한 트랙에 선택 클래스 추가
+  li.classList.add('selected-track');
+
+  // 3) 기존 재생 로직 그대로
+  currentTrack = {
+    title,
+    artist: album.artist,
+    cover: album.image,
+    customVideoId:
+      currentTrack &&
+      currentTrack.title === title &&
+      currentTrack.artist === album.artist
+        ? currentTrack.customVideoId
+        : null,
+  };
+
+  showMiniPlayer({
+    title,
+    artist: album.artist,
+    cover: album.image,
   });
+});
+
 
   // 스트리밍 주소 수정 버튼
   const editBtn = li.querySelector('.track-stream-edit');
