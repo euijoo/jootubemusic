@@ -475,13 +475,6 @@ main {
   cursor: pointer;
 }
 
-.track-add-btn {
-  margin-top: 8px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
 
 /* ===== 트랙모달 터미널 코어 스타일 ===== */
 
@@ -588,4 +581,9 @@ main {
 #trackModal #trackList .track-index {
   color: #66ff99;
   font-size: 10px;
+}
+
+/* 선택된 트랙 강조 */
+#trackModal #trackList li.selected-track {
+  background-color: #FF00FF;
 }
