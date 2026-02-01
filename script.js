@@ -604,16 +604,18 @@ function createTrackListItem(album, title, durationSeconds = 0) {
 
   // 트랙 클릭 → 재생
   li.addEventListener('click', (e) => {
+  // 1) ⋯ 버튼이면 선택 처리/재생 둘 다 막기
   if (e.target.classList.contains('track-stream-edit')) return;
 
-  // 1) 기존 선택 해제
-  document.querySelectorAll('#trackModal #trackList li.selected-track')
+  // 2) 기존 선택 해제
+  document
+    .querySelectorAll('#trackModal #trackList li.selected-track')
     .forEach((item) => item.classList.remove('selected-track'));
 
-  // 2) 현재 클릭한 트랙에 선택 클래스 추가
+  // 3) 현재 li에 선택 클래스 추가
   li.classList.add('selected-track');
 
-  // 3) 기존 재생 로직 그대로
+  // 4) 재생용 currentTrack 설정 + 미니플레이어 호출
   currentTrack = {
     title,
     artist: album.artist,
@@ -632,6 +634,7 @@ function createTrackListItem(album, title, durationSeconds = 0) {
     cover: album.image,
   });
 });
+
 
 
   // 스트리밍 주소 수정 버튼
