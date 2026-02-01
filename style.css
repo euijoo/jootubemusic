@@ -584,3 +584,111 @@ main {
   font-size: 12px;
   cursor: pointer;
 }
+
+
+/* ===== 트랙모달 터미널 코어 스타일 ===== */
+
+#trackModal {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+#trackModal .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(0, 255, 80, 0.10), transparent 55%),
+              #000000;
+  opacity: 0.96;
+}
+
+#trackModal .modal-content {
+  background: #050505;
+  color: #a8ff60;
+  border-radius: 0;
+  border: 1px solid #00ff80;
+  box-shadow:
+    0 0 16px rgba(0, 255, 128, 0.7),
+    0 0 40px rgba(0, 255, 128, 0.30);
+  max-width: 420px;
+  width: 90%;
+  margin: 40px auto;
+  padding: 16px 18px 14px;
+}
+
+/* 헤더 라인 + 제목 + 버튼 정렬 */
+#trackModal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(168, 255, 96, 0.4);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+}
+
+#trackModal #trackModalTitle {
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#trackModal .modal-header > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 커버 변경 버튼 */
+#trackModal #trackCoverChangeBtn {
+  border: 1px solid #00ff80;
+  background: transparent;
+  color: #a8ff60;
+  padding: 2px 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* 닫기 버튼 */
+#trackModal #trackModalClose {
+  border: none;
+  background: transparent;
+  color: #ff4b6e;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+/* 트랙 리스트 (트랙모달 한정) */
+#trackModal #trackList {
+  list-style: none;
+  margin: 8px 0 10px;
+  padding: 0;
+  font-size: 11px;
+}
+
+/* 각 줄을 점선 구분 */
+#trackModal #trackList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  border-bottom: 1px dotted rgba(168, 255, 96, 0.35);
+  cursor: pointer;
+}
+
+#trackModal #trackList li:hover {
+  background: #050a05;
+}
+
+/* 제목은 왼쪽, 번호/아이콘은 오른쪽 */
+#trackModal #trackList .track-title {
+  flex: 1;
+  margin-right: 8px;
+}
+
+#trackModal #trackList .track-index {
+  color: #66ff99;
+  font-size: 10px;
+}
