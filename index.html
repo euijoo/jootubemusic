@@ -35,28 +35,52 @@
       />
       <button id="searchBtn">검색</button>
     </div>
-<br>
-    <br>
-    <br>
-    
-    <!-- 내가 고른 앨범 그리드 -->
-    <section class="section-my">
-      <h2 class="section-title">내 앨범</h2>
 
-      <!-- 카테고리 필터 -->
-      <div id="categoryBar" class="category-bar">
-        <button class="category-btn active" data-category="all">All</button>
-        <button class="category-btn" data-category="kpop">K‑Pop</button>
-        <button class="category-btn" data-category="pop">Pop</button>
-        <button class="category-btn" data-category="jazz">Jazz</button>
-        <button class="category-btn" data-category="classic">Classic</button>
-        <button class="category-btn" data-category="etc">Etc</button>
-      </div>
+<p class="info">
+  Last.fm에서 앨범을 검색해 내 컬렉션으로 가져오고, 각 트랙에 직접 스트리밍 URL을 넣어 들을 수 있어요.
+</p>
 
-      <div id="myGrid" class="grid"></div>
-      <div id="empty" class="empty">아직 선택한 앨범이 없습니다.</div>
-    </section>
-  </main>
+<div id="categoryBar" class="category-bar">
+  <button class="category-btn active" data-category="all">All</button>
+  <button class="category-btn" data-category="kpop">K‑Pop</button>
+  <button class="category-btn" data-category="pop">Pop</button>
+  <button class="category-btn" data-category="ost">OST</button>
+  <button class="category-btn" data-category="etc">Etc</button>
+</div>
+
+<section class="section-my">
+  <h2 class="section-title">내 앨범</h2>
+  <div id="myGrid" class="grid"></div>
+  <div id="empty" class="empty">아직 선택한 앨범이 없습니다.</div>
+</section>
+    <!-- 검색 결과 모달 -->
+<div id="searchModal" class="modal" style="display:none;">
+  <div id="modalBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="modalTitle">검색 결과</span>
+      <button id="modalClose" class="modal-close">&times;</button>
+    </div>
+    <div id="modalGrid" class="grid"></div>
+  </div>
+</div>
+ </main>
+
+<!-- 미니 플레이어 -->
+<div id="miniPlayer" class="mini-player" style="display:none;">
+  <img id="miniCover" class="mini-cover" alt="커버" />
+  <div class="mini-meta">
+    <div id="miniTitle" class="mini-meta-title">제목</div>
+    <div id="miniArtist" class="mini-meta-artist">아티스트</div>
+    <div class="mini-timeline">
+      <span id="miniCurrentTime" class="mini-time">00:00</span>
+      <input id="miniSeek" class="mini-seek" type="range" min="0" max="100" value="0" />
+      <span id="miniDuration" class="mini-time">00:00</span>
+    </div>
+  </div>
+  <button id="miniToggle" class="mini-btn">▶</button>
+  <button id="miniHide" class="mini-btn">✕</button>
+</div>
 
   <!-- 검색 결과 모달 -->
   <div id="searchModal" class="modal" style="display:none;">
@@ -69,6 +93,44 @@
       <div id="modalGrid" class="grid"></div>
     </div>
   </div>
+<!-- 트랙 리스트 모달 -->
+<div id="trackModal" class="modal" style="display:none;">
+  <div id="trackBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <div>
+        <span id="trackModalTitle">앨범 트랙</span>
+        <button id="trackCoverChangeBtn">COVER</button>
+      </div>
+      <button id="trackModalClose">&times;</button>
+    </div>
+    <ul id="trackList" class="track-list"></ul>
+    <button id="trackAddBtn" class="track-add-btn">add tracks</button>
+  </div>
+</div>
+<!-- 커버 URL 입력 모달 -->
+<div id="coverModal" class="modal" style="display:none;">
+  <div id="coverBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="coverModalTitle">앨범 커버 추가</span>
+      <button id="coverModalClose" class="modal-close">&times;</button>
+    </div>
+    <p id="coverInfo" class="info">
+      이 앨범에는 공식 커버가 없어 보입니다. 사용할 커버 이미지 URL을 입력해 주세요.
+    </p>
+    <input
+      id="coverUrlInput"
+      class="cover-input"
+      type="text"
+      placeholder="https:// 로 시작하는 이미지 주소"
+    />
+    <div class="cover-preview-wrap">
+      <img id="coverPreview" class="cover-preview" alt="커버 미리보기" />
+    </div>
+    <button id="coverSaveBtn" class="cover-save-btn">저장</button>
+  </div>
+</div>
 
   <!-- 커버 입력 모달 -->
   <div id="coverModal" class="modal" style="display:none;">
