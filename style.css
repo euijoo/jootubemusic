@@ -216,7 +216,7 @@ main {
   max-width: 900px;
   width: calc(100% - 32px);
   max-height: calc(100% - 80px);
-  background: #050510;
+  background: #000000;
   border-radius: 16px;
   padding: 16px;
   overflow: auto;
