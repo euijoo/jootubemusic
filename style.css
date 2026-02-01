@@ -271,6 +271,12 @@ main {
     Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* 선택된 트랙 강조 */
+#trackModal #trackList li.selected-track {
+  background-color: #FF00FF;
+}
+
+
 #trackModal .modal-backdrop {
   position: fixed;
   inset: 0;
