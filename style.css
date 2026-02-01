@@ -235,7 +235,7 @@ main {
 }
 .modal-close {
   border: none;
-  background: transparent;
+  background: #000000;
   color: rgba(255,255,255,0.8);
   font-size: 20px;
   cursor: pointer;
@@ -256,7 +256,7 @@ main {
   cursor: pointer;
 }
 .track-list li:hover {
-  background: rgba(255,255,255,0.05);
+  background: #000000;
 }
 .track-title {
   flex: 1;
