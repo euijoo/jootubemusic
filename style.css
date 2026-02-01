@@ -263,8 +263,7 @@ main {
   margin-right: 8px;
 }
 .track-duration {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
+  display: none;
 }
 
 /* 미니 플레이어 */
