@@ -28,8 +28,6 @@ const auth      = getAuth(app);
 const db        = getFirestore(app);
 const provider  = new GoogleAuthProvider();
 
-
-
 // 🔑 Last.fm API 키
 const LASTFM_API_KEY = '7e0b8eb10fdc5cf81968b38fdd543cff';
 // YouTube Data API 키
@@ -43,7 +41,6 @@ const searchBtn   = document.getElementById('searchBtn');
 const authStatus = document.getElementById('authStatus');
 const loginBtn   = document.getElementById('loginBtn');
 const logoutBtn  = document.getElementById('logoutBtn');
-
 
 // 내 앨범 그리드
 const myGrid      = document.getElementById('myGrid');
@@ -67,10 +64,7 @@ const trackModalClose = document.getElementById('trackModalClose');
 const trackModalTitle = document.getElementById('trackModalTitle');
 const trackList       = document.getElementById('trackList');
 const trackCoverChangeBtn = document.getElementById('trackCoverChangeBtn');
-const trackAddBtn     = document.getElementById('trackAddBtn'); // ⬅ 여기
-
-
-
+const trackAddBtn     = document.getElementById('trackAddBtn');
 
 // 미니 플레이어
 const miniPlayer  = document.getElementById('miniPlayer');
@@ -84,9 +78,6 @@ const miniHide    = document.getElementById('miniHide');
 const miniSeek        = document.getElementById('miniSeek');
 const miniCurrentTime = document.getElementById('miniCurrentTime');
 const miniDuration    = document.getElementById('miniDuration');
-
-
-
 
 // 커버 입력 모달
 const coverModal      = document.getElementById('coverModal');
@@ -105,9 +96,6 @@ let myAlbums = []; // 내가 선택한 앨범 목록
 let ytPlayer = null;
 let ytUpdateTimer = null;
 
-
-
-
 // YouTube IFrame API 동적 로드
 function injectYouTubeAPI() {
   if (document.getElementById('yt-iframe-api')) return;
@@ -119,7 +107,6 @@ function injectYouTubeAPI() {
 
 // 모듈 로드 시점에 API 주입
 injectYouTubeAPI();
-
 
 /* ---------- 공통 유틸 ---------- */
 
@@ -195,12 +182,10 @@ function loadMyAlbumsFromStorage() {
 
 /* ---------- Firestore 유틸 ---------- */
 
-// 유저별 albums 컬렉션 참조
 function userAlbumsColRef(uid) {
   return collection(db, 'users', uid, 'albums');
 }
 
-// myAlbums를 Firestore에 전체 업로드 (최초 동기화용)
 async function syncMyAlbumsToFirestore() {
   if (!currentUser) {
     console.log('[sync] no currentUser, skip Firestore');
@@ -227,7 +212,6 @@ async function syncMyAlbumsToFirestore() {
   console.log('[sync] done');
 }
 
-// Firestore에서 유저 앨범 모두 불러오기
 async function loadMyAlbumsFromFirestore() {
   if (!currentUser) return;
   const uid = currentUser.uid;
@@ -238,22 +222,18 @@ async function loadMyAlbumsFromFirestore() {
   snap.forEach((docSnap) => {
     const d = docSnap.data();
     list.push({
-  name: d.name,
-  artist: d.artist,
-  image: d.image,
-  hasCover: d.hasCover,
-  category: d.category || 'etc',
-});
+      name: d.name,
+      artist: d.artist,
+      image: d.image,
+      hasCover: d.hasCover,
+      category: d.category || 'etc',
+    });
   });
 
   myAlbums = list;
   renderMyAlbums();
-  saveMyAlbumsToStorage(); // 캐시도 함께 업데이트
+  saveMyAlbumsToStorage();
 }
-
-
-
-
 
 /* ---------- Last.fm API ---------- */
 
@@ -287,12 +267,10 @@ async function fetchAlbumTracks(artist, albumName) {
 
 /* ---------- YouTube 검색 유틸 ---------- */
 
-// (아티스트 + 곡명)으로 검색 쿼리 생성
 function buildYoutubeQuery(title, artist) {
   return `${artist} ${title} official audio`;
 }
 
-// YouTube Data API v3 search.list로 videoId 하나 가져오기
 async function fetchYoutubeVideoId(title, artist) {
   if (!YOUTUBE_API_KEY) {
     console.error('YouTube API key not set');
@@ -337,6 +315,7 @@ function closeModal() {
   searchModal.style.display = 'none';
   modalGrid.innerHTML = '';
 }
+
 function askCategoryAndReturnValue() {
   const category = prompt(
     '카테고리를 입력하세요 (kpop / pop / ost / etc 중 하나):',
@@ -378,20 +357,16 @@ function renderSearchResults(albums) {
       <div class="card-artist">${artist}</div>
     `;
 
-        card.addEventListener('click', () => {
+    card.addEventListener('click', () => {
       const exists = myAlbums.some(
         (a) => a.name === title && a.artist === artist
       );
 
       let category = 'kpop';
 
-      // 이미 등록되지 않은 경우에만 카테고리 선택
       if (!exists) {
         const selected = askCategoryAndReturnValue();
-        if (!selected) {
-          // 취소 또는 잘못 입력하면 추가/재생 둘 다 취소
-          return;
-        }
+        if (!selected) return;
         category = selected;
 
         myAlbums.push({
@@ -406,15 +381,11 @@ function renderSearchResults(albums) {
         if (currentUser) syncMyAlbumsToFirestore();
       }
 
-      showMiniPlayer({
-        title,
-        artist,
-        cover: imgUrl,
-      });
+      const track = { title, artist, cover: imgUrl };
+      currentTrack = track;
+      showMiniPlayerUI(track);
+      playTrackOnYouTube(track);
     });
-
-
-
 
     modalGrid.appendChild(card);
   });
@@ -438,26 +409,23 @@ async function handleSearch() {
   }
 }
 
+/* ---------- 내 앨범 그리드 ---------- */
 
 async function deleteAlbumAtIndex(index) {
   const album = myAlbums[index];
   if (!album) return;
 
-  // 1) myAlbums에서 제거
   myAlbums.splice(index, 1);
-
-  // 2) 화면 갱신 + localStorage 저장
   renderMyAlbums();
   saveMyAlbumsToStorage();
 
-  // 3) 로그인 상태면 Firestore에서도 삭제
   if (currentUser) {
     try {
       const uid = currentUser.uid;
       const colRef = userAlbumsColRef(uid);
       const albumId = `${album.artist} - ${album.name}`;
       const docRef = doc(colRef, albumId);
-      await deleteDoc(docRef); // 문서 삭제[web:213][web:251]
+      await deleteDoc(docRef);
     } catch (e) {
       console.error('delete album from Firestore error', e);
     }
@@ -468,23 +436,17 @@ async function updateAlbumCategory(index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
-  // 1) 메모리 업데이트
   album.category = newCategory;
-
-  // 2) 화면, localStorage 반영
   renderMyAlbums();
   saveMyAlbumsToStorage();
 
-  // 3) Firestore 동기화 (로그인 상태일 때만)
   if (currentUser) {
     try {
       const uid = currentUser.uid;
       const colRef = userAlbumsColRef(uid);
       const albumId = `${album.artist} - ${album.name}`;
       const docRef = doc(colRef, albumId);
-
-      await setDoc(docRef, { category: newCategory }, { merge: true }); // category 필드만 업데이트[web:328]
-
+      await setDoc(docRef, { category: newCategory }, { merge: true });
       console.log('category updated:', albumId, '->', newCategory);
     } catch (e) {
       console.error('updateAlbumCategory Firestore error', e);
@@ -492,13 +454,9 @@ async function updateAlbumCategory(index, newCategory) {
   }
 }
 
-
-/* ---------- 내 앨범 그리드 ---------- */
-
 function renderMyAlbums() {
   myGrid.innerHTML = '';
 
-  // 현재 카테고리 기준으로 필터링
   const filtered = currentCategory === 'all'
     ? myAlbums
     : myAlbums.filter(a => (a.category || 'etc') === currentCategory);
@@ -510,15 +468,14 @@ function renderMyAlbums() {
   empty.style.display = 'none';
 
   filtered.forEach((album, index) => {
-  const card = document.createElement('div');
-  card.className = 'card';
-  card.innerHTML = `
-  <img src="${album.image}" alt="${album.name}">
-  <div class="card-title"><span>${album.name}</span></div>
-  <div class="card-artist">${album.artist}</div>
-  <button class="album-delete-btn" data-index="${index}">삭제</button>
-`;
-;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="${album.image}" alt="${album.name}">
+      <div class="card-title"><span>${album.name}</span></div>
+      <div class="card-artist">${album.artist}</div>
+      <button class="album-delete-btn" data-index="${index}">삭제</button>
+    `;
 
     card.addEventListener('click', (e) => {
       if (e.target.matches('.album-delete-btn')) return;
@@ -540,8 +497,6 @@ function renderMyAlbums() {
     myGrid.appendChild(card);
   });
 }
-
-
 
 /* ---------- 커버 입력 모달 ---------- */
 
@@ -583,11 +538,9 @@ coverSaveBtn.addEventListener('click', () => {
   openTrackModal(pendingCoverAlbum);
 });
 
-
 coverModalClose.addEventListener('click', closeCoverModal);
 coverBackdrop.addEventListener('click', closeCoverModal);
 
-/* ---------- 트랙 모달 ---------- */
 /* ---------- 트랙 모달 ---------- */
 
 function createTrackListItem(album, title, durationSeconds = 0) {
@@ -603,40 +556,30 @@ function createTrackListItem(album, title, durationSeconds = 0) {
   `;
 
   // 트랙 클릭 → 재생
-  li.addEventListener('click', (e) => {
-  // 1) ⋯ 버튼이면 선택 처리/재생 둘 다 막기
-   if (e.target.classList.contains('track-stream-edit')) return;
+  li.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('track-stream-edit')) return;
 
-  // 2) 기존 선택 해제
-  document
-    .querySelectorAll('#trackModal #trackList li.selected-track')
-    .forEach((item) => item.classList.remove('selected-track'));
+    document
+      .querySelectorAll('#trackModal #trackList li.selected-track')
+      .forEach((item) => item.classList.remove('selected-track'));
 
-  // 3) 현재 li에 선택 클래스 추가
-  li.classList.add('selected-track');
-  console.log('track clicked, after:', li.className);
+    li.classList.add('selected-track');
 
-  // 4) 재생용 currentTrack 설정 + 미니플레이어 호출
-  currentTrack = {
-    title,
-    artist: album.artist,
-    cover: album.image,
-    customVideoId:
-      currentTrack &&
-      currentTrack.title === title &&
-      currentTrack.artist === album.artist
-        ? currentTrack.customVideoId
-        : null,
-  };
+    currentTrack = {
+      title,
+      artist: album.artist,
+      cover: album.image,
+      customVideoId:
+        currentTrack &&
+        currentTrack.title === title &&
+        currentTrack.artist === album.artist
+          ? currentTrack.customVideoId
+          : null,
+    };
 
-  showMiniPlayer({
-    title,
-    artist: album.artist,
-    cover: album.image,
+    showMiniPlayerUI(currentTrack);
+    await playTrackOnYouTube(currentTrack);
   });
-});
-
-
 
   // 스트리밍 주소 수정 버튼
   const editBtn = li.querySelector('.track-stream-edit');
@@ -667,7 +610,7 @@ function createTrackListItem(album, title, durationSeconds = 0) {
     }
 
     let videoId = trimmed;
-    const vMatch = trimmed.match(/[?&]v=([^&]+)/); // URL이면 v= 추출[web:396]
+    const vMatch = trimmed.match(/[?&]v=([^&]+)/);
     if (vMatch && vMatch[1]) {
       videoId = vMatch[1];
     }
@@ -679,11 +622,8 @@ function createTrackListItem(album, title, durationSeconds = 0) {
 
     currentTrack.customVideoId = videoId;
 
-    showMiniPlayer({
-      title: currentTrack.title,
-      artist: currentTrack.artist,
-      cover: currentTrack.cover,
-    });
+    showMiniPlayerUI(currentTrack);
+    playTrackOnYouTube(currentTrack);
 
     alert('이 트랙의 스트리밍 주소를 변경했습니다.');
   });
@@ -691,12 +631,11 @@ function createTrackListItem(album, title, durationSeconds = 0) {
   return li;
 }
 
-let currentTrackAlbum = null; // 현재 트랙 모달에서 보고 있는 앨범
-let currentTrack = null;      // 현재 선택한 트랙 정보
+let currentTrackAlbum = null;
+let currentTrack = null;
 
 function openTrackModal(album) {
-  currentTrackAlbum = album;  // ⬅ 추가
-  
+  currentTrackAlbum = album;
   trackModalTitle.textContent = `${album.artist} - ${album.name}`;
   trackList.innerHTML = '<li>트랙 불러오는 중...</li>';
   trackModal.style.display = 'flex';
@@ -711,15 +650,12 @@ function openTrackModal(album) {
 
       const arr = Array.isArray(tracks) ? tracks : [tracks];
 
-arr.forEach((t) => {
-  const title = typeof t.name === 'string' ? t.name : (t.name?.[0] || '제목 없음');
-  const seconds = Number(t.duration || 0);
-
-  const li = createTrackListItem(album, title, seconds);
-  trackList.appendChild(li);
-});
-
-
+      arr.forEach((t) => {
+        const title = typeof t.name === 'string' ? t.name : (t.name?.[0] || '제목 없음');
+        const seconds = Number(t.duration || 0);
+        const li = createTrackListItem(album, title, seconds);
+        trackList.appendChild(li);
+      });
     })
     .catch((err) => {
       console.error(err);
@@ -801,8 +737,8 @@ function stopYtProgressLoop() {
 
 /* ---------- 미니 플레이어 ---------- */
 
-// track: { title, artist, cover }
-async function showMiniPlayer(track) {
+// UI만 세팅
+function showMiniPlayerUI(track) {
   miniCover.src = track.cover;
   miniTitle.textContent = track.title;
   miniArtist.textContent = track.artist;
@@ -811,13 +747,15 @@ async function showMiniPlayer(track) {
   miniCurrentTime.textContent = '00:00';
   miniDuration.textContent    = '00:00';
   miniPlayer.style.display = 'flex';
+}
 
+// 실제 재생
+async function playTrackOnYouTube(track) {
   if (!ytPlayer) {
     console.warn('YouTube player not ready yet');
     return;
   }
 
-  // currentTrack에 customVideoId가 있으면 그걸 우선 사용
   let videoId = null;
   if (currentTrack && currentTrack.customVideoId) {
     videoId = currentTrack.customVideoId;
@@ -831,8 +769,8 @@ async function showMiniPlayer(track) {
   }
 
   ytPlayer.loadVideoById(videoId);
+  ytPlayer.playVideo();
 }
-
 
 miniToggle.addEventListener('click', () => {
   if (!ytPlayer) return;
@@ -870,9 +808,8 @@ miniSeek.addEventListener('change', () => {
   ytPlayer.seekTo(newTime, true);
 });
 
+/* ---------- 로그인 / 필터 / 공통 이벤트 ---------- */
 
-
-// 로그인 / 로그아웃
 loginBtn.addEventListener('click', async () => {
   try {
     await signInWithPopup(auth, provider);
@@ -891,7 +828,6 @@ logoutBtn.addEventListener('click', async () => {
   }
 });
 
-// 카테고리 필터 클릭
 if (categoryBar) {
   categoryBar.addEventListener('click', (e) => {
     const btn = e.target.closest('.category-btn');
@@ -900,7 +836,6 @@ if (categoryBar) {
     const cat = btn.dataset.category || 'all';
     currentCategory = cat;
 
-    // active 클래스 토글
     categoryBar.querySelectorAll('.category-btn').forEach((b) => {
       b.classList.toggle('active', b === btn);
     });
@@ -908,7 +843,6 @@ if (categoryBar) {
     renderMyAlbums();
   });
 }
-
 
 /* ---------- 이벤트 바인딩 ---------- */
 
@@ -933,17 +867,13 @@ trackCoverChangeBtn.addEventListener('click', () => {
     return;
   }
 
-  // 앨범 객체 업데이트
   currentTrackAlbum.image = url;
   currentTrackAlbum.hasCover = true;
 
-  // myAlbums 쪽도 같은 객체를 참조하고 있으니, 그냥 렌더/저장만 호출
   renderMyAlbums();
   saveMyAlbumsToStorage();
   if (currentUser) syncMyAlbumsToFirestore();
 
-  // 트랙 모달 안에서 사용하는 커버는 album.image를 쓰고 있으니,
-  // 다음에 트랙 모달을 열 때는 새 이미지가 반영된다.
   alert('커버 이미지가 변경되었습니다.');
 });
 
@@ -979,9 +909,6 @@ if (trackAddBtn) {
   });
 }
 
-
-
-
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeModal();
@@ -1003,7 +930,6 @@ onAuthStateChanged(auth, async (user) => {
     logoutBtn.style.display = 'inline-block';
 
     try {
-      // Firestore에서 유저 앨범 가져와서 myAlbums 교체
       await loadMyAlbumsFromFirestore();
     } catch (e) {
       console.error('loadMyAlbumsFromFirestore error', e);
@@ -1013,7 +939,6 @@ onAuthStateChanged(auth, async (user) => {
     loginBtn.style.display  = 'inline-block';
     logoutBtn.style.display = 'none';
 
-    // 로그아웃 후에는 localStorage 기준으로 다시 로드
     myAlbums = [];
     loadMyAlbumsFromStorage();
   }
