@@ -587,3 +587,48 @@ main {
 #trackModal #trackList li.selected-track {
   background-color: #FF00FF;
 }
+/* 트랙모달 입력 필드 / 버튼 (제목 + 스트리밍 URL + 재생) */
+#trackModal #trackList .track-index {
+  color: #66ff99;
+  font-size: 10px;
+  margin-right: 6px;
+  min-width: 18px;
+  text-align: right;
+}
+
+#trackModal #trackList .track-title-input {
+  flex: 0 0 40%;
+  margin-right: 6px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(168, 255, 96, 0.3);
+  background: #050a05;
+  color: #a8ff60;
+  font-size: 11px;
+}
+
+#trackModal #trackList .track-stream-input {
+  flex: 1;
+  margin-right: 6px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid rgba(168, 255, 96, 0.2);
+  background: #050a05;
+  color: #e5e7eb;
+  font-size: 11px;
+}
+
+#trackModal #trackList .track-play-btn {
+  flex: 0 0 auto;
+  border: 1px solid #00ff80;
+  background: rgba(0, 255, 128, 0.08);
+  color: #a8ff60;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+#trackModal #trackList .track-play-btn:hover {
+  background: rgba(0, 255, 128, 0.18);
+}
