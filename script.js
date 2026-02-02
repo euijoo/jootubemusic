@@ -953,6 +953,39 @@ function onPlayerStateChange(event) {
   }
 }
 
+function playNextTrackInCurrentAlbum() {
+  // 기본 검증
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) {
+    return;
+  }
+
+  // 현재 인덱스
+  const curIdx = tracks.findIndex(t => t.id === currentTrackId);
+  if (curIdx === -1) return; // 안전장치
+
+  // 아직 안 들은 곡 목록 (현재 곡 제외)
+  const notPlayed = tracks.filter(
+    (t) => !playedTrackIdsInAlbum.has(t.id) && t.id !== currentTrackId
+  );
+
+  let next;
+  if (notPlayed.length) {
+    // 안 들은 곡 중에서 랜덤 선택
+    next = notPlayed[Math.floor(Math.random() * notPlayed.length)];
+  } else {
+    // 전부 들었으면, 단순히 다음 인덱스로 순환
+    const nextIdx = (curIdx + 1) % tracks.length;
+    next = tracks[nextIdx];
+    // 새 라운드 시작이므로 재생 기록 초기화
+    playedTrackIdsInAlbum = new Set();
+  }
+
+  if (!next) return;
+
+  playTrack(next.id);
+}
+
+
 function handleTrackEnded() {
   // 1) 현재 앨범에서 아직 안 재생한 트랙 찾기
   if (currentTrackAlbum && Array.isArray(tracks) && tracks.length) {
@@ -1067,7 +1100,6 @@ miniToggle.addEventListener("click", () => {
   }
 });
 
-miniHide.addEventListener("click", () => {
   // 현재 트랙/앨범 없으면 아무 것도 안 함
   if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) return;
 
