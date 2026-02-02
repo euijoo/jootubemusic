@@ -546,6 +546,38 @@ header {
 
 
 /* ===== 9. Mini Player ===== */
+.mini-toggle {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+
+/* 재생 상태: ▶ */
+.mini-toggle.playing::before {
+  content: "II";              /* 일시정지 모양 */
+  font-size: 14px;
+  color: #fff;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 멈춤 상태: ▶ */
+.mini-toggle.paused::before {
+  content: "▶";
+  font-size: 14px;
+  color: #fff;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
 
 .mini-player {
   position: fixed;
