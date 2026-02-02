@@ -270,6 +270,73 @@ async function loadMyAlbumsFromFirestore() {
   saveMyAlbumsToStorage();
 }
 
+// ===== 트랙 Firestore 유틸 (users/{uid}/albums/{albumId}/tracks) =====
+
+function albumDocRef(uid, album) {
+  const albumId = `${album.artist} - ${album.name}`;
+  return doc(userAlbumsColRef(uid), albumId);
+}
+
+function albumTracksColRef(uid, album) {
+  return collection(albumDocRef(uid, album), "tracks");
+}
+
+async function saveTracksForAlbumToFirestore(album, tracks) {
+  if (!currentUser) return;
+  const uid      = currentUser.uid;
+  const colRef   = albumTracksColRef(uid, album);
+
+  // 단순화를 위해: 기존 트랙 전부 삭제 후 재작성
+  const snap = await getDocs(colRef);
+  const deletions = [];
+  snap.forEach((docSnap) => {
+    deletions.push(deleteDoc(docSnap.ref));
+  });
+  await Promise.all(deletions);
+
+  const ops = tracks.map((t, index) => {
+    const trackRef = doc(colRef, t.id);
+    return setDoc(trackRef, {
+      id: t.id,
+      title: t.title,
+      artist: t.artist,
+      albumName: t.albumName,
+      videoId: t.videoId || "",
+      coverUrl: t.coverUrl || album.image || "",
+      index
+    });
+  });
+
+  await Promise.all(ops);
+}
+
+async function loadTracksForAlbumFromFirestore(album) {
+  if (!currentUser) return null;
+  const uid    = currentUser.uid;
+  const colRef = albumTracksColRef(uid, album);
+
+  const snap = await getDocs(colRef);
+  if (snap.empty) return null;
+
+  const list = [];
+  snap.forEach((docSnap) => {
+    const d = docSnap.data();
+    list.push({
+      id: d.id,
+      title: d.title,
+      artist: d.artist,
+      albumName: d.albumName,
+      videoId: d.videoId || "",
+      coverUrl: d.coverUrl || album.image || ""
+    });
+  });
+
+  // index 순서대로 정렬
+  list.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+  return list;
+}
+
+
 
 // ===== 6. Last.fm API =====
 
@@ -628,6 +695,14 @@ function createTrackListItem(album, trackData, index) {
 
     t.videoId     = videoId;
     e.target.value = videoId; // 정규화해서 표시
+
+    if (currentUser && currentTrackAlbum) {
+    saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
+     .catch((err) =>
+       console.error("saveTracksForAlbumToFirestore (update videoId) error", err)
+      );
+    }
+    
   });
 
   playBtn.addEventListener("click", (e) => {
@@ -644,58 +719,59 @@ function openTrackModal(album) {
   trackList.innerHTML = "<li>트랙 불러오는 중...</li>";
   trackModal.style.display = "flex";
 
-  fetchAlbumTracks(album.artist, album.name)
-    .then((lfTracks) => {
-      trackList.innerHTML = "";
-      if (!lfTracks || (Array.isArray(lfTracks) && lfTracks.length === 0)) {
-        trackList.innerHTML = "<li>트랙 정보를 찾을 수 없습니다.</li>";
-        return;
-      }
+  // 1) 내 계정에 저장된 트랙이 있으면 그걸 먼저 사용
+  (async () => {
+    try {
+      let loadedTracks = await loadTracksForAlbumFromFirestore(album);
 
-      const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
+      if (!loadedTracks || !loadedTracks.length) {
+        // 2) 없으면 Last.fm에서 기본 트랙 리스트 가져오기
+        const lfTracks = await fetchAlbumTracks(album.artist, album.name);
+        if (!lfTracks || (Array.isArray(lfTracks) && lfTracks.length === 0)) {
+          trackList.innerHTML =
+            "<li>트랙 정보를 찾을 수 없습니다. add tracks 버튼으로 직접 추가해 주세요.</li>";
+          tracks = [];
+          return;
+        }
 
-      // 트랙 배열 채우기 (YouTube videoId는 사용자가 나중에 입력)
-      tracks = arr.map((t) => {
-        const title =
-          typeof t.name === "string"
-            ? t.name
-            : t.name?.[0] || "제목 없음";
+        const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
 
-        const existed = tracks.find(
-          (x) =>
-            x.albumName === album.name &&
-            x.artist === album.artist &&
-            x.title === title
-        );
+        loadedTracks = arr.map((t) => {
+          const title =
+            typeof t.name === "string"
+              ? t.name
+              : t.name?.[0] || "제목 없음";
 
-        return (
-          existed || {
+          return {
             id: crypto.randomUUID(),
             title,
             artist: album.artist,
             albumName: album.name,
-            videoId: "", // 나중에 모달에서 입력
+            videoId: "",
             coverUrl: album.image
-          }
-        );
-      });
+          };
+        });
+      }
 
+      tracks = loadedTracks;
+
+      trackList.innerHTML = "";
       tracks.forEach((t, idx) => {
         const li = createTrackListItem(album, t, idx);
         trackList.appendChild(li);
       });
 
-      // 첫 트랙 선택 상태
       if (tracks.length && !currentTrackId) {
         currentTrackId = tracks[0].id;
       }
-    })
-    .catch((err) => {
+    } catch (err) {
       console.error(err);
       trackList.innerHTML =
         "<li>트랙 정보를 불러오는 중 오류가 발생했습니다.</li>";
-    });
+    }
+  })();
 }
+
 
 function closeTrackModal() {
   trackModal.style.display = "none";
@@ -925,12 +1001,14 @@ if (trackAddBtn) {
 
     tracks.push(newTrack);
 
-    const li = createTrackListItem(
-      currentTrackAlbum,
-      newTrack,
-      tracks.length - 1
-    );
-    trackList.appendChild(li);
+const li = createTrackListItem(currentTrackAlbum, newTrack, tracks.length - 1);
+trackList.appendChild(li);
+
+// Firestore에 트랙 전체 저장
+if (currentUser) {
+  saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
+    .catch((e) => console.error("saveTracksForAlbumToFirestore error", e));
+}
   });
 }
 
