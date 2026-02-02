@@ -150,6 +150,29 @@
   </div>
 </div>
 
+<!-- 볼륨 조절 모달 -->
+<div id="volumeModal" class="modal" style="display:none;">
+  <div id="volumeBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>볼륨 조절</span>
+      <button id="volumeModalClose" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input
+        id="volumeSlider"
+        type="range"
+        min="0"
+        max="100"
+        step="1"
+        value="100"
+      />
+    </div>
+  </div>
+</div>
+
+  
+
   <!-- 숨겨진 YouTube 플레이어 (IFrame API용) -->
   <div id="ytPlayer" style="width:0;height:0;overflow:hidden;"></div>
 
