@@ -389,12 +389,14 @@ function renderSearchResults(albums) {
           category
         };
 
-      if (!albumObj.hasCover) {
-        openCoverModal(albumObj);
-      } else {
-        openTrackModal(albumObj);
-      }
-    });
+       if (!albumObj.hasCover) {
+    closeModal();          // ← 추가
+    openCoverModal(albumObj);
+  } else {
+    closeModal();          // ← 추가
+    openTrackModal(albumObj);
+  }
+});
 
     modalGrid.appendChild(card);
   });
