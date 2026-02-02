@@ -1068,11 +1068,30 @@ miniToggle.addEventListener("click", () => {
 });
 
 miniHide.addEventListener("click", () => {
-  miniPlayer.style.display = "none";
-  if (ytPlayer) ytPlayer.pauseVideo();
-  isPlaying = false;
-  stopYtProgressLoop();
+  // 현재 트랙/앨범 없으면 아무 것도 안 함
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) return;
+
+  // 아직 안 들은 곡 우선 사용 (현재 앨범 자동재생 로직 재활용)
+  const notPlayed = tracks.filter((t) => !playedTrackIdsInAlbum.has(t.id) && t.id !== currentTrackId);
+
+  let nextTrack;
+  if (notPlayed.length) {
+    // 안 들은 곡 중 랜덤
+    nextTrack = notPlayed[Math.floor(Math.random() * notPlayed.length)];
+  } else {
+    // 전부 들었으면, 단순히 리스트에서 현재 다음 인덱스 선택
+    const idx = tracks.findIndex((t) => t.id === currentTrackId);
+    const nextIdx = (idx + 1) % tracks.length;
+    nextTrack = tracks[nextIdx];
+    // 새 라운드라 재생 기록 초기화
+    playedTrackIdsInAlbum = new Set();
+  }
+
+  if (!nextTrack) return;
+
+  playTrack(nextTrack.id);
 });
+
 
 // 타임라인 드래그
 miniSeek.addEventListener("input", () => {
