@@ -66,8 +66,17 @@ const trackBackdrop       = document.getElementById("trackBackdrop");
 const trackModalClose     = document.getElementById("trackModalClose");
 const trackModalTitle     = document.getElementById("trackModalTitle");
 const trackList           = document.getElementById("trackList");
-const trackCoverChangeBtn = document.getElementById("trackCoverChangeBtn");
 const trackAddBtn         = document.getElementById("trackAddBtn");
+
+// 앨범 옵션 모달 (새로 추가)
+const albumOptionModal     = document.getElementById('albumOptionModal');
+const albumOptionTitle     = document.getElementById('albumOptionTitle');
+const albumOptionClose     = document.getElementById('albumOptionClose');
+const albumOptionCoverBtn  = document.getElementById('albumOptionCoverBtn');
+const albumOptionDeleteBtn = document.getElementById('albumOptionDeleteBtn');
+
+let albumOptionTargetIndex = null;
+let albumOptionTargetAlbum = null;
 
 // 미니 플레이어
 const miniPlayer = document.getElementById("miniPlayer");
@@ -569,37 +578,35 @@ function renderMyAlbums() {
     card.innerHTML = `
   <div class="card-cover-wrap">
     <img src="${album.image}" alt="${album.name}">
-    <button class="album-delete-btn" data-index="${index}">:</button>
+    <button class="album-option-btn" data-index="${index}">⋮</button>
   </div>
   <div class="card-title"><span>${album.name}</span></div>
   <div class="card-artist">${album.artist}</div>
 `;
 
-    card.addEventListener("click", (e) => {
-      if (e.target.matches(".album-delete-btn")) return;
+card.addEventListener("click", (e) => {
+  // 옵션 버튼 누른 경우에는 카드 기본 동작(모달 열기)을 막기
+  if (e.target.closest(".album-option-btn")) {
+    return;
+  }
 
-      if (!album.hasCover) {
-        openCoverModal(album);
-      } else {
-        openTrackModal(album);
-      }
-    });
-
-    const deleteBtn = card.querySelector(".album-delete-btn");
-deleteBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  const idx = Number(deleteBtn.dataset.index);
-
-  const album = filtered[idx];
-  if (!album) return;
-
-  const ok = confirm(
-    `"${album.artist} - ${album.name}" 앨범을 삭제하시겠습니까?`
-  );
-  if (!ok) return;
-
-  deleteAlbumAtIndex(idx);
+  if (!album.hasCover) {
+    openCoverModal(album);
+  } else {
+    openTrackModal(album);
+  }
 });
+
+const optionBtn = card.querySelector(".album-option-btn");
+optionBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const idx = Number(optionBtn.dataset.index);
+  const target = filtered[idx];
+  if (!target) return;
+
+  openAlbumOptionModal(target, idx);
+});
+
 
     myGrid.appendChild(card);
   });
@@ -1098,38 +1105,91 @@ if (categoryBar) {
 // 추가 트랙 버튼 (수동 추가)
 if (trackAddBtn) {
   trackAddBtn.addEventListener("click", () => {
-    if (!currentTrackAlbum) {
-      alert("먼저 앨범을 선택해 주세요.");
-      return;
-    }
+  if (!currentTrackAlbum) return;
 
-    const title = prompt("추가할 트랙 제목을 입력해 주세요.");
-    if (!title || !title.trim()) {
-      alert("트랙 제목은 필수입니다.");
-      return;
-    }
+  const title = prompt("트랙 제목을 입력해 주세요.");
+  if (!title || !title.trim()) return;
 
-    const newTrack = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      artist: currentTrackAlbum.artist,
-      albumName: currentTrackAlbum.name,
-      videoId: "", // 나중에 입력
-      coverUrl: currentTrackAlbum.image
-    };
+  const artist = prompt("아티스트를 입력해 주세요.", currentTrackAlbum.artist || "");
+  if (!artist || !artist.trim()) return;
 
-    tracks.push(newTrack);
+  const rawUrl = prompt("YouTube videoId 또는 링크를 입력해 주세요.");
+  if (!rawUrl || !rawUrl.trim()) return;
 
-const li = createTrackListItem(currentTrackAlbum, newTrack, tracks.length - 1);
-trackList.appendChild(li);
+  const videoId = extractVideoId(rawUrl);
+  if (!videoId) {
+    alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
+    return;
+  }
 
-// Firestore에 트랙 전체 저장
-if (currentUser) {
-  saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
-    .catch((e) => console.error("saveTracksForAlbumToFirestore error", e));
+  const newTrack = {
+    id: crypto.randomUUID(),
+    title: title.trim(),
+    artist: artist.trim(),
+    albumName: currentTrackAlbum.name,
+    videoId,
+    coverUrl: currentTrackAlbum.image,
+  };
+
+  tracks.push(newTrack);
+
+  const li = createTrackListItem(currentTrackAlbum, newTrack, tracks.length - 1);
+  trackList.appendChild(li);
+
+  if (currentUser && currentTrackAlbum) {
+    saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
+      .catch((err) =>
+        console.error("saveTracksForAlbumToFirestore (add track) error", err)
+      );
+  }
+});
+
 }
-  });
+
+function openAlbumOptionModal(album, index) {
+  albumOptionTargetAlbum = album;
+  albumOptionTargetIndex = index;
+
+  albumOptionTitle.textContent = `${album.artist} - ${album.name}`;
+  albumOptionModal.style.display = 'flex';
 }
+
+function closeAlbumOptionModal() {
+  albumOptionModal.style.display = 'none';
+  albumOptionTargetAlbum = null;
+  albumOptionTargetIndex = null;
+}
+
+albumOptionClose.addEventListener("click", closeAlbumOptionModal);
+
+albumOptionModal.addEventListener("click", (e) => {
+  if (e.target === albumOptionModal) {
+    closeAlbumOptionModal();
+  }
+});
+
+albumOptionCoverBtn.addEventListener("click", () => {
+  if (!albumOptionTargetAlbum) return;
+  const target = albumOptionTargetAlbum;
+  closeAlbumOptionModal();
+
+  // 기존 커버 모달 열기 함수
+  openCoverModal(target);
+});
+
+albumOptionDeleteBtn.addEventListener("click", () => {
+  if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
+
+  const album = albumOptionTargetAlbum;
+  const ok = confirm(`"${album.artist} - ${album.name}" 앨범을 삭제하시겠습니까?`);
+  if (!ok) return;
+
+  const idx = albumOptionTargetIndex;
+  closeAlbumOptionModal();
+  deleteAlbumAtIndex(idx);
+});
+
+
 
 // 모달/검색 이벤트
 searchBtn.addEventListener("click", handleSearch);
@@ -1143,28 +1203,6 @@ modalBackdrop.addEventListener("click", closeModal);
 trackModalClose.addEventListener("click", closeTrackModal);
 trackBackdrop.addEventListener("click", closeTrackModal);
 
-trackCoverChangeBtn.addEventListener("click", () => {
-  if (!currentTrackAlbum) return;
-
-  const url = prompt(
-    "새 커버 이미지 URL을 입력해 주세요.",
-    currentTrackAlbum.image || ""
-  );
-  if (!url) return;
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    alert("올바른 이미지 URL을 입력해 주세요.");
-    return;
-  }
-
-  currentTrackAlbum.image   = url;
-  currentTrackAlbum.hasCover = true;
-
-  renderMyAlbums();
-  saveMyAlbumsToStorage();
-  if (currentUser) syncMyAlbumsToFirestore();
-
-  alert("커버 이미지가 변경되었습니다.");
-});
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
