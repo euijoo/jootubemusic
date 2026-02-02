@@ -920,14 +920,14 @@ function onPlayerStateChange(event) {
 
   if (state === YT.PlayerState.PLAYING) {
     isPlaying = true;
-    miniToggle.textContent = "⏸";
+  miniToggle.textContent = "II";   // 일시정지
     startYtProgressLoop();
   } else if (
     state === YT.PlayerState.PAUSED ||
     state === YT.PlayerState.ENDED
   ) {
     isPlaying = false;
-    miniToggle.textContent = "▶";
+  miniToggle.textContent = "▶";    // 재생
     if (state === YT.PlayerState.ENDED) {
       stopYtProgressLoop();
       handleTrackEnded(); // ← 자동 재생 트리거
