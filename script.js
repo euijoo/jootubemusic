@@ -1021,6 +1021,57 @@ function handleTrackEnded() {
   autoPlayRandomTrackFromAlbum(nextAlbum);
 }
 
+// 내 모든 앨범에서 videoId가 있는 트랙 중 랜덤 하나 재생
+async function playRandomTrackFromAllAlbums() {
+  if (!currentUser) return;              // 로그인 안 되어 있으면 Firestore 접근 X
+
+  const uid = currentUser.uid;
+
+  // 1) Firestore에서 모든 앨범 불러오기
+  const albumsSnap = await getDocs(userAlbumsColRef(uid));
+  const allPlayableTracks = [];
+
+  for (const albumDoc of albumsSnap.docs) {
+    const albumData = albumDoc.data();
+    const album = {
+      name: albumData.name,
+      artist: albumData.artist,
+      image: albumData.image,
+      hasCover: albumData.hasCover,
+      category: albumData.category || "etc",
+    };
+
+    const tracksSnap = await getDocs(albumTracksColRef(uid, album));
+    tracksSnap.forEach((docSnap) => {
+      const d = docSnap.data();
+      if (d.videoId) {
+        allPlayableTracks.push({
+          id: d.id,
+          title: d.title,
+          artist: d.artist,
+          albumName: d.albumName,
+          videoId: d.videoId,
+          coverUrl: d.coverUrl || album.image,
+          _album: album,        // 어떤 앨범인지 같이 들고가기
+        });
+      }
+    });
+  }
+
+  if (!allPlayableTracks.length) return;
+
+  // 2) 전체에서 랜덤 하나
+  const random = allPlayableTracks[Math.floor(Math.random() * allPlayableTracks.length)];
+
+  // 3) 전역 상태를 해당 앨범/트랙으로 세팅 후 재생
+  currentTrackAlbum = random._album;
+  tracks = allPlayableTracks.filter(t => t.albumName === random.albumName); // 최소한 같은 앨범 트랙들로 채우기
+  currentTrackId = random.id;
+  playedTrackIdsInAlbum = new Set([random.id]);
+
+  playTrack(random.id);
+}
+
 
 
 function startYtProgressLoop() {
@@ -1100,10 +1151,10 @@ miniToggle.addEventListener("click", () => {
   }
 });
 
-// ⏭ 버튼: 다음 곡
+// ⏭ 버튼: 모든 앰범에서 랜덤 재생
 miniHide.textContent = '⏭';
 miniHide.addEventListener("click", () => {
-  playNextTrackInCurrentAlbum();
+  playRandomTrackFromAllAlbums();
 });
 
 
