@@ -135,6 +135,29 @@
 <button id="miniToggle" class="mini-btn mini-toggle"></button>
     <button id="miniHide" class="mini-btn">✕</button>
   </div>
+
+  <!-- ===== Volume Modal ===== -->
+<div id="volumeModal" class="modal" style="display:none;">
+  <div id="volumeBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content" style="max-width:260px;margin:auto;padding:16px;">
+    <div class="modal-header">
+      <span>볼륨 조절</span>
+      <button id="volumeModalClose" class="modal-close">&times;</button>
+    </div>
+    <div style="display:flex;justify-content:center;align-items:center;padding:16px 0;">
+      <input
+        id="volumeSlider"
+        type="range"
+        min="0"
+        max="100"
+        value="100"
+        style="width:200px;"
+      />
+    </div>
+  </div>
+</div>
+
+  
 <!-- 앨범 옵션 모달 -->
 <div id="albumOptionModal" class="modal-backdrop" style="display:none;">
   <div class="modal">
