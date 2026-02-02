@@ -614,7 +614,6 @@ optionBtn.addEventListener("click", (e) => {
 
 
 // ===== 9. 커버 입력 모달 =====
-
 let pendingCoverAlbum = null;
 
 function openCoverModal(album) {
@@ -623,7 +622,7 @@ function openCoverModal(album) {
   coverInfo.textContent =
     "이 앨범에는 공식 커버가 없어 보입니다. 사용할 커버 이미지 URL을 입력해 주세요.";
   coverUrlInput.value = "";
-  coverPreview.src    = album.image || "";
+  coverPreview.src = album.image || "";
   coverModal.style.display = "flex";
 }
 
@@ -632,20 +631,18 @@ function closeCoverModal() {
   pendingCoverAlbum = null;
 }
 
-coverUrlInput.addEventListener("input", () => {
-  const url = coverUrlInput.value.trim();
-  coverPreview.src = url || "";
-});
-
 coverSaveBtn.addEventListener("click", () => {
   if (!pendingCoverAlbum) return;
+
   const url = coverUrlInput.value.trim();
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     alert("올바른 이미지 URL을 입력해 주세요.");
     return;
   }
-  pendingCoverAlbum.image   = url;
+
+  pendingCoverAlbum.image = url;
   pendingCoverAlbum.hasCover = true;
+
   renderMyAlbums();
   saveMyAlbumsToStorage();
   if (currentUser) syncMyAlbumsToFirestore();
@@ -657,11 +654,21 @@ coverSaveBtn.addEventListener("click", () => {
 coverModalClose.addEventListener("click", closeCoverModal);
 coverBackdrop.addEventListener("click", closeCoverModal);
 
-
 // ===== 10. 트랙 모달 + YouTube Player =====
-
 function getCurrentTrack() {
   return tracks.find((t) => t.id === currentTrackId) || null;
+}
+
+// ✅ 선택만 하는 함수 추가
+function selectTrackOnly(id) {
+  document
+    .querySelectorAll("#trackModal #trackList li.selected-track")
+    .forEach((item) => item.classList.remove("selected-track"));
+
+  const li = trackList.querySelector(`[data-track-id="${id}"]`);
+  if (li) li.classList.add("selected-track");
+
+  currentTrackId = id;
 }
 
 function playTrack(id) {
@@ -672,11 +679,11 @@ function playTrack(id) {
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
     .forEach((item) => item.classList.remove("selected-track"));
-
   const li = trackList.querySelector(`[data-track-id="${id}"]`);
   if (li) li.classList.add("selected-track");
 
   currentTrackId = id;
+
   updateNowPlaying(track);
   playTrackOnYouTube(track);
 
@@ -686,42 +693,60 @@ function playTrack(id) {
   }
 }
 
-
 function createTrackListItem(album, trackData, index) {
   const id = trackData.id;
   const li = document.createElement("li");
   li.dataset.trackId = id;
 
   li.innerHTML = `
-  <span class="track-index">${index + 1}</span>
-  <div class="track-line">
-    <span class="track-title-text">${trackData.title}</span>
-    <span class="track-dots">____________________________</span>
-    <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
-  </div>
-`;
+    <span class="track-index">${index + 1}</span>
+    <div class="track-line">
+      <span class="track-title-text">${trackData.title}</span>
+      <span class="track-dots">____________________________</span>
+      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
+    </div>
+  `;
 
-
+  const line    = li.querySelector(".track-line");
+  const editBtn = li.querySelector(".track-edit-btn");
   const titleSpan = li.querySelector(".track-title-text");
-  const editBtn   = li.querySelector(".track-edit-btn");
 
-  // 제목 클릭 시 재생
-  titleSpan.addEventListener("click", (e) => {
+  // 곡 선택/재생 클릭 로직 (제목+언더바 영역 전체)
+  let clickCount = 0;
+  let clickTimer = null;
+
+  line.addEventListener("click", (e) => {
     e.stopPropagation();
-    playTrack(id);
+    clickCount += 1;
+
+    if (clickTimer) {
+      clearTimeout(clickTimer);
+    }
+
+    clickTimer = setTimeout(() => {
+      if (clickCount === 1) {
+        // 1번 클릭: 곡 선택만
+        selectTrackOnly(id);
+      } else {
+        // 2번 이상: 재생
+        playTrack(id);
+      }
+
+      clickCount = 0;
+      clickTimer = null;
+    }, 250); // 250ms 안에 다시 클릭하면 '연속 클릭'으로 처리
   });
 
-  // 제목 + URL 편집
+  // 편집 버튼 클릭 로직 (기존 코드 그대로 이 안에 복원)
   editBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const t = tracks.find((t) => t.id === id);
     if (!t) return;
 
-    // 제목 편집
     const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
     if (newTitle && newTitle.trim()) {
       t.title = newTitle.trim();
-      titleSpan.textContent = t.title;
+      if (titleSpan) titleSpan.textContent = t.title;
 
       const current = getCurrentTrack();
       if (current && current.id === id) {
@@ -729,7 +754,6 @@ function createTrackListItem(album, trackData, index) {
       }
     }
 
-    // URL 편집
     const rawUrl = prompt(
       "YouTube videoId 또는 링크를 입력해 주세요.",
       t.videoId || ""
@@ -743,20 +767,22 @@ function createTrackListItem(album, trackData, index) {
       }
     }
 
-    // URL이 설정돼 있으면 버튼 텍스트에 체크 표시
     editBtn.textContent = t.videoId ? "✎✓" : "✎";
 
-    // Firestore에 반영
     if (currentUser && currentTrackAlbum) {
-      saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
-        .catch((err) =>
-          console.error("saveTracksForAlbumToFirestore (edit track) error", err)
-        );
+      saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch((err) =>
+        console.error(
+          "saveTracksForAlbumToFirestore (edit track) error",
+          err
+        )
+      );
     }
   });
 
   return li;
 }
+
+
 
 function openTrackModal(album) {
   currentTrackAlbum = album;
