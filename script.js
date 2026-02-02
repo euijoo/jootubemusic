@@ -95,14 +95,22 @@ const coverSaveBtn    = document.getElementById("coverSaveBtn");
 
 // ===== 3. 상태 (State) =====
 
-let isPlaying        = false; // 재생 중 여부
-let myAlbums         = [];    // 내 앨범 목록
-let currentUser      = null;  // Firebase 현재 유저
+let isPlaying         = false;
+let myAlbums          = [];
+let currentUser       = null;
 
 // 트랙 목록 + 현재 트랙 (YouTube videoId 기반)
-let tracks           = [];    // { id, title, artist, albumName, videoId, coverUrl }
-let currentTrackId   = null;
+let tracks            = []; // { id, title, artist, albumName, videoId, coverUrl }
+let currentTrackId    = null;
 let currentTrackAlbum = null;
+
+// 자동 재생 상태
+let playedTrackIdsInAlbum = new Set(); // 현재 앨범에서 재생한 트랙 id
+let playedAlbumKeys       = new Set(); // 이번 세션에서 모두 소진한 앨범 키
+
+function getAlbumKey(album) {
+  return `${album.artist} - ${album.name}`;
+}
 
 // YouTube IFrame Player
 let ytPlayer      = null;
@@ -664,7 +672,13 @@ function playTrack(id) {
   currentTrackId = id;
   updateNowPlaying(track);
   playTrackOnYouTube(track);
+
+  // 현재 앨범에서 이 트랙을 재생한 것으로 표시
+  if (currentTrackAlbum) {
+    playedTrackIdsInAlbum.add(id);
+  }
 }
+
 
 function createTrackListItem(album, trackData, index) {
   const id = trackData.id;
@@ -682,15 +696,14 @@ function createTrackListItem(album, trackData, index) {
 
   const titleSpan = li.querySelector(".track-title-text");
   const editBtn   = li.querySelector(".track-edit-btn");
-  const dotsSpan  = li.querySelector(".track-dots");
 
-  // 1) 제목 클릭 시 재생
+  // 제목 클릭 시 재생
   titleSpan.addEventListener("click", (e) => {
     e.stopPropagation();
     playTrack(id);
   });
 
-  // 2) 수정 버튼: 제목 + URL 한 번에 관리
+  // 제목 + URL 편집
   editBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const t = tracks.find((t) => t.id === id);
@@ -737,20 +750,19 @@ function createTrackListItem(album, trackData, index) {
   return li;
 }
 
-
 function openTrackModal(album) {
   currentTrackAlbum = album;
   trackModalTitle.textContent = `${album.artist} - ${album.name}`;
   trackList.innerHTML = "<li>트랙 불러오는 중...</li>";
   trackModal.style.display = "flex";
 
-  // 1) 내 계정에 저장된 트랙이 있으면 그걸 먼저 사용
   (async () => {
     try {
+      // 1) Firestore에서 먼저 시도
       let loadedTracks = await loadTracksForAlbumFromFirestore(album);
 
+      // 2) 없으면 Last.fm에서 기본 트랙 리스트
       if (!loadedTracks || !loadedTracks.length) {
-        // 2) 없으면 Last.fm에서 기본 트랙 리스트 가져오기
         const lfTracks = await fetchAlbumTracks(album.artist, album.name);
         if (!lfTracks || (Array.isArray(lfTracks) && lfTracks.length === 0)) {
           trackList.innerHTML =
@@ -760,7 +772,6 @@ function openTrackModal(album) {
         }
 
         const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
-
         loadedTracks = arr.map((t) => {
           const title =
             typeof t.name === "string"
@@ -773,12 +784,13 @@ function openTrackModal(album) {
             artist: album.artist,
             albumName: album.name,
             videoId: "",
-            coverUrl: album.image
+            coverUrl: album.image,
           };
         });
       }
 
       tracks = loadedTracks;
+      playedTrackIdsInAlbum = new Set(); // 새로 열면 현재 앨범 재생 기록 초기화
 
       trackList.innerHTML = "";
       tracks.forEach((t, idx) => {
@@ -797,12 +809,56 @@ function openTrackModal(album) {
   })();
 }
 
+// === 자동으로 다른 앨범에서 랜덤 곡 재생 ===
+async function autoPlayRandomTrackFromAlbum(album) {
+  try {
+    // 트랙 로드: 먼저 Firestore, 없으면 Last.fm
+    let loadedTracks = await loadTracksForAlbumFromFirestore(album);
+
+    if (!loadedTracks || !loadedTracks.length) {
+      const lfTracks = await fetchAlbumTracks(album.artist, album.name);
+      if (!lfTracks || (Array.isArray(lfTracks) && lfTracks.length === 0)) {
+        return; // 이 앨범은 트랙 없음
+      }
+
+      const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
+      loadedTracks = arr.map((t) => {
+        const title =
+          typeof t.name === "string" ? t.name : t.name?.[0] || "제목 없음";
+
+        return {
+          id: crypto.randomUUID(),
+          title,
+          artist: album.artist,
+          albumName: album.name,
+          videoId: "",
+          coverUrl: album.image,
+        };
+      });
+    }
+
+    // videoId가 있는 트랙만 대상으로 랜덤 선택
+    const playable = loadedTracks.filter((t) => t.videoId);
+    if (!playable.length) return;
+
+    // 전역 상태 업데이트
+    currentTrackAlbum = album;
+    tracks = loadedTracks;
+    playedTrackIdsInAlbum = new Set(); // 새 앨범 시작
+
+    const next = playable[Math.floor(Math.random() * playable.length)];
+    playTrack(next.id);
+  } catch (err) {
+    console.error("autoPlayRandomTrackFromAlbum error", err);
+  }
+}
 
 function closeTrackModal() {
   trackModal.style.display = "none";
   trackList.innerHTML      = "";
   currentTrackAlbum        = null;
 }
+
 
 /* --- YouTube IFrame Player & 미니 플레이어 --- */
 
@@ -857,9 +913,47 @@ function onPlayerStateChange(event) {
     miniToggle.textContent = "▶";
     if (state === YT.PlayerState.ENDED) {
       stopYtProgressLoop();
+      handleTrackEnded(); // ← 자동 재생 트리거
     }
   }
 }
+
+function handleTrackEnded() {
+  // 1) 현재 앨범에서 아직 안 재생한 트랙 찾기
+  if (currentTrackAlbum && Array.isArray(tracks) && tracks.length) {
+    const notPlayed = tracks.filter((t) => !playedTrackIdsInAlbum.has(t.id));
+
+    if (notPlayed.length) {
+      // 아직 안 들은 곡 중 랜덤 선택
+      const next = notPlayed[Math.floor(Math.random() * notPlayed.length)];
+      playTrack(next.id);
+      return;
+    }
+
+    // 이 앨범은 모두 재생 완료
+    const currentAlbumKey = getAlbumKey(currentTrackAlbum);
+    playedAlbumKeys.add(currentAlbumKey);
+  }
+
+  // 2) 남아 있는 다른 앨범 중 하나 선택
+  const remainingAlbums = myAlbums.filter((album) => {
+    const key = getAlbumKey(album);
+    return !playedAlbumKeys.has(key);
+  });
+
+  if (!remainingAlbums.length) {
+    // 모든 앨범 순환 완료 → 상태 초기화만
+    playedTrackIdsInAlbum.clear();
+    playedAlbumKeys.clear();
+    return;
+  }
+
+  const nextAlbum =
+    remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
+  autoPlayRandomTrackFromAlbum(nextAlbum);
+}
+
+
 
 function startYtProgressLoop() {
   if (ytUpdateTimer) return;
