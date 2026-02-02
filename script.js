@@ -559,11 +559,13 @@ function renderMyAlbums() {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <img src="${album.image}" alt="${album.name}">
-      <div class="card-title"><span>${album.name}</span></div>
-      <div class="card-artist">${album.artist}</div>
-      <button class="album-delete-btn" data-index="${index}">삭제</button>
-    `;
+  <div class="card-cover-wrap">
+    <img src="${album.image}" alt="${album.name}">
+    <button class="album-delete-btn" data-index="${index}">:</button>
+  </div>
+  <div class="card-title"><span>${album.name}</span></div>
+  <div class="card-artist">${album.artist}</div>
+`;
 
     card.addEventListener("click", (e) => {
       if (e.target.matches(".album-delete-btn")) return;
