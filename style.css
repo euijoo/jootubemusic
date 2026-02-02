@@ -22,16 +22,6 @@ main {
   width: 100%;
 }
 
-@media (max-width: 600px) {
-  header {
-    padding: 12px 14px;
-  }
-  main {
-    padding: 14px;
-  }
-}
-
-
 /* ===== 2. Header & Auth ===== */
 
 header {
@@ -617,4 +607,66 @@ header {
   color: #fff;
   cursor: pointer;
   font-size: 16px;
+}
+
+
+/* ===== 10. Responsive Breakpoints ===== */
+
+/* 모바일 전용 (예: 아이폰 세로) */
+@media (max-width: 600px) {
+  header {
+    padding: 12px 14px;
+  }
+
+  main {
+    padding: 14px;
+  }
+
+  .mini-player {
+    bottom: 60px;
+    width: calc(100% - 24px);
+  }
+}
+
+/* 태블릿 이상 (768px~) */
+@media (min-width: 768px) {
+  main {
+    max-width: 900px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .card-artist {
+    font-size: 13px;
+  }
+}
+
+/* 데스크톱 이상 (1024px~) */
+@media (min-width: 1024px) {
+  main {
+    max-width: 1200px;
+  }
+
+  header {
+    height: 72px;
+  }
+
+  .logo {
+    font-size: 20px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .mini-player {
+    width: min(640px, 100% - 40px);
+    bottom: 20px;
+  }
 }
