@@ -684,14 +684,17 @@ function playTrack(id) {
 
   currentTrackId = id;
 
-  updateNowPlaying(track);
+  // 미니 플레이어 정보 업데이트 + 표시
+  updateNowPlaying(track);      // 여기서 miniCover/miniTitle/miniArtist 설정
+  miniPlayer.style.display = "flex";
+
   playTrackOnYouTube(track);
 
-  // 현재 앨범에서 이 트랙을 재생한 것으로 표시
   if (currentTrackAlbum) {
     playedTrackIdsInAlbum.add(id);
   }
 }
+
 
 function createTrackListItem(album, trackData, index) {
   const id = trackData.id;
@@ -707,37 +710,17 @@ function createTrackListItem(album, trackData, index) {
     </div>
   `;
 
-  const line    = li.querySelector(".track-line");
-  const editBtn = li.querySelector(".track-edit-btn");
+  const line      = li.querySelector(".track-line");
+  const editBtn   = li.querySelector(".track-edit-btn");
   const titleSpan = li.querySelector(".track-title-text");
 
-  // 곡 선택/재생 클릭 로직 (제목+언더바 영역 전체)
-  let clickCount = 0;
-  let clickTimer = null;
-
+  // ✅ 제목 + 언더바 라인 전체를 '재생 버튼'처럼 사용 (한 번 탭 = 재생)
   line.addEventListener("click", (e) => {
     e.stopPropagation();
-    clickCount += 1;
-
-    if (clickTimer) {
-      clearTimeout(clickTimer);
-    }
-
-    clickTimer = setTimeout(() => {
-      if (clickCount === 1) {
-        // 1번 클릭: 곡 선택만
-        selectTrackOnly(id);
-      } else {
-        // 2번 이상: 재생
-        playTrack(id);
-      }
-
-      clickCount = 0;
-      clickTimer = null;
-    }, 250); // 250ms 안에 다시 클릭하면 '연속 클릭'으로 처리
+    playTrack(id);
   });
 
-  // 편집 버튼 클릭 로직 (기존 코드 그대로 이 안에 복원)
+  // 편집 버튼 클릭 로직 (기존 코드 유지)
   editBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const t = tracks.find((t) => t.id === id);
@@ -781,6 +764,7 @@ function createTrackListItem(album, trackData, index) {
 
   return li;
 }
+
 
 
 
