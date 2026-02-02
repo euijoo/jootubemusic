@@ -254,20 +254,24 @@ async function loadMyAlbumsFromFirestore() {
 
   const snap = await getDocs(colRef);
   const list = [];
-  snap.forEach((docSnap) => {
-    const d = docSnap.data();
-    list.push({
-      name: d.name,
-      artist: d.artist,
-      image: d.image,
-      hasCover: d.hasCover,
-      category: d.category || "etc"
-    });
+snap.forEach((docSnap) => {
+  const d = docSnap.data();
+  list.push({
+    name: d.name,
+    artist: d.artist,
+    image: d.image,
+    hasCover: d.hasCover,
+    category: d.category || "etc",
+    createdAt: d.createdAt || 0,
   });
+});
 
-  myAlbums = list;
-  renderMyAlbums();
-  saveMyAlbumsToStorage();
+// createdAt 내림차순으로 정렬 (최근 것이 위로)
+list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+myAlbums = list;
+renderMyAlbums();
+saveMyAlbumsToStorage();
 }
 
 // ===== 트랙 Firestore 유틸 (users/{uid}/albums/{albumId}/tracks) =====
@@ -423,47 +427,52 @@ function renderSearchResults(albums) {
     `;
 
     card.addEventListener("click", () => {
-      const exists = myAlbums.some(
-        (a) => a.name === title && a.artist === artist
-      );
+  const exists = myAlbums.some(
+    (a) => a.name === title && a.artist === artist
+  );
 
-      let category = "kpop";
+  let category = "kpop";
 
-      if (!exists) {
-        const selected = askCategoryAndReturnValue();
-        if (!selected) return;
-        category = selected;
+  if (!exists) {
+    const selected = askCategoryAndReturnValue();
+    if (!selected) return;
+    category = selected;
 
-        myAlbums.push({
-          name: title,
-          artist,
-          image: imgUrl,
-          hasCover: hasRealCover(album),
-          category
-        });
-        renderMyAlbums();
-        saveMyAlbumsToStorage();
-        if (currentUser) syncMyAlbumsToFirestore();
-      }
+    const newAlbum = {
+      name: title,
+      artist,
+      image: imgUrl,
+      hasCover: hasRealCover(album),
+      category,
+    };
 
-      // 앨범 선택 시: 바로 트랙 모달 열기
-      const albumObj =
-        myAlbums.find((a) => a.name === title && a.artist === artist) || {
-          name: title,
-          artist,
-          image: imgUrl,
-          hasCover: hasRealCover(album),
-          category
-        };
+    // 기존: myAlbums.push(newAlbum);
+    // 변경: 항상 맨 앞에 추가
+    myAlbums.unshift(newAlbum);
 
-       if (!albumObj.hasCover) {
-    closeModal();          // ← 추가
+    renderMyAlbums();
+    saveMyAlbumsToStorage();
+    if (currentUser) syncMyAlbumsToFirestore();
+  }
+
+  const albumObj =
+    myAlbums.find((a) => a.name === title && a.artist === artist) || {
+      name: title,
+      artist,
+      image: imgUrl,
+      hasCover: hasRealCover(album),
+      category,
+    };
+
+  if (!albumObj.hasCover) {
+    closeModal();
     openCoverModal(albumObj);
   } else {
-    closeModal();          // ← 추가
+    closeModal();
     openTrackModal(albumObj);
   }
 });
+
 
     modalGrid.appendChild(card);
   });
