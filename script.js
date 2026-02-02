@@ -674,73 +674,65 @@ function createTrackListItem(album, trackData, index) {
   li.innerHTML = `
     <span class="track-index">${index + 1}</span>
     <span class="track-title-text">${trackData.title}</span>
-    <button class="track-edit-title-btn">제목</button>
-    <button class="track-edit-url-btn">${trackData.videoId ? "URL✓" : "URL"}</button>
+    <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
     <button class="track-play-btn">▶</button>
   `;
 
-  const titleTextBtn = li.querySelector(".track-edit-title-btn");
-  const urlBtn       = li.querySelector(".track-edit-url-btn");
-  const playBtn      = li.querySelector(".track-play-btn");
-  const titleSpan    = li.querySelector(".track-title-text");
+  const titleSpan = li.querySelector(".track-title-text");
+  const editBtn   = li.querySelector(".track-edit-btn");
+  const playBtn   = li.querySelector(".track-play-btn");
 
-  // 제목 편집: 간단히 prompt로
-  titleTextBtn.addEventListener("click", (e) => {
+  // 1) 제목 클릭 시 재생
+  titleSpan.addEventListener("click", (e) => {
     e.stopPropagation();
-    const t = tracks.find((t) => t.id === id);
-    if (!t) return;
-
-    const currentTitle = t.title || "";
-    const next = prompt("트랙 제목을 입력해 주세요.", currentTitle);
-    if (!next || !next.trim()) return;
-
-    t.title = next.trim();
-    titleSpan.textContent = t.title;
-
-    const current = getCurrentTrack();
-    if (current && current.id === id) {
-      miniTitle.textContent = t.title;
-    }
-
-    // 제목 변경도 저장
-    if (currentUser && currentTrackAlbum) {
-      saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
-        .catch((err) =>
-          console.error("saveTracksForAlbumToFirestore (update title) error", err)
-        );
-    }
+    playTrack(id);
   });
 
-  // URL 편집: videoId 또는 YouTube 링크를 prompt로 입력
-  urlBtn.addEventListener("click", (e) => {
+  // 2) 편집 버튼: 제목 + URL 한 번에 관리
+  editBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const t = tracks.find((t) => t.id === id);
     if (!t) return;
 
-    const currentRaw = t.videoId || "";
-    const raw = prompt(
+    // 제목 편집
+    const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
+    if (newTitle && newTitle.trim()) {
+      t.title = newTitle.trim();
+      titleSpan.textContent = t.title;
+
+      const current = getCurrentTrack();
+      if (current && current.id === id) {
+        miniTitle.textContent = t.title;
+      }
+    }
+
+    // URL 편집
+    const rawUrl = prompt(
       "YouTube videoId 또는 링크를 입력해 주세요.",
-      currentRaw
+      t.videoId || ""
     );
-    if (!raw || !raw.trim()) return;
-
-    const videoId = extractVideoId(raw);
-    if (!videoId) {
-      alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
-      return;
+    if (rawUrl && rawUrl.trim()) {
+      const videoId = extractVideoId(rawUrl);
+      if (!videoId) {
+        alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
+      } else {
+        t.videoId = videoId;
+      }
     }
 
-    t.videoId = videoId;
-    urlBtn.textContent = "URL✓";
+    // URL이 설정돼 있으면 버튼 텍스트에 체크 표시
+    editBtn.textContent = t.videoId ? "✎✓" : "✎";
 
+    // Firestore에 반영
     if (currentUser && currentTrackAlbum) {
       saveTracksForAlbumToFirestore(currentTrackAlbum, tracks)
         .catch((err) =>
-          console.error("saveTracksForAlbumToFirestore (update videoId) error", err)
+          console.error("saveTracksForAlbumToFirestore (edit track) error", err)
         );
     }
   });
 
+  // 3) ▶ 버튼으로도 재생
   playBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     playTrack(id);
@@ -748,6 +740,7 @@ function createTrackListItem(album, trackData, index) {
 
   return li;
 }
+
 
 function openTrackModal(album) {
   currentTrackAlbum = album;
