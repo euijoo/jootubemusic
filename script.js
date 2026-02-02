@@ -578,11 +578,20 @@ function renderMyAlbums() {
     });
 
     const deleteBtn = card.querySelector(".album-delete-btn");
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const idx = Number(deleteBtn.dataset.index);
-      deleteAlbumAtIndex(idx);
-    });
+deleteBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const idx = Number(deleteBtn.dataset.index);
+
+  const album = filtered[idx];
+  if (!album) return;
+
+  const ok = confirm(
+    `"${album.artist} - ${album.name}" 앨범을 삭제하시겠습니까?`
+  );
+  if (!ok) return;
+
+  deleteAlbumAtIndex(idx);
+});
 
     myGrid.appendChild(card);
   });
