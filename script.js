@@ -1332,7 +1332,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     authStatus.textContent = `${
       user.displayName || "사용자"
-    } 님이 로그인했습니다.`;
+    }`;
     authToggleBtn.textContent = "Logout";
 
     try {
@@ -1341,7 +1341,7 @@ onAuthStateChanged(auth, async (user) => {
       console.error("loadMyAlbumsFromFirestore error", e);
     }
   } else {
-    authStatus.textContent = "로그인하지 않은 상태입니다.";
+    authStatus.textContent = "";
     authToggleBtn.textContent = "Login";
 
     myAlbums = [];
