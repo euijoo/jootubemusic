@@ -139,19 +139,18 @@
   <!-- ===== Volume Modal ===== -->
 <div id="volumeModal" class="modal" style="display:none;">
   <div id="volumeBackdrop" class="modal-backdrop"></div>
-  <div class="modal-content" style="max-width:260px;margin:auto;padding:16px;">
+  <div class="modal-content">
     <div class="modal-header">
       <span>볼륨 조절</span>
       <button id="volumeModalClose" class="modal-close">&times;</button>
     </div>
-    <div style="display:flex;justify-content:center;align-items:center;padding:16px 0;">
+    <div class="volume-body">
       <input
         id="volumeSlider"
         type="range"
         min="0"
         max="100"
         value="100"
-        style="width:200px;"
       />
     </div>
   </div>
