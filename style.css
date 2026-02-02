@@ -211,23 +211,21 @@ header {
 }
 
 /* 앨범 삭제 버튼 (커버 왼쪽 상단, 눈에 덜 띄게) */
-.album-delete-btn {
+.album-option-btn {
   position: absolute;
   top: 6px;
-  left: 6px;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border-radius: 999px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.35);
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 16px;
   cursor: pointer;
-  font-size: 13px;
-  line-height: 1;
 }
 
-.album-delete-btn:hover {
+.album-option-btn:hover {
   background: rgba(0, 0, 0, 0.45);
   color: rgba(255, 255, 255, 0.85);
 }
@@ -508,6 +506,19 @@ header {
   font-size: 13px;
 }
 
+.cover-style-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cover-style-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
 
 /* ===== 9. Mini Player ===== */
 
