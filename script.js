@@ -92,14 +92,15 @@ let isPlaying = false;
 let myAlbums = [];        // 내가 선택한 앨범 목록
 let currentUser = null;   // 현재 로그인한 Firebase 유저
 
-// euitube 스타일: 트랙 목록 + 현재 트랙
-let tracks = [];          // { id, title, artist, albumName, streamUrl, coverUrl }
+// 트랙 목록 + 현재 트랙 (YouTube videoId 기반)
+let tracks = [];          // { id, title, artist, albumName, videoId, coverUrl }
 let currentTrackId = null;
 let currentTrackAlbum = null;
 
-// HTML5 Audio 기반 플레이어
-const audio = new Audio();
-audio.crossOrigin = 'anonymous';
+// YouTube IFrame Player
+let ytPlayer = null;
+let ytUpdateTimer = null;
+;
 
 /* ---------- 공통 유틸 ---------- */
 
@@ -523,7 +524,37 @@ function playTrack(id) {
 
   currentTrackId = id;
   updateNowPlaying(track);
-  playStreamByTrack(track);
+  playTrackOnYouTube(track);
+}
+
+// YouTube URL에서 videoId만 뽑아내는 유틸
+function extractVideoId(input) {
+  const trimmed = (input || '').trim();
+  if (!trimmed) return '';
+
+  // 순수 videoId로 보이는 경우
+  if (/^[a-zA-Z0-9_-]{8,}$/.test(trimmed) && !trimmed.includes('http')) {
+    return trimmed;
+  }
+
+  try {
+    const u = new URL(trimmed);
+    // youtu.be 단축 주소
+    if (u.hostname.includes('youtu.be')) {
+      return u.pathname.replace('/', '') || '';
+    }
+    // 일반 watch 주소
+    const v = u.searchParams.get('v');
+    if (v) return v;
+    // /embed/VIDEOID 형태
+    const parts = u.pathname.split('/');
+    const last = parts.pop() || parts.pop();
+    if (last && /^[a-zA-Z0-9_-]{8,}$/.test(last)) return last;
+  } catch (e) {
+    // URL 파싱 실패 시에는 위의 regex로 이미 걸렀으므로 그냥 무시
+  }
+
+  return '';
 }
 
 function createTrackListItem(album, trackData, index) {
@@ -542,8 +573,8 @@ function createTrackListItem(album, trackData, index) {
     <input
       class="track-stream-input"
       type="text"
-      value="${trackData.streamUrl || ''}"
-      placeholder="스트리밍 URL (mp3, m3u8 등)"
+      value="${trackData.videoId || ''}"
+      placeholder="YouTube videoId 또는 URL"
     />
     <button class="track-play-btn">▶</button>
   `;
@@ -561,9 +592,20 @@ function createTrackListItem(album, trackData, index) {
     }
   });
 
-  streamInput.addEventListener('input', (e) => {
+  streamInput.addEventListener('change', (e) => {
+    const raw = e.target.value;
+    const videoId = extractVideoId(raw);
     const t = tracks.find(t => t.id === id);
-    if (t) t.streamUrl = e.target.value;
+    if (!t) return;
+
+    if (!videoId) {
+      alert('올바른 YouTube videoId 또는 링크를 입력해 주세요.');
+      e.target.value = t.videoId || '';
+      return;
+    }
+
+    t.videoId = videoId;
+    e.target.value = videoId; // 정규화해서 표시
   });
 
   playBtn.addEventListener('click', (e) => {
@@ -573,6 +615,7 @@ function createTrackListItem(album, trackData, index) {
 
   return li;
 }
+
 
 function openTrackModal(album) {
   currentTrackAlbum = album;
@@ -590,7 +633,7 @@ function openTrackModal(album) {
 
       const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
 
-      // euitube 식 tracks 배열 채우기
+      // 트랙 배열 채우기 (YouTube videoId는 사용자가 나중에 입력)
       tracks = arr.map((t, idx) => {
         const title = typeof t.name === 'string'
           ? t.name
@@ -605,7 +648,7 @@ function openTrackModal(album) {
           title,
           artist: album.artist,
           albumName: album.name,
-          streamUrl: '',
+          videoId: '',          // 나중에 모달에서 입력
           coverUrl: album.image,
         };
       });
@@ -631,29 +674,97 @@ function closeTrackModal() {
   trackList.innerHTML = '';
   currentTrackAlbum = null;
 }
-/* ---------- Audio 플레이어 & 미니 플레이어 ---------- */
+/* ---------- YouTube IFrame Player & 미니 플레이어 ---------- */
+
+// IFrame API 스크립트 동적 로드
+(function injectYouTubeAPI() {
+  if (document.getElementById('yt-iframe-api')) return;
+  const tag = document.createElement('script');
+  tag.id = 'yt-iframe-api';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+})();
+
+// 전역 콜백
+window.onYouTubeIframeAPIReady = function () {
+  // ytPlayer를 DOM 어딘가에 만들어 둔 <div id="ytPlayer">에 붙임
+  ytPlayer = new YT.Player('ytPlayer', {
+    height: '0',
+    width: '0',
+    videoId: '',
+    playerVars: {
+      autoplay: 0,
+      controls: 0,
+      modestbranding: 1,
+      rel: 0,
+      playsinline: 1,
+    },
+    events: {
+      onReady: onPlayerReady,
+      onStateChange: onPlayerStateChange,
+    },
+  });
+};
+
+function onPlayerReady() {
+  miniToggle.textContent = '▶';
+  updateMiniPlayerProgress();
+}
+
+function onPlayerStateChange(event) {
+  if (!window.YT) return;
+  const state = event.data;
+
+  if (state === YT.PlayerState.PLAYING) {
+    isPlaying = true;
+    miniToggle.textContent = '⏸';
+    startYtProgressLoop();
+  } else if (
+    state === YT.PlayerState.PAUSED ||
+    state === YT.PlayerState.ENDED
+  ) {
+    isPlaying = false;
+    miniToggle.textContent = '▶';
+    if (state === YT.PlayerState.ENDED) {
+      stopYtProgressLoop();
+    }
+  }
+}
+
+function startYtProgressLoop() {
+  if (ytUpdateTimer) return;
+  ytUpdateTimer = setInterval(updateMiniPlayerProgress, 500);
+}
+
+function stopYtProgressLoop() {
+  if (ytUpdateTimer) {
+    clearInterval(ytUpdateTimer);
+    ytUpdateTimer = null;
+  }
+}
 
 function updateMiniPlayerProgress() {
-  if (!audio.src) {
+  if (!ytPlayer || typeof ytPlayer.getDuration !== 'function') {
     miniCurrentTime.textContent = '00:00';
     miniDuration.textContent = '00:00';
     miniSeek.value = 0;
     return;
   }
-  const current = audio.currentTime || 0;
-  const duration = audio.duration || 0;
+
+  const duration = ytPlayer.getDuration() || 0;
+  const current = ytPlayer.getCurrentTime() || 0;
+
+  if (!duration) {
+    miniCurrentTime.textContent = '00:00';
+    miniDuration.textContent = '00:00';
+    miniSeek.value = 0;
+    return;
+  }
 
   miniCurrentTime.textContent = formatTime(current);
   miniDuration.textContent = formatTime(duration);
-  miniSeek.value = duration ? (current / duration) * 100 : 0;
+  miniSeek.value = (current / duration) * 100;
 }
-
-audio.addEventListener('timeupdate', updateMiniPlayerProgress);
-audio.addEventListener('loadedmetadata', updateMiniPlayerProgress);
-audio.addEventListener('ended', () => {
-  isPlaying = false;
-  miniToggle.textContent = '▶';
-});
 
 function updateNowPlaying(track) {
   const coverUrl = track.coverUrl || '';
@@ -672,57 +783,57 @@ function updateNowPlaying(track) {
   miniPlayer.style.display = 'flex';
 }
 
-function playStreamByTrack(track) {
-  if (!track.streamUrl) {
-    alert('먼저 이 트랙의 스트리밍 URL을 입력해 주세요.');
+function playTrackOnYouTube(track) {
+  if (!track.videoId) {
+    alert('먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.');
+    return;
+  }
+  if (!ytPlayer || typeof ytPlayer.loadVideoById !== 'function') {
+    alert('YouTube 플레이어가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.');
     return;
   }
 
-  audio.src = track.streamUrl;
-  audio.play()
-    .then(() => {
-      isPlaying = true;
-      miniToggle.textContent = '⏸';
-    })
-    .catch((err) => {
-      console.error('재생 실패', err);
-      alert('재생할 수 없습니다. URL을 다시 확인해 주세요.');
-    });
+  ytPlayer.loadVideoById(track.videoId);
+  ytPlayer.playVideo();
 }
 
+// 미니 플레이어 버튼들
 miniToggle.addEventListener('click', () => {
-  if (!audio.src) return;
-  if (audio.paused) {
-    audio.play();
-    isPlaying = true;
-    miniToggle.textContent = '⏸';
+  if (!ytPlayer) return;
+  const state = ytPlayer.getPlayerState();
+  if (state === YT.PlayerState.PLAYING) {
+    ytPlayer.pauseVideo();
   } else {
-    audio.pause();
-    isPlaying = false;
-    miniToggle.textContent = '▶';
+    ytPlayer.playVideo();
   }
 });
 
 miniHide.addEventListener('click', () => {
   miniPlayer.style.display = 'none';
-  audio.pause();
+  if (ytPlayer) ytPlayer.pauseVideo();
   isPlaying = false;
+  stopYtProgressLoop();
 });
 
+// 타임라인 드래그
 miniSeek.addEventListener('input', () => {
-  const duration = audio.duration || 0;
+  if (!ytPlayer) return;
+  const duration = ytPlayer.getDuration() || 0;
   if (!duration) return;
-  const percent = Number(miniSeek.value);
-  const newTime = (percent / 100) * duration;
-  miniCurrentTime.textContent = formatTime(newTime);
+  const pct = Number(miniSeek.value) / 100;
+  const previewTime = duration * pct;
+  miniCurrentTime.textContent = formatTime(previewTime);
 });
 
 miniSeek.addEventListener('change', () => {
-  const duration = audio.duration || 0;
+  if (!ytPlayer) return;
+  const duration = ytPlayer.getDuration() || 0;
   if (!duration) return;
-  const percent = Number(miniSeek.value);
-  audio.currentTime = (percent / 100) * duration;
+  const pct = Number(miniSeek.value) / 100;
+  const newTime = duration * pct;
+  ytPlayer.seekTo(newTime, true);
 });
+
 
 /* ---------- 로그인 / 필터 / 공통 이벤트 ---------- */
 
@@ -776,13 +887,13 @@ if (trackAddBtn) {
     }
 
     const newTrack = {
-      id: crypto.randomUUID(),
-      title: title.trim(),
-      artist: currentTrackAlbum.artist,
-      albumName: currentTrackAlbum.name,
-      streamUrl: '',
-      coverUrl: currentTrackAlbum.image,
-    };
+  id: crypto.randomUUID(),
+  title: title.trim(),
+  artist: currentTrackAlbum.artist,
+  albumName: currentTrackAlbum.name,
+  videoId: '', // 나중에 입력
+  coverUrl: currentTrackAlbum.image,
+};
 
     tracks.push(newTrack);
 
