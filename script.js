@@ -1078,8 +1078,6 @@ window.addEventListener("keydown", (e) => {
 
 // ===== 12. 초기 로드 & Auth 상태 =====
 
-// 초기: localStorage에서 먼저 로드
-loadMyAlbumsFromStorage();
 
 // Firebase Auth 상태 감시
 onAuthStateChanged(auth, async (user) => {
@@ -1098,11 +1096,12 @@ onAuthStateChanged(auth, async (user) => {
       console.error("loadMyAlbumsFromFirestore error", e);
     }
   } else {
-    authStatus.textContent = "로그인하지 않은 상태입니다.";
-    loginBtn.style.display  = "inline-block";
-    logoutBtn.style.display = "none";
+  authStatus.textContent = "로그인하지 않은 상태입니다.";
+  loginBtn.style.display  = "inline-block";
+  logoutBtn.style.display = "none";
 
-    myAlbums = [];
-    loadMyAlbumsFromStorage();
-  }
+  // 로그아웃 시에는 내 앨범 비우고 화면에서도 숨김
+  myAlbums = [];
+  renderMyAlbums();        // 빈 배열 기준으로 렌더 → 그리드 비움
+}
 });
