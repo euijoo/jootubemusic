@@ -41,8 +41,8 @@ const searchInput = document.getElementById("searchInput");
 const searchBtn   = document.getElementById("searchBtn");
 
 // 로그인 UI
-const authStatus    = document.getElementById("authStatus");
-const authToggleBtn = document.getElementById("authToggleBtn");
+const authStatus    = document.getElementById('authStatus');
+const authToggleBtn = document.getElementById('authToggleBtn');
 
 // 내 앨범 그리드
 const myGrid = document.getElementById("myGrid");
@@ -1207,7 +1207,18 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-
+authToggleBtn.addEventListener("click", async () => {
+  try {
+    if (currentUser) {
+      await signOut(auth);
+    } else {
+      await signInWithPopup(auth, provider);
+    }
+  } catch (e) {
+    console.error("auth toggle error", e);
+    alert("로그인/로그아웃 중 오류가 발생했습니다.");
+  }
+});
 
 
 // ===== 12. 초기 로드 & Auth 상태 =====
