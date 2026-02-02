@@ -1221,14 +1221,6 @@ authToggleBtn.addEventListener("click", async () => {
 });
 
 
-// ===== 12. 초기 로드 & Auth 상태 =====
-onAuthStateChanged(auth, async (user) => {
-  // ...
-});
-
-// ===== 12. 초기 로드 & Auth 상태 =====
-
-
 // Firebase Auth 상태 감시
 onAuthStateChanged(auth, async (user) => {
   currentUser = user || null;
@@ -1252,5 +1244,6 @@ onAuthStateChanged(auth, async (user) => {
     renderMyAlbums();
   }
 });
+
 
 
