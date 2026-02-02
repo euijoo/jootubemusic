@@ -673,14 +673,16 @@ function createTrackListItem(album, trackData, index) {
 
   li.innerHTML = `
     <span class="track-index">${index + 1}</span>
-    <span class="track-title-text">${trackData.title}</span>
-    <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
-    <button class="track-play-btn">▶</button>
+    <div class="track-line">
+      <span class="track-title-text">${trackData.title}</span>
+      <span class="track-dots"></span>
+      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
+    </div>
   `;
 
   const titleSpan = li.querySelector(".track-title-text");
   const editBtn   = li.querySelector(".track-edit-btn");
-  const playBtn   = li.querySelector(".track-play-btn");
+  const dotsSpan  = li.querySelector(".track-dots");
 
   // 1) 제목 클릭 시 재생
   titleSpan.addEventListener("click", (e) => {
@@ -688,7 +690,7 @@ function createTrackListItem(album, trackData, index) {
     playTrack(id);
   });
 
-  // 2) 편집 버튼: 제목 + URL 한 번에 관리
+  // 2) 수정 버튼: 제목 + URL 한 번에 관리
   editBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     const t = tracks.find((t) => t.id === id);
@@ -730,12 +732,6 @@ function createTrackListItem(album, trackData, index) {
           console.error("saveTracksForAlbumToFirestore (edit track) error", err)
         );
     }
-  });
-
-  // 3) ▶ 버튼으로도 재생
-  playBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    playTrack(id);
   });
 
   return li;
