@@ -90,6 +90,13 @@ const miniSeek        = document.getElementById("miniSeek");
 const miniCurrentTime = document.getElementById("miniCurrentTime");
 const miniDuration    = document.getElementById("miniDuration");
 
+// ✅ 볼륨 모달
+const volumeModal      = document.getElementById("volumeModal");
+const volumeBackdrop   = document.getElementById("volumeBackdrop");
+const volumeModalClose = document.getElementById("volumeModalClose");
+const volumeSlider     = document.getElementById("volumeSlider");
+
+
 // 커버 입력 모달
 const coverModal      = document.getElementById("coverModal");
 const coverBackdrop   = document.getElementById("coverBackdrop");
@@ -1209,6 +1216,42 @@ trackBackdrop.addEventListener("click", (e) => {
     closeTrackModal();
   }
 });
+
+function openVolumeModal() {
+  if (!ytPlayer || typeof ytPlayer.getVolume !== "function") {
+    volumeSlider.value = 100;
+  } else {
+    const v = ytPlayer.getVolume();    // 0~100
+    volumeSlider.value = Number.isFinite(v) ? v : 100;
+  }
+  volumeModal.style.display = "flex";
+}
+
+function closeVolumeModal() {
+  volumeModal.style.display = "none";
+}
+
+// 미니 커버 클릭 시 볼륨 모달 열기
+miniCover.addEventListener("click", (e) => {
+  e.stopPropagation();
+  openVolumeModal();
+});
+
+// 볼륨 모달 닫기
+volumeModalClose.addEventListener("click", closeVolumeModal);
+volumeBackdrop.addEventListener("click", (e) => {
+  if (e.target === volumeBackdrop) closeVolumeModal();
+});
+
+// 슬라이더로 볼륨 조절
+volumeSlider.addEventListener("input", () => {
+  const v = Number(volumeSlider.value);
+  if (ytPlayer && typeof ytPlayer.setVolume === "function") {
+    ytPlayer.setVolume(v);   // 0~100
+  }
+});
+
+
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
