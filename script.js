@@ -42,8 +42,7 @@ const searchBtn   = document.getElementById("searchBtn");
 
 // 로그인 UI
 const authStatus = document.getElementById("authStatus");
-const loginBtn   = document.getElementById("loginBtn");
-const logoutBtn  = document.getElementById("logoutBtn");
+const authToggleBtn = document.getElementById('authToggleBtn');
 
 // 내 앨범 그리드
 const myGrid = document.getElementById("myGrid");
@@ -1210,11 +1209,7 @@ searchInput.addEventListener("keydown", (e) => {
 
 modalClose.addEventListener("click", closeModal);
 modalBackdrop.addEventListener("click", closeModal);
-
 trackModalClose.addEventListener("click", closeTrackModal);
-trackBackdrop.addEventListener("click", closeTrackModal);
-
-
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeModal();
@@ -1223,20 +1218,36 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
+authToggleBtn.addEventListener("click", async () => {
+  try {
+    if (currentUser) {
+      await signOut(auth);
+    } else {
+      await signInWithPopup(auth, provider);
+    }
+  } catch (e) {
+    console.error("auth toggle error", e);
+    alert("로그인/로그아웃 중 오류가 발생했습니다.");
+  }
+});
+
+// ===== 12. 초기 로드 & Auth 상태 =====
+onAuthStateChanged(auth, async (user) => {
+  // ...
+});
 
 // ===== 12. 초기 로드 & Auth 상태 =====
 
 
 // Firebase Auth 상태 감시
 onAuthStateChanged(auth, async (user) => {
-  currentUser = user;
+  currentUser = user || null;
 
   if (user) {
     authStatus.textContent = `${
       user.displayName || "사용자"
     } 님이 로그인했습니다.`;
-    loginBtn.style.display  = "inline-block";
-    logoutBtn.style.display = "inline-block";
+    authToggleBtn.textContent = "Logout";
 
     try {
       await loadMyAlbumsFromFirestore();
@@ -1244,12 +1255,11 @@ onAuthStateChanged(auth, async (user) => {
       console.error("loadMyAlbumsFromFirestore error", e);
     }
   } else {
-  authStatus.textContent = "로그인하지 않은 상태입니다.";
-  loginBtn.style.display  = "inline-block";
-  logoutBtn.style.display = "none";
+    authStatus.textContent = "로그인하지 않은 상태입니다.";
+    authToggleBtn.textContent = "Login";
 
-  // 로그아웃 시에는 내 앨범 비우고 화면에서도 숨김
-  myAlbums = [];
-  renderMyAlbums();        // 빈 배열 기준으로 렌더 → 그리드 비움
-}
+    myAlbums = [];
+    renderMyAlbums();
+  }
 });
+
