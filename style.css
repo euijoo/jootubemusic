@@ -504,6 +504,28 @@ main {
     Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+#trackModal .track-edit-btn,
+#trackModal .track-play-btn {
+  border-radius: 999px;
+  border: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(168, 255, 96, 0.12);
+  color: #a8ff60;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#trackModal .track-edit-btn:hover,
+#trackModal .track-play-btn:hover {
+  background: rgba(168, 255, 96, 0.28);
+}
+
+
+
 #trackModal .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -615,28 +637,6 @@ main {
   margin-right: 6px;
   min-width: 18px;
   text-align: right;
-}
-
-#trackModal #trackList .track-title-input {
-  flex: 0 0 40%;
-  margin-right: 6px;
-  padding: 2px 4px;
-  border-radius: 3px;
-  border: 1px solid rgba(168, 255, 96, 0.3);
-  background: #050a05;
-  color: #a8ff60;
-  font-size: 11px;
-}
-
-#trackModal #trackList .track-stream-input {
-  flex: 1;
-  margin-right: 6px;
-  padding: 2px 4px;
-  border-radius: 3px;
-  border: 1px solid rgba(168, 255, 96, 0.2);
-  background: #050a05;
-  color: #e5e7eb;
-  font-size: 11px;
 }
 
 #trackModal #trackList .track-play-btn {
