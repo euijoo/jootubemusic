@@ -60,9 +60,9 @@ const modalBackdrop = document.getElementById("modalBackdrop");
 const modalTitle    = document.getElementById("modalTitle");
 
 // 트랙 모달
-const trackModal          = document.getElementById("trackModal");
-const trackBackdrop       = document.getElementById("trackBackdrop");
-const trackModalClose     = document.getElementById("trackModalClose");
+const trackModal = document.getElementById("trackModal");
+const trackBackdrop = document.getElementById("trackBackdrop");
+const trackModalClose = document.getElementById("trackModalClose");
 const trackModalTitle     = document.getElementById("trackModalTitle");
 const trackList           = document.getElementById("trackList");
 const trackAddBtn         = document.getElementById("trackAddBtn");
@@ -1189,10 +1189,16 @@ searchBtn.addEventListener("click", handleSearch);
 searchInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") handleSearch();
 });
-
 modalClose.addEventListener("click", closeModal);
 modalBackdrop.addEventListener("click", closeModal);
+
 trackModalClose.addEventListener("click", closeTrackModal);
+trackBackdrop.addEventListener("click", (e) => {
+  if (e.target === trackBackdrop) {
+    closeTrackModal();
+  }
+});
+
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeModal();
@@ -1200,6 +1206,7 @@ window.addEventListener("keydown", (e) => {
     closeCoverModal();
   }
 });
+
 
 
 
