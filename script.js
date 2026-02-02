@@ -693,13 +693,14 @@ function createTrackListItem(album, trackData, index) {
   li.dataset.trackId = id;
 
   li.innerHTML = `
-    <span class="track-index">${index + 1}</span>
-    <div class="track-line">
-      <span class="track-title-text">${trackData.title}</span>
-      <span class="track-dots"></span>
-      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
-    </div>
-  `;
+  <span class="track-index">${index + 1}</span>
+  <div class="track-line">
+    <span class="track-title-text">${trackData.title}</span>
+    <span class="track-dots">____________________________</span>
+    <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
+  </div>
+`;
+
 
   const titleSpan = li.querySelector(".track-title-text");
   const editBtn   = li.querySelector(".track-edit-btn");
