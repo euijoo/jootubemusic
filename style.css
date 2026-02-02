@@ -164,6 +164,20 @@ main {
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
   border: 1px solid rgba(255,255,255,0.06);
 }
+
+.card-cover-wrap {
+  position: relative;
+}
+
+.card-cover-wrap img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+
 .card:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 26px rgba(0,0,0,0.55);
@@ -409,19 +423,26 @@ main {
 }
 
 .album-delete-btn {
-  margin-top: 6px;
-  padding: 4px 8px;
-  font-size: 11px;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
   border-radius: 999px;
   border: none;
-  background: rgba(255, 77, 109, 0.15);
-  color: #ff4d6d;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.35);
   cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
 }
 
 .album-delete-btn:hover {
-  background: rgba(255, 77, 109, 0.25);
+  background: rgba(0, 0, 0, 0.45);
+  color: rgba(255, 255, 255, 0.8);
 }
+
 
 .category-bar {
   display: flex;
