@@ -1217,39 +1217,55 @@ trackBackdrop.addEventListener("click", (e) => {
   }
 });
 
+// ===== 볼륨 모달 (모바일 완전 호환) =====
 function openVolumeModal() {
   if (!ytPlayer || typeof ytPlayer.getVolume !== "function") {
     volumeSlider.value = 100;
   } else {
-    const v = ytPlayer.getVolume();    // 0~100
+    const v = ytPlayer.getVolume();
     volumeSlider.value = Number.isFinite(v) ? v : 100;
   }
   volumeModal.style.display = "flex";
+  volumeModal.style.zIndex = "9999";
 }
 
 function closeVolumeModal() {
   volumeModal.style.display = "none";
 }
 
-// 미니 커버 클릭 시 볼륨 모달 열기
-miniCover.addEventListener("click", (e) => {
-  e.stopPropagation();
-  openVolumeModal();
+// 미니 커버 터치/클릭
+['click', 'touchend'].forEach(evt => {
+  miniCover.addEventListener(evt, (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openVolumeModal();
+  });
 });
 
-// 볼륨 모달 닫기
-volumeModalClose.addEventListener("click", closeVolumeModal);
-volumeBackdrop.addEventListener("click", (e) => {
-  if (e.target === volumeBackdrop) closeVolumeModal();
+// 모달 닫기 터치
+['click', 'touchend'].forEach(evt => {
+  volumeModalClose.addEventListener(evt, (e) => {
+    e.preventDefault();
+    closeVolumeModal();
+  });
+  volumeBackdrop.addEventListener(evt, (e) => {
+    if (e.target === volumeBackdrop) {
+      e.preventDefault();
+      closeVolumeModal();
+    }
+  });
 });
 
-// 슬라이더로 볼륨 조절
-volumeSlider.addEventListener("input", () => {
-  const v = Number(volumeSlider.value);
-  if (ytPlayer && typeof ytPlayer.setVolume === "function") {
-    ytPlayer.setVolume(v);   // 0~100
-  }
+// 슬라이더 실시간 터치
+['input', 'change', 'touchend'].forEach(evt => {
+  volumeSlider.addEventListener(evt, () => {
+    const v = Math.max(0, Math.min(100, Number(volumeSlider.value)));
+    if (ytPlayer && typeof ytPlayer.setVolume === "function") {
+      ytPlayer.setVolume(v);
+    }
+  });
 });
+
 
 
 
