@@ -910,9 +910,20 @@ window.onYouTubeIframeAPIReady = function () {
 };
 
 function onPlayerReady() {
-  miniToggle.textContent = "▶";
+  isPlaying = false;
+  updatePlayButtonUI();      // 클래스만 설정
   updateMiniPlayerProgress();
 }
+
+function updatePlayButtonUI() {
+  if (isPlaying) {
+    miniToggle.textContent = "II";   // 일시정지
+  } else {
+    miniToggle.textContent = "▶";    // 재생
+  }
+}
+
+
 
 function onPlayerStateChange(event) {
   if (!window.YT) return;
