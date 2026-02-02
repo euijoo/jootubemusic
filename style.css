@@ -1,4 +1,8 @@
-* { box-sizing: border-box; }
+/* ===== 1. Global & Layout ===== */
+
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -10,9 +14,28 @@ body {
   min-height: 100vh;
 }
 
+main {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 12px 14px;
+  }
+  main {
+    padding: 14px;
+  }
+}
+
+
+/* ===== 2. Header & Auth ===== */
 
 header {
-  background: #336980; /* 피그마 파란 바 느낌 */
+  background: #336980;
   color: #f5f5f5;
   padding: 0 24px;
   height: 64px;
@@ -29,7 +52,6 @@ header {
   margin: 0 auto;
 }
 
-/* 좌우 영역 비율 */
 .header-left,
 .header-right {
   flex: 1;
@@ -37,13 +59,6 @@ header {
   align-items: center;
 }
 
-.header-center {
-  flex: 0 0 120px; /* 가운데 정사각 박스 영역 */
-  display: flex;
-  justify-content: center;
-}
-
-/* 로고 */
 .logo {
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -54,16 +69,6 @@ header {
   color: #ffffff;
 }
 
-/* 가운데 대표 커버 박스 (점선) */
-.hero-cover-placeholder {
-  width: 80px;
-  height: 48px;
-  border-radius: 4px;
-  border: 2px dashed rgba(255, 255, 255, 0.7);
-  background: transparent;
-}
-
-/* 로그인 영역 */
 .header-right {
   justify-content: flex-end;
   gap: 10px;
@@ -89,32 +94,30 @@ header {
   background: rgba(0, 0, 0, 0.4);
 }
 
-main {
-  flex: 1;
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
+
+/* ===== 3. Search & Info ===== */
 
 .search-bar {
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
 }
+
 .search-bar input {
   flex: 1;
   padding: 10px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(12,12,32,0.9);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 12, 32, 0.9);
   color: #f5f5f5;
   outline: none;
   font-size: 14px;
 }
+
 .search-bar input::placeholder {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255, 255, 255, 0.4);
 }
+
 .search-bar button {
   padding: 10px 18px;
   border-radius: 999px;
@@ -127,25 +130,56 @@ main {
   transition: transform 0.12s ease, box-shadow 0.12s ease;
   white-space: nowrap;
 }
+
 .search-bar button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
 .info {
   font-size: 13px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: 16px;
 }
+
+
+/* ===== 4. Category Bar ===== */
+
+.category-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.category-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.category-btn.active {
+  background: linear-gradient(135deg, #ff4b9f, #ffc857);
+  color: #050510;
+  font-weight: 600;
+}
+
+
+/* ===== 5. Album Grid & Cards ===== */
 
 .section-my {
   margin-top: 24px;
 }
+
 .section-title {
   font-size: 15px;
   font-weight: 600;
   margin: 0 0 10px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .grid {
@@ -153,18 +187,26 @@ main {
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
+
 .card {
   background: #000000;
-  border-radius: 0px;
-  padding: 0px;
+  border-radius: 0;
+  padding: 0;
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 0px;
+  gap: 4px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.55);
+  background: radial-gradient(circle at top left, #32204f, #080818);
+}
+
+/* 커버 + 삭제 버튼 래퍼 */
 .card-cover-wrap {
   position: relative;
 }
@@ -175,253 +217,10 @@ main {
   aspect-ratio: 1 / 1;
   border-radius: 12px;
   object-fit: cover;
-}
-
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 26px rgba(0,0,0,0.55);
-  background: radial-gradient(circle at top left, #32204f, #080818);
-}
-.card img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 12px;
-  object-fit: cover;
   background: #000000;
 }
-.card-title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.35;
-  margin: 0;
-}
-.card-title span:hover {
-  text-decoration: underline;
-}
-.card-artist {
-  font-size: 12px;
-  color: rgba(255,255,255,0.7);
-}
 
-.empty {
-  font-size: 14px;
-  color: rgba(255,255,255,0.5);
-  margin-top: 16px;
-  text-align: center;
-}
-
-/* 모달 공통 */
-.modal {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
-.modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.55);
-}
-.modal-content {
-  position: relative;
-  max-width: 900px;
-  width: calc(100% - 32px);
-  max-height: calc(100% - 80px);
-  background: #000000;
-  border-radius: 16px;
-  padding: 16px;
-  overflow: auto;
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.7);
-}
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.modal-header span {
-  font-size: 14px;
-  font-weight: 600;
-}
-.modal-close {
-  border: none;
-  background: #000000;
-  color: rgba(255,255,255,0.8);
-  font-size: 20px;
-  cursor: pointer;
-}
-
-/* 트랙 리스트 모달 내용 */
-.track-list {
-  list-style: none;
-  padding: 0;
-  margin: 8px 0 0;
-}
-.track-list li {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 4px;
-  font-size: 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  cursor: pointer;
-}
-.track-list li:hover {
-  background: #000000;
-}
-.track-title {
-  flex: 1;
-  margin-right: 8px;
-}
-.track-duration {
-  display: none;
-}
-
-
-/* 미니 플레이어 */
-.mini-player {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 12px;
-  width: min(480px, 100% - 24px);
-  background: rgba(8,8,24,0.96);
-  border-radius: 999px;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.65);
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(16px);
-}
-.mini-cover {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #151525;
-}
-.mini-meta {
-  flex: 1;
-  min-width: 0;
-}
-.mini-meta-title {
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mini-meta-artist {
-  font-size: 11px;
-  color: rgba(255,255,255,0.6);
-}
-.mini-btn {
-  border-radius: 999px;
-  border: none;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255,255,255,0.09);
-  color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-@media (max-width: 600px) {
-  header {
-    padding: 12px 14px;
-  }
-  main {
-    padding: 14px;
-  }
-}
-
-.cover-input {
-  width: 100%;
-  padding: 8px 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(12,12,32,0.9);
-  color: #f5f5f5;
-  font-size: 13px;
-}
-
-.cover-preview-wrap {
-  margin: 10px 0;
-  text-align: center;
-}
-
-.cover-preview {
-  width: 160px;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 12px;
-  background: #151525;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-.cover-save-btn {
-  width: 100%;
-  margin-top: 6px;
-  padding: 8px 0;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(135deg, #ff4b9f, #ffc857);
-  color: #050510;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.mini-timeline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.mini-time {
-  font-size: 11px;
-  color: #ccc;
-  width: 40px;
-  text-align: center;
-}
-
-.mini-seek {
-  flex: 1;
-  -webkit-appearance: none;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  outline: none;
-}
-
-/* WebKit thumb */
-.mini-seek::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-
-/* Firefox */
-.mini-seek::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-
+/* 앨범 삭제 버튼 (커버 왼쪽 상단, 눈에 덜 띄게) */
 .album-delete-btn {
   position: absolute;
   top: 6px;
@@ -440,97 +239,96 @@ main {
 
 .album-delete-btn:hover {
   background: rgba(0, 0, 0, 0.45);
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.card-title span:hover {
+  text-decoration: underline;
+}
+
+.card-artist {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.empty {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 16px;
+  text-align: center;
 }
 
 
-.category-bar {
+/* ===== 6. Common Modal (Search / Cover / Track) ===== */
+
+.modal {
+  position: fixed;
+  inset: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-content {
+  position: relative;
+  max-width: 900px;
+  width: calc(100% - 32px);
+  max-height: calc(100% - 80px);
+  background: #000000;
+  border-radius: 16px;
+  padding: 16px;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 12px;
 }
 
-.category-btn {
-  border: none;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 11px;
-  cursor: pointer;
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.8);
-}
-
-.category-btn.active {
-  background: linear-gradient(135deg, #ff4b9f, #ffc857);
-  color: #050510;
+.modal-header span {
+  font-size: 14px;
   font-weight: 600;
 }
 
-.triangle-btn {
-  background: transparent;
+.modal-close {
   border: none;
-  font-size: 10px;
-  color: #888;
-  cursor: pointer;
-  margin-right: 8px;
-}
-
-.track-stream-edit {
-  background: transparent;
-  border: none;
-  font-size: 10px;
-  color: #888;
-  cursor: pointer;
-  margin-left: 6px;
-}
-.track-stream-edit:hover {
-  color: #ccc;
-}
-
-
-.track-add-btn {
-  margin-top: 8px;
-  padding: 4px 8px;
-  font-size: 12px;
+  background: #000000;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
   cursor: pointer;
 }
 
 
-/* ===== 트랙모달 터미널 코어 스타일 ===== */
+/* ===== 7. Track Modal (터미널 스타일) ===== */
 
 #trackModal {
   font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-#trackModal .track-edit-btn,
-#trackModal .track-play-btn {
-  border-radius: 999px;
-  border: none;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(168, 255, 96, 0.12);
-  color: #a8ff60;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-#trackModal .track-edit-btn:hover,
-#trackModal .track-play-btn:hover {
-  background: rgba(168, 255, 96, 0.28);
-}
-
-
-
 #trackModal .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at top, rgba(0, 255, 80, 0.10), transparent 55%),
-              #000000;
+  background: radial-gradient(circle at top, rgba(0, 255, 80, 0.1), transparent 55%),
+    #000000;
   opacity: 0.96;
 }
 
@@ -541,7 +339,7 @@ main {
   border: 1px solid #00ff80;
   box-shadow:
     0 0 16px rgba(0, 255, 128, 0.7),
-    0 0 40px rgba(0, 255, 128, 0.30);
+    0 0 40px rgba(0, 255, 128, 0.3);
   max-width: 420px;
   width: 90%;
   margin: 40px auto;
@@ -593,7 +391,7 @@ main {
   cursor: pointer;
 }
 
-/* 트랙 리스트 (트랙모달 한정) */
+/* 트랙 리스트 */
 #trackModal #trackList {
   list-style: none;
   margin: 8px 0 10px;
@@ -615,41 +413,208 @@ main {
   background: #050a05;
 }
 
-/* 제목은 왼쪽, 번호/아이콘은 오른쪽 */
-#trackModal #trackList .track-title {
-  flex: 1;
-  margin-right: 8px;
-}
-
-#trackModal #trackList .track-index {
-  color: #66ff99;
-  font-size: 10px;
-}
-
-/* 선택된 트랙 강조 */
-#trackModal #trackList li.selected-track {
-  background-color: #FF00FF;
-}
-/* 트랙모달 입력 필드 / 버튼 (제목 + 스트리밍 URL + 재생) */
+/* 번호 */
 #trackModal #trackList .track-index {
   color: #66ff99;
   font-size: 10px;
   margin-right: 6px;
-  min-width: 18px;
+  min-width: 16px;
   text-align: right;
 }
 
-#trackModal #trackList .track-play-btn {
-  flex: 0 0 auto;
-  border: 1px solid #00ff80;
-  background: rgba(0, 255, 128, 0.08);
-  color: #a8ff60;
-  padding: 2px 8px;
+/* 트랙 한 줄 레이아웃: 제목 왼쪽, 점선, 오른쪽 끝에 버튼 */
+#trackModal #trackList .track-line {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 6px;
+}
+
+#trackModal #trackList .track-title-text {
+  flex: 0 1 auto;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 제목 끝부터 버튼까지 점선 채우기 */
+#trackModal #trackList .track-dots {
+  flex: 1;
+  border-bottom: 1px dotted rgba(168, 255, 96, 0.35);
+  margin: 0 4px;
+}
+
+/* 수정 버튼 (작은 네온 버튼) */
+#trackModal .track-edit-btn {
   border-radius: 999px;
-  font-size: 10px;
+  border: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(168, 255, 96, 0.12);
+  color: #a8ff60;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#trackModal .track-edit-btn:hover {
+  background: rgba(168, 255, 96, 0.28);
+}
+
+/* 선택된 트랙 강조 */
+#trackModal #trackList li.selected-track {
+  background-color: #ff00ff;
+}
+
+/* add tracks 버튼 */
+.track-add-btn {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
   cursor: pointer;
 }
 
-#trackModal #trackList .track-play-btn:hover {
-  background: rgba(0, 255, 128, 0.18);
+
+/* ===== 8. Cover Input Modal ===== */
+
+.cover-input {
+  width: 100%;
+  padding: 8px 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(12, 12, 32, 0.9);
+  color: #f5f5f5;
+  font-size: 13px;
+}
+
+.cover-preview-wrap {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.cover-preview {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #151525;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cover-save-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 0;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #ff4b9f, #ffc857);
+  color: #050510;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+
+/* ===== 9. Mini Player ===== */
+
+.mini-player {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 12px;
+  width: min(480px, 100% - 24px);
+  background: rgba(8, 8, 24, 0.96);
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.mini-cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #151525;
+}
+
+.mini-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.mini-meta-title {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-meta-artist {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.mini-timeline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.mini-time {
+  font-size: 11px;
+  color: #ccc;
+  width: 40px;
+  text-align: center;
+}
+
+.mini-seek {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+/* WebKit thumb */
+.mini-seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+/* Firefox */
+.mini-seek::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.mini-btn {
+  border-radius: 999px;
+  border: none;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
 }
