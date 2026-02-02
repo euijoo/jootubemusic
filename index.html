@@ -74,20 +74,18 @@
   </div>
 
   <!-- 트랙 리스트 모달 -->
-  <div id="trackModal" class="modal" style="display:none;">
-    <div id="trackBackdrop" class="modal-backdrop"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <div>
-          <span id="trackModalTitle">앨범 트랙</span>
-          <button id="trackCoverChangeBtn">COVER</button>
-        </div>
-        <button id="trackModalClose" class="modal-close">&times;</button>
+<div id="trackModal" class="modal-backdrop" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <span id="trackModalTitle">앨범 트랙</span>
+        <button id="trackAddBtn" class="cover-style-btn">COVER</button>
       </div>
-      <ul id="trackList" class="track-list"></ul>
-      <button id="trackAddBtn" class="track-add-btn">add tracks</button>
+      <button id="trackModalClose" class="modal-close">&times;</button>
     </div>
+    <ul id="trackList" class="track-list"></ul>
   </div>
+</div>
 
   <!-- 커버 URL 입력 모달 -->
   <div id="coverModal" class="modal" style="display:none;">
@@ -136,6 +134,20 @@
     <button id="miniToggle" class="mini-btn">▶</button>
     <button id="miniHide" class="mini-btn">✕</button>
   </div>
+<!-- 앨범 옵션 모달 -->
+<div id="albumOptionModal" class="modal-backdrop" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <span id="albumOptionTitle">앨범 옵션</span>
+      <button id="albumOptionClose" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>이 앨범에 대해 어떤 작업을 하시겠어요?</p>
+      <button id="albumOptionCoverBtn">커버 변경</button>
+      <button id="albumOptionDeleteBtn">앨범 삭제</button>
+    </div>
+  </div>
+</div>
 
   <!-- 숨겨진 YouTube 플레이어 (IFrame API용) -->
   <div id="ytPlayer" style="width:0;height:0;overflow:hidden;"></div>
