@@ -1076,25 +1076,8 @@ miniSeek.addEventListener("change", () => {
 });
 
 
-// ===== 11. 로그인 / 카테고리 / 공통 이벤트 =====
+// ===== 11. / 카테고리 / 공통 이벤트 =====
 
-loginBtn.addEventListener("click", async () => {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (e) {
-    console.error("Google login error", e);
-    alert("로그인 중 오류가 발생했습니다.");
-  }
-});
-
-logoutBtn.addEventListener("click", async () => {
-  try {
-    await signOut(auth);
-  } catch (e) {
-    console.error("Logout error", e);
-    alert("로그아웃 중 오류가 발생했습니다.");
-  }
-});
 
 if (categoryBar) {
   categoryBar.addEventListener("click", (e) => {
