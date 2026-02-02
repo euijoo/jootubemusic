@@ -1299,5 +1299,34 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
+// ===== 스페이스바 재생/일시정지 (미니플레이어 전역 컨트롤) =====
+window.addEventListener("keydown", (e) => {
+  // 스페이스바가 아니면 패스
+  if (e.code !== 'Space') return;
+
+  // 검색/입력 중이면 스페이스 허용 (타이핑 방해 안 함)
+  const active = document.activeElement;
+  const isInput = 
+    active.tagName === 'INPUT' || 
+    active.tagName === 'TEXTAREA' || 
+    active.isContentEditable;
+  if (isInput) return;
+
+  // 미니플레이어가 안 보이면 동작 안 함
+  if (miniPlayer.style.display === 'none' || !miniPlayer.offsetParent) return;
+
+  // 페이지 스크롤 방지 (핵심!)
+  e.preventDefault();
+
+  // ytPlayer가 준비됐는지 확인
+  if (!ytPlayer) return;
+
+  const state = ytPlayer.getPlayerState?.();
+  if (state === YT.PlayerState.PLAYING) {
+    ytPlayer.pauseVideo();
+  } else {
+    ytPlayer.playVideo();
+  }
+});
 
 
