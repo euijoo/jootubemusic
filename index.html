@@ -173,6 +173,31 @@
   </div>
 </div>
 
+<!-- 카테고리 관리 모달 -->
+<div id="categoryModal" class="modal" style="display:none;">
+  <div id="categoryBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <span>카테고리 설정</span>
+      <button id="categoryModalClose" class="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:8px;">이 앨범에 적용할 카테고리를 선택하세요.</p>
+      <div id="categoryList" class="category-list-modal"></div>
+
+      <hr style="border-color:#374151;margin:12px 0;">
+
+      <p style="margin-bottom:4px;">카테고리 추가/삭제</p>
+      <div class="category-manage-row">
+        <input id="categoryNewInput" type="text" placeholder="새 카테고리 이름" />
+        <button id="categoryAddBtn">추가</button>
+      </div>
+      <div class="category-note">
+        기본: kpop, pop, ost, etc
+      </div>
+    </div>
+  </div>
+</div>
 
   
 
