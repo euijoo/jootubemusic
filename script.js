@@ -524,7 +524,6 @@ async function handleSearch() {
 
 
 // ===== 9. 내 앨범 그리드 =====
-
 async function deleteAlbumAtIndex(index) {
   const album = myAlbums[index];
   if (!album) return;
@@ -550,9 +549,12 @@ async function updateAlbumCategory(index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
-  console.log("updateAlbumCategory", { index, before: album.category, newCategory });
+  console.log("updateAlbumCategory", {
+    index,
+    before: album.category,
+    newCategory,
+  });
 
-  
   album.category = newCategory;
   renderMyAlbums();
   saveMyAlbumsToStorage();
@@ -574,7 +576,7 @@ async function updateAlbumCategory(index, newCategory) {
 let categoryTargetIndex = null;
 
 function openCategoryModal(index) {
-  console.log("openCategoryModal called with index:", index); // 디버그용
+  console.log("openCategoryModal called with index:", index);
   categoryTargetIndex = index;
   renderCategoryChips();
   categoryModal.style.display = "flex";
@@ -596,8 +598,14 @@ function renderCategoryChips() {
     btn.textContent = cat;
 
     btn.addEventListener("click", () => {
-      console.log("category chip clicked:", cat, "targetIndex:", categoryTargetIndex);
+      console.log(
+        "category chip clicked:",
+        cat,
+        "targetIndex:",
+        categoryTargetIndex
+      );
 
+      // 1) 상단 카테고리 상태 변경
       currentCategory = cat;
       if (categoryBar) {
         categoryBar.querySelectorAll(".category-btn").forEach((b) => {
@@ -606,10 +614,14 @@ function renderCategoryChips() {
         });
       }
 
+      // 2) 실제 데이터 변경 + 렌더
       updateAlbumCategory(categoryTargetIndex, cat);
+
+      // 3) 모달 닫기
       closeCategoryModal();
     });
 
+    // 사용자 정의 카테고리 삭제 버튼
     if (!["kpop", "pop", "ost", "etc"].includes(cat)) {
       const x = document.createElement("span");
       x.className = "remove";
@@ -626,6 +638,64 @@ function renderCategoryChips() {
     categoryListEl.appendChild(btn);
   });
 }
+
+function renderMyAlbums() {
+  myGrid.innerHTML = "";
+
+  // 원본 인덱스를 붙인 뒤 카테고리로 필터
+  const base = myAlbums.map((album, i) => ({ album, originalIndex: i }));
+  const filtered =
+    currentCategory === "all"
+      ? base
+      : base.filter(
+          ({ album }) => (album.category || "etc") === currentCategory
+        );
+
+  if (!filtered.length) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  filtered.forEach(({ album, originalIndex }) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="card-cover-wrap">
+        <img src="${album.image}" alt="${album.name}">
+        <button class="album-option-btn" data-index="${originalIndex}">⋮</button>
+      </div>
+      <div class="card-title"><span>${album.name}</span></div>
+      <div class="card-artist">${album.artist}</div>
+    `;
+
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".album-option-btn")) return;
+
+      if (!album.hasCover) {
+        openCoverModal(album);
+      } else {
+        openTrackModal(album);
+      }
+    });
+
+    const optionBtn = card.querySelector(".album-option-btn");
+    optionBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+
+      const idx    = Number(optionBtn.dataset.index); // 항상 myAlbums 인덱스
+      const target = myAlbums[idx];
+      if (!target) return;
+
+      openAlbumOptionModal(target, idx);             // 여기서 index를 넘김
+    });
+
+    myGrid.appendChild(card);
+  });
+}
+
+
 
 
 
@@ -1250,14 +1320,13 @@ if (trackAddBtn) {
 
 
 // ===== 13. 앨범 옵션 모달 =====
-
 let albumOptionTargetIndex = null;
 let albumOptionTargetAlbum = null;
 
 function openAlbumOptionModal(album, index) {
+  console.log("openAlbumOptionModal", { index, album });
   albumOptionTargetAlbum = album;
   albumOptionTargetIndex = index;
-
   albumOptionTitle.textContent = `${album.artist} - ${album.name}`;
   albumOptionModal.style.display = "flex";
 }
