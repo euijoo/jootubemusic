@@ -883,3 +883,62 @@ header {
   font-size: 20px;
   cursor: pointer;
 }
+
+.category-list-modal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.category-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #4b5563;
+  background: #1f2933;
+  color: #e5e7eb;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.category-chip.active {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.category-chip .remove {
+  margin-left: 6px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.category-manage-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.category-manage-row input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #4b5563;
+  background: #111827;
+  color: #e5e7eb;
+}
+
+.category-manage-row button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #2563eb;
+  color: #f9fafb;
+  cursor: pointer;
+}
+
+.category-note {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+
