@@ -524,7 +524,8 @@ async function deleteAlbumAtIndex(index) {
   }
 }
 
-async function updateAlbumCategory(index, newCategory) {
+async 1267
+  (index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
@@ -602,6 +603,34 @@ function renderCategoryChips() {
     }
 
 
+
+  // 카테고리 버튼 칩 추가
+  const buttonContainer = document.createElement('div');
+  buttonContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;';
+
+  customCategories.forEach((cat) => {
+        const btn = document.createElement('button');
+        btn.textContent = cat;
+        btn.style.cssText = 'padding: 10px 20px; border-radius: 20px; border: 2px solid #ccc; background: white; cursor: pointer; font-size: 14px;';
+        btn.dataset.category = cat;
+
+        // 현재 카테고리와 동일한 경우 하이라이트
+        if (cat === currentCat) {
+                btn.style.background = '#007bff';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#007bff';
+              }
+
+        // 버튼 클릭 이벤트
+        btn.addEventListener('click', () => {
+                updateAlbumCategory(categoryTargetIndex, cat);
+                closeCategoryModal();
+              });
+
+        buttonContainer.appendChild(btn);
+      });
+
+  categoryListEl.appendChild(buttonContainer);
 function renderMyAlbums() {
   myGrid.innerHTML = "";
 
