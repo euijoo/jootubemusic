@@ -524,14 +524,12 @@ async function deleteAlbumAtIndex(index) {
   }
 }
 
-async 1267
-  (index, newCategory) {
+async function updateAlbumCategory(index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
   console.log("updateAlbumCategory", { index, before: album.category, newCategory });
 
-  
   album.category = newCategory;
   renderMyAlbums();
   saveMyAlbumsToStorage();
@@ -548,6 +546,7 @@ async 1267
     }
   }
 }
+
 
 // 카테고리 모달용 상태/함수
 let categoryTargetIndex = null;
