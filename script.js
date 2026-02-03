@@ -574,6 +574,7 @@ async function updateAlbumCategory(index, newCategory) {
 let categoryTargetIndex = null;
 
 function openCategoryModal(index) {
+  console.log("openCategoryModal called with index:", index); // 디버그용
   categoryTargetIndex = index;
   renderCategoryChips();
   categoryModal.style.display = "flex";
@@ -595,9 +596,10 @@ function renderCategoryChips() {
     btn.textContent = cat;
 
     btn.addEventListener("click", () => {
-      updateAlbumCategory(categoryTargetIndex, cat);
-      currentCategory = cat;
+      console.log("category chip clicked:", cat, "targetIndex:", categoryTargetIndex); // 디버그용
 
+      // 1) 먼저 현재 필터/버튼 상태를 선택한 카테고리로 전환
+      currentCategory = cat;
       if (categoryBar) {
         categoryBar.querySelectorAll(".category-btn").forEach((b) => {
           const c = b.dataset.category || "all";
@@ -605,9 +607,14 @@ function renderCategoryChips() {
         });
       }
 
+      // 2) 실제 앨범 데이터의 category 변경 + 렌더
+      updateAlbumCategory(categoryTargetIndex, cat);
+
+      // 3) 모달 닫기
       closeCategoryModal();
     });
 
+    // 사용자 정의 카테고리 삭제 버튼
     if (!["kpop", "pop", "ost", "etc"].includes(cat)) {
       const x = document.createElement("span");
       x.className = "remove";
@@ -624,6 +631,7 @@ function renderCategoryChips() {
     categoryListEl.appendChild(btn);
   });
 }
+
 
 
 function renderMyAlbums() {
@@ -1285,6 +1293,10 @@ albumOptionDeleteBtn.addEventListener("click", () => {
 });
 
 albumOptionCategoryBtn.addEventListener("click", () => {
+  console.log("albumOptionCategoryBtn clicked", {
+    albumOptionTargetIndex,
+    albumOptionTargetAlbum,
+  });
   if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
   closeAlbumOptionModal();
   openCategoryModal(albumOptionTargetIndex);
