@@ -73,6 +73,8 @@ const albumOptionTitle     = document.getElementById('albumOptionTitle');
 const albumOptionClose     = document.getElementById('albumOptionClose');
 const albumOptionCoverBtn  = document.getElementById('albumOptionCoverBtn');
 const albumOptionDeleteBtn = document.getElementById('albumOptionDeleteBtn');
+const albumOptionCategoryBtn = document.getElementById('albumOptionCategoryBtn');
+
 
 let albumOptionTargetIndex = null;
 let albumOptionTargetAlbum = null;
@@ -1285,6 +1287,44 @@ albumOptionDeleteBtn.addEventListener("click", () => {
   deleteAlbumAtIndex(idx);
 });
 
+albumOptionDeleteBtn.addEventListener("click", () => {
+  if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
+
+  const album = albumOptionTargetAlbum;
+  const ok = confirm(`"${album.artist} - ${album.name}" 앨범을 삭제하시겠습니까?`);
+  if (!ok) return;
+
+  const idx = albumOptionTargetIndex;
+  closeAlbumOptionModal();
+  deleteAlbumAtIndex(idx);
+});
+
+// ✅ 카테고리 변경 버튼 핸들러 (여기 추가)
+albumOptionCategoryBtn.addEventListener("click", () => {
+  if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
+
+  const current = albumOptionTargetAlbum.category || "etc";
+  const input = prompt(
+    "카테고리를 입력하세요 (kpop / pop / ost / etc 중 하나):",
+    current
+  );
+  if (!input) return;
+
+  const normalized = input.trim().toLowerCase();
+  const allowed    = ["kpop", "pop", "ost", "etc"];
+  if (!allowed.includes(normalized)) {
+    alert("kpop / pop / ost / etc 중 하나만 입력할 수 있습니다.");
+    return;
+  }
+
+  const idx = albumOptionTargetIndex;
+  closeAlbumOptionModal();
+  updateAlbumCategory(idx, normalized);
+});
+
+
+// 모달/검색 이벤트
+searchBtn.addEventListener("click", handleSearch);
 
 
 // 모달/검색 이벤트
