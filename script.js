@@ -550,6 +550,9 @@ async function updateAlbumCategory(index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
+  console.log("updateAlbumCategory", { index, before: album.category, newCategory });
+
+  
   album.category = newCategory;
   renderMyAlbums();
   saveMyAlbumsToStorage();
