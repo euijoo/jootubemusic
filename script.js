@@ -649,7 +649,12 @@ function renderMyAlbums() {
     card.className = "album-card";
     card.dataset.index = originalIndex;
 
+    const imgUrl = album.image || pickAlbumImage(album);  // ★ 커버 URL 결정
+
     card.innerHTML = `
+      <div class="album-cover">
+        <img src="${imgUrl}" alt="${album.name}">
+      </div>
       <div class="album-header">
         <button class="album-option-btn" data-index="${originalIndex}">⋮</button>
       </div>
@@ -665,6 +670,7 @@ function renderMyAlbums() {
     myGrid.appendChild(card);
   });
 }
+
 
 
 
