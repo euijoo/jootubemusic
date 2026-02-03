@@ -834,3 +834,52 @@ header {
     -webkit-overflow-scrolling: touch !important;
   }
 }
+
+/* 공통 모달 레이아웃 (trackModal, coverModal, albumOptionModal 모두 공유) */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+  position: relative;
+  z-index: 1;
+  background: #111827;
+  border-radius: 16px;
+  padding: 16px 20px;
+  max-width: 420px;
+  width: 90vw;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #f9fafb;
+}
+
+.modal-body {
+  font-size: 14px;
+  color: #e5e7eb;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 20px;
+  cursor: pointer;
+}
