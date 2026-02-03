@@ -941,4 +941,58 @@ header {
   color: #9ca3af;
 }
 
+/* ===== jootubemusic 모달 네온 공통 테마 ===== */
+.modal {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+      circle at top,
+      rgba(0, 255, 80, 0.12),
+      transparent 55%
+    ),
+    #000000;
+  opacity: 0.96;
+}
+
+.modal-content {
+  position: relative;
+  z-index: 1;
+  background: #050505;
+  color: #a8ff60;
+  border-radius: 0;
+  border: 1px solid #00ff80;
+  box-shadow:
+    0 0 16px rgba(0, 255, 128, 0.7),
+    0 0 40px rgba(0, 255, 128, 0.3);
+  max-width: 420px;
+  width: 90vw;
+  margin: 40px auto;
+  padding: 16px 18px 14px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(168, 255, 96, 0.4);
+  padding-bottom: 6px;
+  color: #a8ff60;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: #ff4b6e;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
 
