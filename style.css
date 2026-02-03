@@ -214,20 +214,26 @@ header {
 .album-option-btn {
   position: absolute;
   top: 6px;
-  right: 6px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  left: 6px;      /* ✅ right 대신 left */
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
   border: none;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  font-size: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   cursor: pointer;
+  opacity: 0.15;
+  transition: opacity 0.2s ease, background 0.2s ease;
 }
 
-.album-option-btn:hover {
-  background: rgba(0, 0, 0, 0.45);
-  color: rgba(255, 255, 255, 0.85);
+.card:hover .album-option-btn {
+  opacity: 0.7;
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .card-title {
