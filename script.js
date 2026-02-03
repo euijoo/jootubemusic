@@ -596,9 +596,8 @@ function renderCategoryChips() {
     btn.textContent = cat;
 
     btn.addEventListener("click", () => {
-      console.log("category chip clicked:", cat, "targetIndex:", categoryTargetIndex); // 디버그용
+      console.log("category chip clicked:", cat, "targetIndex:", categoryTargetIndex);
 
-      // 1) 먼저 현재 필터/버튼 상태를 선택한 카테고리로 전환
       currentCategory = cat;
       if (categoryBar) {
         categoryBar.querySelectorAll(".category-btn").forEach((b) => {
@@ -607,14 +606,10 @@ function renderCategoryChips() {
         });
       }
 
-      // 2) 실제 앨범 데이터의 category 변경 + 렌더
       updateAlbumCategory(categoryTargetIndex, cat);
-
-      // 3) 모달 닫기
       closeCategoryModal();
     });
 
-    // 사용자 정의 카테고리 삭제 버튼
     if (!["kpop", "pop", "ost", "etc"].includes(cat)) {
       const x = document.createElement("span");
       x.className = "remove";
@@ -634,16 +629,18 @@ function renderCategoryChips() {
 
 
 
+
 function renderMyAlbums() {
   myGrid.innerHTML = "";
 
-  // filtered에 원본 인덱스를 같이 담기
+  // 1) myAlbums 전체에 originalIndex를 붙인 뒤, currentCategory로 필터
+  const base = myAlbums.map((album, i) => ({ album, originalIndex: i }));
   const filtered =
     currentCategory === "all"
-      ? myAlbums.map((album, i) => ({ album, originalIndex: i }))
-      : myAlbums
-          .map((album, i) => ({ album, originalIndex: i }))
-          .filter(({ album }) => (album.category || "etc") === currentCategory);
+      ? base
+      : base.filter(
+          ({ album }) => (album.category || "etc") === currentCategory
+        );
 
   if (!filtered.length) {
     empty.style.display = "block";
@@ -651,6 +648,7 @@ function renderMyAlbums() {
   }
   empty.style.display = "none";
 
+  // 2) filtered의 각 아이템에서 album, originalIndex를 분해해서 사용
   filtered.forEach(({ album, originalIndex }) => {
     const card = document.createElement("div");
     card.className = "card";
@@ -677,16 +675,18 @@ function renderMyAlbums() {
     const optionBtn = card.querySelector(".album-option-btn");
     optionBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const idx = Number(optionBtn.dataset.index);  // ← 항상 myAlbums index
-      const target = myAlbums[idx];                // ← 원본 배열에서 가져옴
+      const idx = Number(optionBtn.dataset.index);   // ✅ 항상 myAlbums 인덱스
+      const target = myAlbums[idx];                  // ✅ myAlbums에서 직접 찾기
       if (!target) return;
 
-      openAlbumOptionModal(target, idx);
+      openAlbumOptionModal(target, idx);             // ✅ 여기서 index = myAlbums 인덱스
     });
 
     myGrid.appendChild(card);
   });
 }
+
+
 
 // ===== 10. 커버 입력 모달 =====
 
