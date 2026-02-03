@@ -996,3 +996,62 @@ header {
   cursor: pointer;
 }
 
+/* ===== Navbar Logo (Spotify 스타일) ===== */
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 원형 로고 마크 */
+.logo-mark {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1db954;              /* Spotify 느낌 그린 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.35);
+}
+
+/* 안쪽 물결 3줄 */
+.logo-wave {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  height: 3px;
+  border-radius: 999px;
+  background: #0d0d0d;
+  opacity: 0.9;
+}
+
+/* 각 줄 위치/굽힘 다르게 */
+.logo-wave.wave1 {
+  top: 7px;
+  transform: rotate(5deg);
+}
+
+.logo-wave.wave2 {
+  top: 11px;
+  transform: rotate(3deg) scaleX(0.95);
+}
+
+.logo-wave.wave3 {
+  top: 15px;
+  transform: rotate(1deg) scaleX(0.9);
+}
+
+/* 텍스트 */
+.logo-text {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 15px;
+  text-transform: lowercase;
+  color: #fefefe;
+}
+
+/* jootubemusic 중 joo / music 컬러를 쪼개고 싶다면 span으로 나눠서 색 다르게도 가능 */
