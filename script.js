@@ -708,6 +708,14 @@ function closeCoverModal() {
   pendingCoverAlbum = null;
 }
 
+// URL 입력 시 미리보기 업데이트
+coverUrlInput.addEventListener("input", () => {
+  const url = coverUrlInput.value.trim();
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    coverPreview.src = url;
+  }
+});
+
 coverSaveBtn.addEventListener("click", () => {
   if (!pendingCoverAlbum) return;
 
