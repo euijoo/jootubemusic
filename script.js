@@ -601,7 +601,7 @@ function renderCategoryChips() {
 
     }
 
-    categoryListEl.appendChild(btn);
+    
   });
 }
 
