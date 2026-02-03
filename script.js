@@ -593,6 +593,15 @@ function renderCategoryChips() {
 
     btn.addEventListener("click", () => {
       updateAlbumCategory(categoryTargetIndex, cat);
+      currentCategory = cat;
+
+      if (categoryBar) {
+        categoryBar.querySelectorAll(".category-btn").forEach((b) => {
+          const c = b.dataset.category || "all";
+          b.classList.toggle("active", c === cat);
+        });
+      }
+
       closeCategoryModal();
     });
 
@@ -612,6 +621,7 @@ function renderCategoryChips() {
     categoryListEl.appendChild(btn);
   });
 }
+
 
 function renderMyAlbums() {
   myGrid.innerHTML = "";
