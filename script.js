@@ -568,37 +568,37 @@ function renderCategoryChips() {
   const album = myAlbums[categoryTargetIndex];
   const currentCat = album ? album.category || "etc" : null;
 
+    // 드롭다운 select 생성
+  const select = document.createElement("select");
+  select.className = "category-select";
+  select.style.cssText = "width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;";
+  
   customCategories.forEach((cat) => {
-    const btn = document.createElement("button");
-    btn.className = "category-chip" + (cat === currentCat ? " active" : "");
-    btn.textContent = cat;
-
-    btn.addEventListener("click", () => {
-      console.log("category chip clicked:", cat, "targetIndex:", categoryTargetIndex);
-
-      currentCategory = cat;
-      if (categoryBar) {
-        categoryBar.querySelectorAll(".category-btn").forEach((b) => {
-          const c = b.dataset.category || "all";
-          b.classList.toggle("active", c === cat);
-        });
-      }
-
-      updateAlbumCategory(categoryTargetIndex, cat);
-      closeCategoryModal();
-    });
-
-    if (!["kpop", "pop", "ost", "etc"].includes(cat)) {
-      const x = document.createElement("span");
-      x.className = "remove";
-      x.textContent = "×";
-      x.addEventListener("click", (e) => {
-        e.stopPropagation();
-        customCategories = customCategories.filter((c) => c !== cat);
-        saveCategoriesToStorage();
-        renderCategoryChips();
+    const option = document.createElement("option");
+    option.value = cat;
+    option.textContent = cat;
+    if (cat === currentCat) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  });
+  
+  select.addEventListener("change", (e) => {
+    const selectedCat = e.target.value;
+    console.log("category selected:", selectedCat, "targetIndex:", categoryTargetIndex);
+    currentCategory = selectedCat;
+    if (categoryBar) {
+      categoryBar.querySelectorAll(".category-btn").forEach((b) => {
+        const c = b.dataset.category || "all";
+        b.classList.toggle("active", c === selectedCat);
       });
-      btn.appendChild(x);
+    }
+    updateAlbumCategory(categoryTargetIndex, selectedCat);
+    closeCategoryModal();
+  });
+  
+  categoryListEl.appendChild(select);  });
+
     }
 
     categoryListEl.appendChild(btn);
