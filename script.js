@@ -568,68 +568,72 @@ function renderCategoryChips() {
   const album = myAlbums[categoryTargetIndex];
   const currentCat = album ? album.category || "etc" : null;
 
-    // 드롭다운 select 생성
+  // 1) 드롭다운 select 생성
   const select = document.createElement("select");
   select.className = "category-select";
-  select.style.cssText = "width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;";
-  
+  select.style.cssText =
+    "width: 100%; padding: 10px; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;";
+
   customCategories.forEach((cat) => {
     const option = document.createElement("option");
     option.value = cat;
     option.textContent = cat;
-    if (cat === currentCat) {
-      option.selected = true;
-    }
+    if (cat === currentCat) option.selected = true;
     select.appendChild(option);
   });
-  
+
   select.addEventListener("change", (e) => {
     const selectedCat = e.target.value;
-    console.log("category selected:", selectedCat, "targetIndex:", categoryTargetIndex);
+    console.log(
+      "category selected:",
+      selectedCat,
+      "targetIndex:",
+      categoryTargetIndex
+    );
     currentCategory = selectedCat;
+
     if (categoryBar) {
       categoryBar.querySelectorAll(".category-btn").forEach((b) => {
         const c = b.dataset.category || "all";
         b.classList.toggle("active", c === selectedCat);
       });
     }
+
     updateAlbumCategory(categoryTargetIndex, selectedCat);
     closeCategoryModal();
   });
-  
-  categoryListEl.appendChild(select); 
 
-    }
+  categoryListEl.appendChild(select);
 
-
-
-  // 카테고리 버튼 칩 추가
-  const buttonContainer = document.createElement('div');
-  buttonContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;';
+  // 2) 버튼 칩 컨테이너
+  const buttonContainer = document.createElement("div");
+  buttonContainer.style.cssText =
+    "display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;";
 
   customCategories.forEach((cat) => {
-        const btn = document.createElement('button');
-        btn.textContent = cat;
-        btn.style.cssText = 'padding: 10px 20px; border-radius: 20px; border: 2px solid #ccc; background: white; cursor: pointer; font-size: 14px;';
-        btn.dataset.category = cat;
+    const btn = document.createElement("button");
+    btn.textContent = cat;
+    btn.style.cssText =
+      "padding: 10px 20px; border-radius: 20px; border: 2px solid #ccc; background: white; cursor: pointer; font-size: 14px;";
+    btn.dataset.category = cat;
 
-        // 현재 카테고리와 동일한 경우 하이라이트
-        if (cat === currentCat) {
-                btn.style.background = '#007bff';
-                btn.style.color = 'white';
-                btn.style.borderColor = '#007bff';
-              }
+    if (cat === currentCat) {
+      btn.style.background = "#007bff";
+      btn.style.color = "white";
+      btn.style.borderColor = "#007bff";
+    }
 
-        // 버튼 클릭 이벤트
-        btn.addEventListener('click', () => {
-                updateAlbumCategory(categoryTargetIndex, cat);
-                closeCategoryModal();
-              });
+    btn.addEventListener("click", () => {
+      updateAlbumCategory(categoryTargetIndex, cat);
+      closeCategoryModal();
+    });
 
-        buttonContainer.appendChild(btn);
-      });
+    buttonContainer.appendChild(btn);
+  });
 
   categoryListEl.appendChild(buttonContainer);
+}
+
 function renderMyAlbums() {
   myGrid.innerHTML = "";
 
@@ -675,21 +679,18 @@ function renderMyAlbums() {
     const optionBtn = card.querySelector(".album-option-btn");
     optionBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const idx = Number(optionBtn.dataset.index);   // ✅ 항상 myAlbums 인덱스
-      const target = myAlbums[idx];                  // ✅ myAlbums에서 직접 찾기
+      const idx = Number(optionBtn.dataset.index); // 항상 myAlbums 인덱스
+      const target = myAlbums[idx];
       if (!target) return;
 
-      openAlbumOptionModal(target, idx);             // ✅ 여기서 index = myAlbums 인덱스
+      openAlbumOptionModal(target, idx);
     });
 
     myGrid.appendChild(card);
   });
 }
 
-
-
 // ===== 10. 커버 입력 모달 =====
-
 let pendingCoverAlbum = null;
 
 function openCoverModal(album) {
@@ -716,7 +717,7 @@ coverSaveBtn.addEventListener("click", () => {
     return;
   }
 
-  pendingCoverAlbum.image   = url;
+  pendingCoverAlbum.image = url;
   pendingCoverAlbum.hasCover = true;
 
   renderMyAlbums();
@@ -730,6 +731,7 @@ coverSaveBtn.addEventListener("click", () => {
 
 coverModalClose.addEventListener("click", closeCoverModal);
 coverBackdrop.addEventListener("click", closeCoverModal);
+
 // ===== 11. 트랙 모달 + YouTube Player =====
 
 function getCurrentTrack() {
