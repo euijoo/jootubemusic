@@ -448,7 +448,7 @@ function renderSearchResults(albums) {
       );
 
 
-      if (if (!exists) {
+      if (!exists) {
         const newAlbum = {
           name: title,
           artist,
