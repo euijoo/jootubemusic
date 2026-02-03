@@ -416,21 +416,6 @@ function closeModal() {
   modalGrid.innerHTML = "";
 }
 
-function askCategoryAndReturnValue() {
-  const category = prompt(
-    "카테고리를 입력하세요 (kpop / pop / ost / etc 중 하나):",
-    "kpop"
-  );
-  if (!category) return null;
-
-  const normalized = category.trim().toLowerCase();
-  const allowed    = ["kpop", "pop", "ost", "etc"];
-  if (!allowed.includes(normalized)) {
-    alert("kpop / pop / ost / etc 중 하나만 입력할 수 있습니다.");
-    return null;
-  }
-  return normalized;
-}
 
 function renderSearchResults(albums) {
   modalGrid.innerHTML = "";
@@ -462,36 +447,28 @@ function renderSearchResults(albums) {
         (a) => a.name === title && a.artist === artist
       );
 
-      let category = "kpop";
 
-      if (!exists) {
-        const selected = askCategoryAndReturnValue();
-        if (!selected) return;
-        category = selected;
-
+      if (if (!exists) {
         const newAlbum = {
           name: title,
           artist,
           image: imgUrl,
           hasCover: hasRealCover(album),
-          category,
+          category: "etc",
         };
-
         myAlbums.unshift(newAlbum);
         renderMyAlbums();
         saveMyAlbumsToStorage();
         if (currentUser) syncMyAlbumsToFirestore();
+        
+        closeModal();
+        openCategoryModal(0); // 방금 추가한 앨범은 인덱스 0
+        return;
       }
 
-      const albumObj =
-        myAlbums.find((a) => a.name === title && a.artist === artist) || {
-          name: title,
-          artist,
-          image: imgUrl,
-          hasCover: hasRealCover(album),
-          category,
-        };
-
+      // 이미 있는 앨범
+      const albumObj = myAlbums.find((a) => a.name === title && a.artist === artist);
+      if (albumObj) {
       if (!albumObj.hasCover) {
         closeModal();
         openCoverModal(albumObj);
@@ -499,6 +476,7 @@ function renderSearchResults(albums) {
         closeModal();
         openTrackModal(albumObj);
       }
+              }
     });
 
     modalGrid.appendChild(card);
