@@ -675,16 +675,19 @@ function renderMyAlbums() {
     const optionBtn = card.querySelector(".album-option-btn");
     optionBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const idx = Number(optionBtn.dataset.index);   // ✅ 항상 myAlbums 인덱스
-      const target = myAlbums[idx];                  // ✅ myAlbums에서 직접 찾기
+
+      // ✅ 항상 myAlbums 인덱스를 쓰게 한다
+      const idx = Number(optionBtn.dataset.index);
+      const target = myAlbums[idx];
       if (!target) return;
 
-      openAlbumOptionModal(target, idx);             // ✅ 여기서 index = myAlbums 인덱스
+      openAlbumOptionModal(target, idx);  // ✅ 여기서 index = myAlbums 인덱스
     });
 
     myGrid.appendChild(card);
   });
 }
+
 
 
 
