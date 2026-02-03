@@ -1305,15 +1305,12 @@ albumOptionCategoryBtn.addEventListener("click", () => {
     albumOptionTargetIndex,
     albumOptionTargetAlbum,
   });
-
-  // ✅ 이 줄 추가
   console.log("typeof albumOptionTargetIndex:", typeof albumOptionTargetIndex);
 
   if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
   closeAlbumOptionModal();
-  openCategoryModal(albumOptionTargetIndex);
+  openCategoryModal(albumOptionTargetIndex);  // ✅ 이 한 줄만
 });
-
 
 
 // ===== 14. 모달/검색/카테고리 모달 이벤트 =====
