@@ -549,28 +549,25 @@ async function updateAlbumCategory(index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
-  console.log("updateAlbumCategory", {
-    index,
-    before: album.category,
-    newCategory,
-  });
-
   album.category = newCategory;
   renderMyAlbums();
   saveMyAlbumsToStorage();
 
   if (currentUser) {
     try {
-      const uid     = currentUser.uid;
-      const colRef  = userAlbumsColRef(uid);
+      const uid = currentUser.uid;
+      const colRef = userAlbumsColRef(uid);
       const albumId = `${album.artist} - ${album.name}`;
-      const docRef  = doc(colRef, albumId);
-      await setDoc(docRef, { category: newCategory }, { merge: true });
-    } catch (e) {
-      console.error("updateAlbumCategory Firestore error", e);
+      await setDoc(doc(colRef, albumId), {
+        ...album,
+        category: newCategory,
+      });
+    } catch (err) {
+      console.error("updateAlbumCategory Firestore error", err);
     }
   }
 }
+
 
 // 카테고리 모달용 상태/함수
 let categoryTargetIndex = null;
@@ -587,45 +584,43 @@ function closeCategoryModal() {
   categoryTargetIndex = null;
 }
 
-function renderCategoryChips() {
-  categoryListEl.innerHTML = "";
-  const album = myAlbums[categoryTargetIndex];
-  const currentCat = album ? album.category || "etc" : null;
 
-  customCategories.forEach((cat) => {
+function renderCategoryChips() {
+  const categoryListEl = document.querySelector(".category-list");
+  if (!categoryListEl) return;
+
+  categoryListEl.innerHTML = "";
+
+  const categories = ["all", "kpop", "pop", "ost", "etc", ...customCategories];
+
+  categories.forEach((cat) => {
+    if (cat === "all") return; // 'all'은 선택용만, 이동용으론 제외해도 됨
+
     const btn = document.createElement("button");
-    btn.className = "category-chip" + (cat === currentCat ? " active" : "");
+    btn.className = "category-chip";
     btn.textContent = cat;
 
     btn.addEventListener("click", () => {
-      console.log(
-        "category chip clicked:",
-        cat,
-        "targetIndex:",
-        categoryTargetIndex
-      );
+      console.log("category chip clicked:", cat, "targetIndex:", categoryTargetIndex);
+      if (categoryTargetIndex === null) return;
+      const album = myAlbums[categoryTargetIndex];
+      if (!album) return;
 
-      // 1) 상단 카테고리 상태 변경
-      currentCategory = cat;
-      if (categoryBar) {
-        categoryBar.querySelectorAll(".category-btn").forEach((b) => {
-          const c = b.dataset.category || "all";
-          b.classList.toggle("active", c === cat);
-        });
-      }
+      console.log("updateAlbumCategory", {
+        index: categoryTargetIndex,
+        before: album.category,
+        newCategory: cat,
+      });
 
-      // 2) 실제 데이터 변경 + 렌더
       updateAlbumCategory(categoryTargetIndex, cat);
-
-      // 3) 모달 닫기
       closeCategoryModal();
     });
 
-    // 사용자 정의 카테고리 삭제 버튼
+    // 커스텀 카테고리는 X 삭제 버튼 추가
     if (!["kpop", "pop", "ost", "etc"].includes(cat)) {
       const x = document.createElement("span");
-      x.className = "remove";
       x.textContent = "×";
+      x.className = "category-delete";
       x.addEventListener("click", (e) => {
         e.stopPropagation();
         customCategories = customCategories.filter((c) => c !== cat);
@@ -639,56 +634,34 @@ function renderCategoryChips() {
   });
 }
 
+
 function renderMyAlbums() {
   myGrid.innerHTML = "";
 
-  // 원본 인덱스를 붙인 뒤 카테고리로 필터
   const base = myAlbums.map((album, i) => ({ album, originalIndex: i }));
   const filtered =
     currentCategory === "all"
       ? base
-      : base.filter(
-          ({ album }) => (album.category || "etc") === currentCategory
+      : base.filter(({ album }) =>
+          (album.category || "etc") === currentCategory
         );
-
-  if (!filtered.length) {
-    empty.style.display = "block";
-    return;
-  }
-  empty.style.display = "none";
 
   filtered.forEach(({ album, originalIndex }) => {
     const card = document.createElement("div");
-    card.className = "card";
+    card.className = "album-card";
+    card.dataset.index = originalIndex;
 
     card.innerHTML = `
-      <div class="card-cover-wrap">
-        <img src="${album.image}" alt="${album.name}">
+      <div class="album-header">
         <button class="album-option-btn" data-index="${originalIndex}">⋮</button>
       </div>
       <div class="card-title"><span>${album.name}</span></div>
       <div class="card-artist">${album.artist}</div>
     `;
 
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".album-option-btn")) return;
-
-      if (!album.hasCover) {
-        openCoverModal(album);
-      } else {
-        openTrackModal(album);
-      }
-    });
-
     const optionBtn = card.querySelector(".album-option-btn");
-    optionBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-
-      const idx    = Number(optionBtn.dataset.index); // 항상 myAlbums 인덱스
-      const target = myAlbums[idx];
-      if (!target) return;
-
-      openAlbumOptionModal(target, idx);             // 여기서 index를 넘김
+    optionBtn.addEventListener("click", () => {
+      openAlbumOptionModal(album, originalIndex);
     });
 
     myGrid.appendChild(card);
@@ -1256,16 +1229,18 @@ if (trackAddBtn) {
 
 
 // ===== 13. 앨범 옵션 모달 =====
-let albumOptionTargetIndex = null;
+let albumOptionTargetIndex = null;  // 옵션 모달에서 쓸 인덱스
 let albumOptionTargetAlbum = null;
+
+let categoryTargetIndex = null;     // 카테고리 모달에서 최종으로 쓸 인덱스
 
 function openAlbumOptionModal(album, index) {
   console.log("openAlbumOptionModal", { index, album });
-  albumOptionTargetAlbum = album;
   albumOptionTargetIndex = index;
-  albumOptionTitle.textContent = `${album.artist} - ${album.name}`;
+  albumOptionTargetAlbum = album;
   albumOptionModal.style.display = "flex";
 }
+
 
 function closeAlbumOptionModal() {
   albumOptionModal.style.display = "none";
