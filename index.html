@@ -158,20 +158,22 @@
 
   
 <!-- 앨범 옵션 모달 -->
-<div id="albumOptionModal" class="modal-backdrop" style="display:none;">
-  <div class="modal">
+<div id="albumOptionModal" class="modal" style="display:none;">
+  <div id="albumOptionBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
     <div class="modal-header">
       <span id="albumOptionTitle">앨범 옵션</span>
       <button id="albumOptionClose" class="modal-close">&times;</button>
     </div>
     <div class="modal-body">
       <p>이 앨범에 대해 어떤 작업을 하시겠어요?</p>
-      <button id="albumOptionCoverBtn">커버 변경</button>
-      <button id="albumOptionCategoryBtn">카테고리 변경</button> <!-- ✅ 추가 -->
-      <button id="albumOptionDeleteBtn">앨범 삭제</button>
+      <button id="albumOptionCoverBtn"    class="option-btn">커버 변경</button>
+      <button id="albumOptionCategoryBtn" class="option-btn">카테고리 변경</button>
+      <button id="albumOptionDeleteBtn"   class="option-btn option-danger">앨범 삭제</button>
     </div>
   </div>
 </div>
+
 
 <!-- 카테고리 관리 모달 -->
 <div id="categoryModal" class="modal" style="display:none;">
