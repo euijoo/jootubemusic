@@ -570,8 +570,6 @@ async function updateAlbumCategory(index, newCategory) {
 
 
 // 카테고리 모달용 상태/함수
-let categoryTargetIndex = null;
-
 function openCategoryModal(index) {
   console.log("openCategoryModal called with index:", index);
   categoryTargetIndex = index;
