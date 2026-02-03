@@ -626,10 +626,13 @@ function renderCategoryChips() {
 function renderMyAlbums() {
   myGrid.innerHTML = "";
 
+  // filtered에 원본 인덱스를 같이 담기
   const filtered =
     currentCategory === "all"
-      ? myAlbums
-      : myAlbums.filter((a) => (a.category || "etc") === currentCategory);
+      ? myAlbums.map((album, i) => ({ album, originalIndex: i }))
+      : myAlbums
+          .map((album, i) => ({ album, originalIndex: i }))
+          .filter(({ album }) => (album.category || "etc") === currentCategory);
 
   if (!filtered.length) {
     empty.style.display = "block";
@@ -637,14 +640,14 @@ function renderMyAlbums() {
   }
   empty.style.display = "none";
 
-  filtered.forEach((album, index) => {
+  filtered.forEach(({ album, originalIndex }) => {
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
       <div class="card-cover-wrap">
         <img src="${album.image}" alt="${album.name}">
-        <button class="album-option-btn" data-index="${index}">⋮</button>
+        <button class="album-option-btn" data-index="${originalIndex}">⋮</button>
       </div>
       <div class="card-title"><span>${album.name}</span></div>
       <div class="card-artist">${album.artist}</div>
@@ -663,8 +666,8 @@ function renderMyAlbums() {
     const optionBtn = card.querySelector(".album-option-btn");
     optionBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const idx    = Number(optionBtn.dataset.index);
-      const target = filtered[idx];
+      const idx = Number(optionBtn.dataset.index);  // ← 항상 myAlbums index
+      const target = myAlbums[idx];                // ← 원본 배열에서 가져옴
       if (!target) return;
 
       openAlbumOptionModal(target, idx);
@@ -673,6 +676,7 @@ function renderMyAlbums() {
     myGrid.appendChild(card);
   });
 }
+
 // ===== 10. 커버 입력 모달 =====
 
 let pendingCoverAlbum = null;
