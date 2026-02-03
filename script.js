@@ -597,15 +597,9 @@ function renderCategoryChips() {
     closeCategoryModal();
   });
   
-  categoryListEl.appendChild(select);  });
+  categoryListEl.appendChild(select); 
 
     }
-
-    
-  });
-}
-
-
 
 
 function renderMyAlbums() {
