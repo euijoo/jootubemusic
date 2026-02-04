@@ -1123,9 +1123,14 @@ function handleTrackEnded() {
 
   // 2) 아직 재생하지 않은 다른 앨범들 중에서 랜덤 선택
   const remainingAlbums = myAlbums.filter((album) => {
-    const key = getAlbumKey(album);
-    return !playedAlbumKeys.has(key);
-  });
+  const key = getAlbumKey(album);
+  if (playedAlbumKeys.has(key)) return false;
+
+  // 이 앨범에 Firestore 기준으로 재생 가능한 트랙(videoId나 source)이 하나라도 있는지
+  // (간단 필터: hasVideoOrSource 속성이 있으면 그걸 쓰고, 아니면 나중에 로딩 시 다시 한 번 필터)
+  return true; // 우선은 기본 true로 두고, 실제 트랙 로딩 단계에서 한 번 더 검사
+});
+
 
   // 재생하지 않은 앨범이 더 이상 없으면 상태 리셋하고 종료
   if (!remainingAlbums.length) {
@@ -1165,6 +1170,23 @@ function handleTrackEnded() {
         });
       }
 
+      // 재생 가능한 트랙만 남기기 (YouTube videoId나 SoundCloud source가 있는 것만)
+      loadedTracks = loadedTracks.filter(
+        (t) =>
+          (t.videoId && t.videoId.trim()) ||
+          (t.source && t.source.trim())
+      );
+
+      if (!loadedTracks.length) {
+        // 이 앨범은 재생 가능한 트랙이 없으니,
+        // 이 앨범을 건너뛰고 다음 앨범을 찾도록 handleTrackEnded를 다시 호출
+        const key = getAlbumKey(nextAlbum);
+        playedAlbumKeys.add(key);
+        handleTrackEnded();
+        return;
+      }
+
+      
       currentTrackAlbum     = nextAlbum;
       tracks                = loadedTracks;
       playedTrackIdsInAlbum = new Set();
