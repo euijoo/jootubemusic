@@ -198,7 +198,14 @@
 
   <!-- 공통 플레이어 컨테이너 (YouTube / SoundCloud용) -->
   <div id="player-container" class="player-container">
-    ...
+   <!-- SoundCloud iframe (숨김) -->
+  <iframe id="sc-player" 
+          width="1" height="20" 
+          style="opacity: 0; position: absolute; pointer-events: none;"
+          scrolling="no" frameborder="no" 
+          src="">
+  </iframe>
+  <!-- 기존 미니플레이어 UI (play-btn, progress 등) -->
   </div>
 
   <!-- 숨겨진 YouTube 플레이어 (IFrame API용) -->
