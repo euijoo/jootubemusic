@@ -1421,39 +1421,57 @@ albumOptionCategoryBtn.addEventListener("click", () => {
 // ===== 14. 모달/검색/카테고리 모달 이벤트 =====
 
 // 검색 모달
-searchBtn.addEventListener("click", handleSearch);
-searchInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleSearch();
-});
-modalClose.addEventListener("click", closeModal);
-modalBackdrop.addEventListener("click", closeModal);
+if (searchBtn) {
+  searchBtn.addEventListener("click", handleSearch);
+}
+if (searchInput) {
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleSearch();
+  });
+}
+if (modalClose) {
+  modalClose.addEventListener("click", closeModal);
+}
+if (modalBackdrop) {
+  modalBackdrop.addEventListener("click", closeModal);
+}
 
 // 트랙 모달
-trackModalClose.addEventListener("click", closeTrackModal);
-trackBackdrop.addEventListener("click", (e) => {
-  if (e.target === trackBackdrop) {
-    closeTrackModal();
-  }
-});
+if (trackModalClose) {
+  trackModalClose.addEventListener("click", closeTrackModal);
+}
+if (trackBackdrop) {
+  trackBackdrop.addEventListener("click", (e) => {
+    if (e.target === trackBackdrop) {
+      closeTrackModal();
+    }
+  });
+}
 
 // 카테고리 모달
-categoryModalClose.addEventListener("click", closeCategoryModal);
-categoryBackdrop.addEventListener("click", (e) => {
-  if (e.target === categoryBackdrop) closeCategoryModal();
-});
+if (categoryModalClose) {
+  categoryModalClose.addEventListener("click", closeCategoryModal);
+}
+if (categoryBackdrop) {
+  categoryBackdrop.addEventListener("click", (e) => {
+    if (e.target === categoryBackdrop) closeCategoryModal();
+  });
+}
 
-categoryAddBtn.addEventListener("click", () => {
-  const name = (categoryNewInput.value || "").trim().toLowerCase();
-  if (!name) return;
-  if (customCategories.includes(name)) {
-    alert("이미 존재하는 카테고리입니다.");
-    return;
-  }
-  customCategories.push(name);
-  saveCategoriesToStorage();
-  categoryNewInput.value = "";
-  renderCategoryChips();
-});
+if (categoryAddBtn) {
+  categoryAddBtn.addEventListener("click", () => {
+    const name = (categoryNewInput.value || "").trim().toLowerCase();
+    if (!name) return;
+    if (customCategories.includes(name)) {
+      alert("이미 존재하는 카테고리입니다.");
+      return;
+    }
+    customCategories.push(name);
+    saveCategoriesToStorage();
+    categoryNewInput.value = "";
+    renderCategoryChips();
+  });
+}
 
 
 // ===== 15. 볼륨 모달 (모바일 호환) =====
@@ -1474,6 +1492,7 @@ function closeVolumeModal() {
 }
 
 ["click", "touchend"].forEach((evt) => {
+  if (!miniCover) return;
   miniCover.addEventListener(evt, (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1482,19 +1501,24 @@ function closeVolumeModal() {
 });
 
 ["click", "touchend"].forEach((evt) => {
-  volumeModalClose.addEventListener(evt, (e) => {
-    e.preventDefault();
-    closeVolumeModal();
-  });
-  volumeBackdrop.addEventListener(evt, (e) => {
-    if (e.target === volumeBackdrop) {
+  if (volumeModalClose) {
+    volumeModalClose.addEventListener(evt, (e) => {
       e.preventDefault();
       closeVolumeModal();
-    }
-  });
+    });
+  }
+  if (volumeBackdrop) {
+    volumeBackdrop.addEventListener(evt, (e) => {
+      if (e.target === volumeBackdrop) {
+        e.preventDefault();
+        closeVolumeModal();
+      }
+    });
+  }
 });
 
 ["input", "change", "touchend"].forEach((evt) => {
+  if (!volumeSlider) return;
   volumeSlider.addEventListener(evt, () => {
     const v = Math.max(0, Math.min(100, Number(volumeSlider.value)));
     if (ytPlayer && typeof ytPlayer.setVolume === "function") {
@@ -1502,6 +1526,7 @@ function closeVolumeModal() {
     }
   });
 });
+
 
 
 // ===== 16. 키보드(ESC/스페이스) =====
