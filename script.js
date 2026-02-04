@@ -1287,13 +1287,18 @@ function stopYtProgressLoop() {
 
 function updateMiniPlayerProgress() {
   const track = getCurrentTrack();
-  const platform =
-    track?.platform ||
-    (track?.videoId
-      ? "youtube"
-      : track?.source?.includes("soundcloud.com")
-      ? "soundcloud"
-      : "youtube");
+
+  let platform = "youtube";
+  if (track) {
+    if (track.platform) {
+      platform = track.platform;
+    } else if (track.source && track.source.includes("soundcloud.com")) {
+      platform = "soundcloud";
+    } else if (track.videoId) {
+      platform = "youtube";
+    }
+  }
+
 
   // SoundCloud 쪽
   if (platform === "soundcloud") {
@@ -1381,17 +1386,23 @@ function playTrackUnified(track) {
       : "youtube");
 
   if (platform === "soundcloud") {
-    // 1) 유튜브는 확실히 멈추기
-    if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
-      ytPlayer.pauseVideo();
-    }
-
-    // 2) 사운드클라우드 재생
-    renderSoundCloudPlayer(track);
-    isPlaying = true;
-    updatePlayButtonUI();
-    return;
+  // 1) 유튜브는 확실히 멈추기
+  if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
+    ytPlayer.pauseVideo();
   }
+
+  // 2) 현재 트랙/앨범 상태를 확실히 세팅
+  currentTrackId = track.id;
+  // tracks 배열에 이 트랙이 없다면, 현재 앨범 트랙 목록에 맞게 이미 세팅되어 있으니 건드리지 않고,
+  // 최소한 currentTrackId만 맞춰 두면 handleTrackEnded에서 index를 찾을 수 있음
+
+  // 3) 사운드클라우드 재생
+  renderSoundCloudPlayer(track);
+  isPlaying = true;
+  updatePlayButtonUI();
+  return;
+}
+
 
   // platform === "youtube" 또는 기타 기본값
 
