@@ -208,29 +208,6 @@ function extractVideoId(input) {
   return "";
 }
 
-function extractVideoId(input) {
-  const trimmed = (input || "").trim();
-  if (!trimmed) return "";
-
-  if (/^[a-zA-Z0-9_-]{8,}$/.test(trimmed) && !trimmed.includes("http")) {
-    return trimmed;
-  }
-
-  try {
-    const u = new URL(trimmed);
-    if (u.hostname.includes("youtu.be")) {
-      return u.pathname.replace("/", "") || "";
-    }
-    const v = u.searchParams.get("v");
-    if (v) return v;
-    const parts = u.pathname.split("/");
-    const last = parts.pop() || parts.pop();
-    if (last && /^[a-zA-Z0-9_-]{8,}$/.test(last)) return last;
-  } catch (e) {}
-
-  return "";
-}
-
 // ===== 플랫폼 감지 (YouTube / SoundCloud) =====
 function detectPlatform(url) {
   if (!url || typeof url !== "string") return null;
