@@ -1029,3 +1029,18 @@ header {
 }
 
 /* jootubemusic 중 joo / music 컬러를 쪼개고 싶다면 span으로 나눠서 색 다르게도 가능 */
+
+
+#player-container {
+  position: relative;
+  width: 300px; height: 60px;
+  /* 기존 미니플레이어 스타일 */
+}
+
+#sc-player {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  width: 1px !important; height: 1px !important;
+  z-index: -1;
+  pointer-events: none;
+}
