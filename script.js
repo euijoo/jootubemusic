@@ -1179,6 +1179,7 @@ function handleTrackEnded() {
   })();
 }
 
+
 // 내 모든 앨범에서 videoId가 있는 트랙 중 랜덤
 async function playRandomTrackFromAllAlbums() {
   if (!currentUser) return;
@@ -1326,24 +1327,35 @@ function playTrackUnified(track) {
   // 플랫폼 기본값: 기존 데이터 호환 (videoId 있으면 youtube)
   const platform =
     track.platform ||
-    (track.videoId ? "youtube" : track.source?.includes("soundcloud.com") ? "soundcloud" : "youtube");
+    (track.videoId
+      ? "youtube"
+      : track.source?.includes("soundcloud.com")
+      ? "soundcloud"
+      : "youtube");
 
   if (platform === "soundcloud") {
-    // 사운드클라우드 재생
-    renderSoundCloudPlayer(track);
-    isPlaying = true;
-    updatePlayButtonUI();
-    // YouTube는 멈춰두기
+    // 1) 유튜브는 확실히 멈추기
     if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
       ytPlayer.pauseVideo();
     }
-  } else {
-    // 유튜브 재생
-    playTrackOnYouTube(track);
+
+    // 2) 사운드클라우드 재생
+    renderSoundCloudPlayer(track);
+    isPlaying = true;
+    updatePlayButtonUI();
+    return;
   }
+
+  // platform === "youtube" 또는 기타 기본값
+
+  // 3) 사운드클라우드는 확실히 멈추기
+  if (scWidget && typeof scWidget.pause === "function") {
+    scWidget.pause();
+  }
+
+  // 4) 유튜브 재생
+  playTrackOnYouTube(track);
 }
-
-
 
 function playTrackOnYouTube(track) {
   if (!track.videoId) {
