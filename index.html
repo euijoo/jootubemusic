@@ -198,16 +198,15 @@
 
   <!-- 공통 플레이어 컨테이너 (YouTube / SoundCloud용) -->
   <div id="player-container" class="player-container">
-   <!-- SoundCloud iframe (숨김) -->
-  <iframe id="sc-player" 
-          width="1" height="20" 
-          style="opacity: 0; position: absolute; pointer-events: none;"
-          scrolling="no" frameborder="no" 
-          src="">
-  </iframe>
-  <!-- 기존 미니플레이어 UI (play-btn, progress 등) -->
-  </div>
-
+  <iframe
+    id="sc-player"
+    style="opacity:0;visibility:hidden;width:1px;height:1px;position:absolute;pointer-events:none;"
+    scrolling="no"
+    frameborder="no"
+    src=""
+    allow="autoplay"
+  ></iframe>
+</div>
   <!-- 숨겨진 YouTube 플레이어 (IFrame API용) -->
   <div id="ytPlayer" style="width:0;height:0;overflow:hidden;"></div>
 
