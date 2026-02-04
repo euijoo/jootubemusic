@@ -1066,14 +1066,19 @@ function renderSoundCloudPlayer(track) {
     track.source
   )}&visual=false&show_artwork=false&show_user=false&show_reposts=false&auto_play=true`;
 
-  const checkReady = setInterval(() => {
+   const checkReady = setInterval(() => {
     if (window.SC) {
       scWidget = SC.Widget(iframe);
       scWidget.bind(SC.Widget.Events.READY, () => {
         clearInterval(checkReady);
+
+        // 매 곡마다 길이 다시 읽기
         scWidget.getDuration((d) => {
           scDurationMs = d || 0;
+          // 길이를 다시 가져온 직후 한 번 UI 갱신
+          updateMiniPlayerProgress();
         });
+
         bindSoundCloudControls();
       });
     }
@@ -1380,22 +1385,25 @@ function updatePlayButtonUI() {
 function playTrackUnified(track) {
   if (!track) return;
 
-  // 플랫폼 기본값: 기존 데이터 호환 (videoId 있으면 youtube)
-  const platform =
-    track.platform ||
-    (track.videoId
-      ? "youtube"
-      : track.source?.includes("soundcloud.com")
-      ? "soundcloud"
-      : "youtube");
+  // 플랫폼 판별 (기본값: youtube)
+  let platform = "youtube";
+  if (track.platform === "soundcloud") {
+    platform = "soundcloud";
+  } else if (track.platform === "youtube") {
+    platform = "youtube";
+  } else if (track.source && track.source.includes("soundcloud.com")) {
+    platform = "soundcloud";
+  } else if (track.videoId) {
+    platform = "youtube";
+  }
 
-      if (platform === "soundcloud") {
+  if (platform === "soundcloud") {
     // 1) 유튜브는 확실히 멈추기
     if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
       ytPlayer.pauseVideo();
     }
 
-    // 2) 현재 트랙 상태를 확실히 세팅 (handleTrackEnded가 index를 찾을 수 있게)
+    // 2) 현재 트랙 상태 세팅 (handleTrackEnded에서 index 찾는 데 필요)
     currentTrackId = track.id;
 
     // 3) 사운드클라우드 재생
@@ -1404,14 +1412,12 @@ function playTrackUnified(track) {
     // 4) 재생 상태/버튼/타임라인 루프 시작
     isPlaying = true;
     updatePlayButtonUI();
-    startYtProgressLoop();   // 🔴 추가: SoundCloud도 공통 progress 루프 사용
+    startYtProgressLoop(); // SoundCloud도 공통 progress 루프 사용
 
     return;
   }
 
-
-
-  // platform === "youtube" 또는 기타 기본값
+  // 여기까지 왔으면 youtube
 
   // 3) 사운드클라우드는 확실히 멈추기
   if (scWidget && typeof scWidget.pause === "function") {
@@ -1421,6 +1427,7 @@ function playTrackUnified(track) {
   // 4) 유튜브 재생
   playTrackOnYouTube(track);
 }
+
 
 function playTrackOnYouTube(track) {
   if (!track.videoId) {
