@@ -1103,33 +1103,80 @@ function onPlayerStateChange(event) {
 }
 
 function handleTrackEnded() {
+  // 1) 현재 앨범 안에서 다음 트랙 찾기 (순서대로)
   if (currentTrackAlbum && Array.isArray(tracks) && tracks.length) {
-    const notPlayed = tracks.filter((t) => !playedTrackIdsInAlbum.has(t.id));
+    const currentIndex = tracks.findIndex((t) => t.id === currentTrackId);
 
-    if (notPlayed.length) {
-      const next = notPlayed[Math.floor(Math.random() * notPlayed.length)];
-      playTrack(next.id);
-      return;
+    // 현재 트랙이 배열 안에 있고, 아직 마지막 트랙이 아니면 다음 트랙 재생
+    if (currentIndex >= 0 && currentIndex < tracks.length - 1) {
+      const nextTrack = tracks[currentIndex + 1];
+      if (nextTrack) {
+        playTrack(nextTrack.id);
+        return;
+      }
     }
 
+    // 여기까지 왔으면 이 앨범의 마지막 트랙을 끝까지 들은 상태
     const currentAlbumKey = getAlbumKey(currentTrackAlbum);
     playedAlbumKeys.add(currentAlbumKey);
   }
 
+  // 2) 아직 재생하지 않은 다른 앨범들 중에서 랜덤 선택
   const remainingAlbums = myAlbums.filter((album) => {
     const key = getAlbumKey(album);
     return !playedAlbumKeys.has(key);
   });
 
+  // 재생하지 않은 앨범이 더 이상 없으면 상태 리셋하고 종료
   if (!remainingAlbums.length) {
     playedTrackIdsInAlbum.clear();
     playedAlbumKeys.clear();
     return;
   }
 
+  // 3) 남은 앨범들 중 하나를 랜덤으로 골라,
+  //    그 앨범의 트랙을 1번부터 순서대로 재생 시작
   const nextAlbum =
     remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
-  autoPlayRandomTrackFromAlbum(nextAlbum);
+
+  (async () => {
+    try {
+      let loadedTracks = await loadTracksForAlbumFromFirestore(nextAlbum);
+
+      if (!loadedTracks || !loadedTracks.length) {
+        const lfTracks = await fetchAlbumTracks(nextAlbum.artist, nextAlbum.name);
+        if (!lfTracks || (Array.isArray(lfTracks) && lfTracks.length === 0)) {
+          return;
+        }
+
+        const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
+        loadedTracks = arr.map((t) => {
+          const title =
+            typeof t.name === "string" ? t.name : t.name?.[0] || "제목 없음";
+
+          return {
+            id: crypto.randomUUID(),
+            title,
+            artist: nextAlbum.artist,
+            albumName: nextAlbum.name,
+            videoId: "",
+            coverUrl: nextAlbum.image,
+          };
+        });
+      }
+
+      currentTrackAlbum     = nextAlbum;
+      tracks                = loadedTracks;
+      playedTrackIdsInAlbum = new Set();
+
+      if (tracks.length) {
+        const firstTrack = tracks[0];
+        playTrack(firstTrack.id);
+      }
+    } catch (err) {
+      console.error("handleTrackEnded nextAlbum error", err);
+    }
+  })();
 }
 
 // 내 모든 앨범에서 videoId가 있는 트랙 중 랜덤
