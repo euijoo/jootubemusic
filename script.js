@@ -1389,7 +1389,7 @@ function playTrackUnified(track) {
       ? "soundcloud"
       : "youtube");
 
-    if (platform === "soundcloud") {
+      if (platform === "soundcloud") {
     // 1) 유튜브는 확실히 멈추기
     if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
       ytPlayer.pauseVideo();
@@ -1400,8 +1400,12 @@ function playTrackUnified(track) {
 
     // 3) 사운드클라우드 재생
     renderSoundCloudPlayer(track);
+
+    // 4) 재생 상태/버튼/타임라인 루프 시작
     isPlaying = true;
     updatePlayButtonUI();
+    startYtProgressLoop();   // 🔴 추가: SoundCloud도 공통 progress 루프 사용
+
     return;
   }
 
