@@ -1020,6 +1020,37 @@ window.onYouTubeIframeAPIReady = function () {
   });
 };
 
+function onPlayerReady() {
+  // 유튜브 준비 완료 시 초기 상태 세팅
+  isPlaying = false;
+  updatePlayButtonUI();
+  stopYtProgressLoop();
+  updateMiniPlayerProgress();
+}
+
+function onPlayerStateChange(event) {
+  if (!window.YT) return;
+
+  const state = event.data;
+
+  if (state === YT.PlayerState.PLAYING) {
+    isPlaying = true;
+    updatePlayButtonUI();
+    startYtProgressLoop();
+  } else if (
+    state === YT.PlayerState.PAUSED ||
+    state === YT.PlayerState.ENDED
+  ) {
+    isPlaying = false;
+    updatePlayButtonUI();
+    stopYtProgressLoop();
+
+    if (state === YT.PlayerState.ENDED) {
+      handleTrackEnded();
+    }
+  }
+}
+
 
 // SoundCloud iframe + Widget API (iframe은 숨겨진 상태로만 사용)
 function renderSoundCloudPlayer(track) {
@@ -1061,10 +1092,6 @@ function bindSoundCloudControls() {
       });
     };
   }
-
-  scWidget.bind(SC.Widget.Events.PLAY_PROGRESS, (e) => {
-    updateMiniPlayerProgressFromSC(e);
-  });
 
   scWidget.bind(SC.Widget.Events.FINISH, () => {
     handleTrackEnded();
