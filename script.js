@@ -1404,7 +1404,9 @@ miniToggle.addEventListener("click", () => {
 
 miniHide.textContent = "⏭";
 miniHide.addEventListener("click", () => {
-  playRandomTrackFromAllAlbums();
+  // 현재 트랙을 강제로 '끝난 것'처럼 처리해서
+  // 앨범 내 다음 트랙 → 다음 앨범 순서 로직을 그대로 사용
+  handleTrackEnded();
 });
 
 // 타임라인 드래그
