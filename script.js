@@ -1031,9 +1031,9 @@ function renderSoundCloudPlayer(track) {
   const iframe = document.getElementById("sc-player");
   if (!iframe) return;
 
-  iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
+    iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
     track.source
-  )}&visual=false&show_artwork=false&show_user=false&show_reposts=false&auto_play=false`;
+  )}&visual=false&show_artwork=false&show_user=false&show_reposts=false&auto_play=true`;
 
   const checkReady = setInterval(() => {
     if (window.SC) {
@@ -1333,6 +1333,11 @@ function updateNowPlaying(track) {
   miniCurrentTime.textContent = "00:00";
   miniDuration.textContent    = "00:00";
   miniPlayer.style.display    = "flex";
+}
+
+function updatePlayButtonUI() {
+  if (!miniToggle) return;
+  miniToggle.textContent = isPlaying ? "⏸" : "▶";
 }
 
 
