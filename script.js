@@ -304,7 +304,7 @@ async function syncMyAlbumsToFirestore() {
         image: album.image,
         hasCover: album.hasCover ?? true,
         category: album.category || "etc",
-        createdAt: Date.now(),
+        createdAt: album.createdAt || Date.now(),
       },
       { merge: true }
     );
@@ -479,13 +479,15 @@ function renderSearchResults(albums) {
 
 
       if (!exists) {
-        const newAlbum = {
-          name: title,
-          artist,
-          image: imgUrl,
-          hasCover: hasRealCover(album),
-          category: "etc",
-        };
+      const newAlbum = {
+      name: title,
+      artist,
+      image: imgUrl,
+      hasCover: hasRealCover(album),
+      category: "etc",
+      createdAt: Date.now(),
+     };
+
         myAlbums.unshift(newAlbum);
         renderMyAlbums();
         saveMyAlbumsToStorage();
