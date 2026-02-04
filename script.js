@@ -142,6 +142,11 @@ const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 // YouTube IFrame Player
 let ytPlayer      = null;
 let ytUpdateTimer = null;
+
+// SoundCloud Widget Player
+let scWidget     = null;
+let scDurationMs = 0;
+
 // ===== 4. 공통 유틸 =====
 
 function pickAlbumImage(album) {
@@ -1014,9 +1019,7 @@ window.onYouTubeIframeAPIReady = function () {
 };
 
 
-
-
-// ===== SoundCloud 재생용 iframe =====
+// ===== SoundCloud 재생용 iframe + Widget API =====
 function renderSoundCloudPlayer(track) {
   if (!playerContainer) return;
   if (!track.source) {
@@ -1026,18 +1029,45 @@ function renderSoundCloudPlayer(track) {
 
   const src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
     track.source
-  )}&auto_play=true&hide_related=false&show_comments=false&show_user=true&show_reposts=false&visual=true`;
+  )}&auto_play=true&hide_related=false&show_comments=false&show_user=true&show_reposts=false&visual=false`;
 
   playerContainer.innerHTML = `
     <iframe
+      id="sc-player"
       width="100%"
-      height="166"
+      height="80"
       scrolling="no"
       frameborder="no"
       allow="autoplay"
       src="${src}">
     </iframe>
   `;
+
+  const iframe = document.getElementById("sc-player");
+  if (!iframe || !window.SC) return;
+
+  scWidget = SC.Widget(iframe);
+  scDurationMs = 0;
+
+  scWidget.bind(SC.Widget.Events.READY, () => {
+    scWidget.getDuration((d) => {
+      scDurationMs = d || 0;
+    });
+  });
+
+  scWidget.bind(SC.Widget.Events.PLAY, () => {
+    isPlaying = true;
+    updatePlayButtonUI();
+  });
+
+  scWidget.bind(SC.Widget.Events.PAUSE, () => {
+    isPlaying = false;
+    updatePlayButtonUI();
+  });
+
+  scWidget.bind(SC.Widget.Events.FINISH, () => {
+    handleTrackEnded();
+  });
 }
 
 
@@ -1166,26 +1196,63 @@ function stopYtProgressLoop() {
 }
 
 function updateMiniPlayerProgress() {
+  const track = getCurrentTrack();
+  const platform =
+    track?.platform ||
+    (track?.videoId
+      ? "youtube"
+      : track?.source?.includes("soundcloud.com")
+      ? "soundcloud"
+      : "youtube");
+
+  // SoundCloud 쪽
+  if (platform === "soundcloud") {
+    if (!scWidget || !scDurationMs) {
+      miniCurrentTime.textContent = "00:00";
+      miniDuration.textContent = "00:00";
+      miniSeek.value = 0;
+      return;
+    }
+
+    scWidget.getPosition((posMs) => {
+      const durationSec = scDurationMs / 1000;
+      const currentSec = posMs / 1000;
+
+      if (!durationSec) {
+        miniCurrentTime.textContent = "00:00";
+        miniDuration.textContent = "00:00";
+        miniSeek.value = 0;
+        return;
+      }
+
+      miniCurrentTime.textContent = formatTime(currentSec);
+      miniDuration.textContent = formatTime(durationSec);
+      miniSeek.value = (currentSec / durationSec) * 100;
+    });
+    return;
+  }
+
+  // YouTube 쪽 (기존 로직)
   if (!ytPlayer || typeof ytPlayer.getDuration !== "function") {
     miniCurrentTime.textContent = "00:00";
-    miniDuration.textContent    = "00:00";
-    miniSeek.value              = 0;
+    miniDuration.textContent = "00:00";
+    miniSeek.value = 0;
     return;
   }
 
   const duration = ytPlayer.getDuration() || 0;
-  const current  = ytPlayer.getCurrentTime() || 0;
+  const current = ytPlayer.getCurrentTime() || 0;
 
   if (!duration) {
     miniCurrentTime.textContent = "00:00";
-    miniDuration.textContent    = "00:00";
-    miniSeek.value              = 0;
+    miniDuration.textContent = "00:00";
+    miniSeek.value = 0;
     return;
   }
 
   miniCurrentTime.textContent = formatTime(current);
-  miniDuration.textContent    = formatTime(duration);
-  miniSeek.value              = (current / duration) * 100;
+  miniDuration.textContent = formatTime(duration);
+  miniSeek.value = (current / duration) * 100;
 }
 
 function updateNowPlaying(track) {
@@ -1247,6 +1314,26 @@ function playTrackOnYouTube(track) {
 
 // 미니 플레이어 버튼들
 miniToggle.addEventListener("click", () => {
+  const track = getCurrentTrack();
+  if (!track) return;
+
+  const platform =
+    track.platform ||
+    (track.videoId
+      ? "youtube"
+      : track.source?.includes("soundcloud.com")
+      ? "soundcloud"
+      : "youtube");
+
+  if (platform === "soundcloud") {
+    if (!scWidget) return;
+    scWidget.isPaused((paused) => {
+      if (paused) scWidget.play();
+      else scWidget.pause();
+    });
+    return;
+  }
+
   if (!ytPlayer) return;
   const state = ytPlayer.getPlayerState();
   if (state === YT.PlayerState.PLAYING) {
@@ -1272,13 +1359,31 @@ miniSeek.addEventListener("input", () => {
 });
 
 miniSeek.addEventListener("change", () => {
+  const track = getCurrentTrack();
+  const platform =
+    track?.platform ||
+    (track?.videoId
+      ? "youtube"
+      : track?.source?.includes("soundcloud.com")
+      ? "soundcloud"
+      : "youtube");
+
+  const pct = Number(miniSeek.value) / 100;
+
+  if (platform === "soundcloud") {
+    if (!scWidget || !scDurationMs) return;
+    const targetMs = scDurationMs * pct;
+    scWidget.seekTo(targetMs);
+    return;
+  }
+
   if (!ytPlayer) return;
   const duration = ytPlayer.getDuration() || 0;
   if (!duration) return;
-  const pct    = Number(miniSeek.value) / 100;
   const newTime = duration * pct;
   ytPlayer.seekTo(newTime, true);
 });
+
 // ===== 12. 카테고리 / 공통 이벤트 =====
 
 if (categoryBar) {
