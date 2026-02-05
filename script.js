@@ -783,7 +783,7 @@ function playTrack(id) {
     return;
   }
 
-  // 안전 장치: currentTrackAlbum이 비어 있으면, albumName/artist로 앨범 추정
+  // 안전 장치: currentTrackAlbum이 비어 있으면 albumName/artist로 앨범 추정
   if (!currentTrackAlbum) {
     const guessedAlbum = myAlbums.find(
       (a) => a.name === track.albumName && a.artist === track.artist
@@ -1322,21 +1322,12 @@ miniSeek.addEventListener("change", () => {
 // ===== 11-1. Mini Player: Next Track =====
 
 function playNextInCurrentAlbum() {
-  console.log("playNextInCurrentAlbum", {
-    currentTrackAlbum,
-    tracksLen: Array.isArray(tracks) ? tracks.length : "not array",
-    currentTrackId,
-    ids: tracks.map(t => t.id),
-  });
-
   if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
 
   const idx = tracks.findIndex((t) => t.id === currentTrackId);
-  console.log("current index", idx);
   if (idx < 0) return;
 
   const next = tracks[idx + 1];
-  console.log("next track", next);
   if (!next) return;
 
   playTrack(next.id);
@@ -1347,6 +1338,7 @@ miniHide.textContent = "⏭";
 miniHide.addEventListener("click", () => {
   playNextInCurrentAlbum();
 });
+
 
 // ===== 12. 카테고리 / 공통 이벤트 =====
 
