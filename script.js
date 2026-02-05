@@ -823,6 +823,15 @@ function playTrack(id) {
   }
 }
 
+function updateMiniToggleUI() {
+  if (!miniToggle) return;
+  miniToggle.classList.remove("playing", "paused");
+  if (currentPlayback.isPlaying) {
+    miniToggle.classList.add("playing");
+  } else {
+    miniToggle.classList.add("paused");
+  }
+}
 
 
 function createTrackListItem(album, trackData, index) {
