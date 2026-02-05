@@ -143,6 +143,14 @@ const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 let ytPlayer      = null;
 let ytUpdateTimer = null;
 
+// 현재 재생 상태 공통 객체
+let currentPlayback = {
+  track: null,          // { id, title, artist, albumName, platform, source, videoId, coverUrl }
+  platform: null,       // 'youtube' | 'soundcloud'
+  isPlaying: false,
+  durationSec: 0,
+};
+
 // SoundCloud Widget Player
 let scWidget     = null;
 let scDurationMs = 0;
@@ -1382,52 +1390,51 @@ function updatePlayButtonUI() {
 }
 
 
-function playTrackUnified(track) {
-  if (!track) return;
+function resolvePlatform(track) {
+  if (!track) return null;
+  if (track.platform === "soundcloud") return "soundcloud";
+  if (track.platform === "youtube") return "youtube";
+  if (track.source && track.source.includes("soundcloud.com")) return "soundcloud";
+  if (track.videoId) return "youtube";
+  return null;
+}
 
-  // 플랫폼 판별 (기본값: youtube)
-  let platform = "youtube";
-  if (track.platform === "soundcloud") {
-    platform = "soundcloud";
-  } else if (track.platform === "youtube") {
-    platform = "youtube";
-  } else if (track.source && track.source.includes("soundcloud.com")) {
-    platform = "soundcloud";
-  } else if (track.videoId) {
-    platform = "youtube";
+function stopYouTube() {
+  if (ytPlayer && typeof ytPlayer.stopVideo === "function") {
+    ytPlayer.stopVideo();
+  } else if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
+    ytPlayer.pauseVideo();
   }
+  stopYtProgressLoop();
+}
 
-  if (platform === "soundcloud") {
-    // 1) 유튜브는 확실히 멈추기
-    if (ytPlayer && typeof ytPlayer.pauseVideo === "function") {
-      ytPlayer.pauseVideo();
-    }
-
-    // 2) 현재 트랙 상태 세팅 (handleTrackEnded에서 index 찾는 데 필요)
-    currentTrackId = track.id;
-
-    // 3) 사운드클라우드 재생
-    renderSoundCloudPlayer(track);
-
-    // 4) 재생 상태/버튼/타임라인 루프 시작
-    isPlaying = true;
-    updatePlayButtonUI();
-    startYtProgressLoop(); // SoundCloud도 공통 progress 루프 사용
-
-    return;
-  }
-
-  // 여기까지 왔으면 youtube
-
-  // 3) 사운드클라우드는 확실히 멈추기
+function stopSoundCloud() {
   if (scWidget && typeof scWidget.pause === "function") {
     scWidget.pause();
   }
-
-  // 4) 유튜브 재생
-  playTrackOnYouTube(track);
 }
 
+function playTrackUnified(track) {
+  if (!track) return;
+
+  const platform = resolvePlatform(track);
+  if (!platform) {
+    alert("YouTube 또는 SoundCloud 링크를 먼저 설정해 주세요.");
+    return;
+  }
+
+  currentTrackId           = track.id;
+  currentPlayback.track    = track;
+  currentPlayback.platform = platform;
+
+  if (platform === "soundcloud") {
+    stopYouTube();
+    renderSoundCloudPlayer(track);
+  } else {
+    stopSoundCloud();
+    playTrackOnYouTube(track);
+  }
+}
 
 function playTrackOnYouTube(track) {
   if (!track.videoId) {
@@ -1441,45 +1448,64 @@ function playTrackOnYouTube(track) {
 
   ytPlayer.loadVideoById(track.videoId);
   ytPlayer.playVideo();
+
+  currentPlayback.isPlaying = true;
+  updateMiniToggleUI();
+  startYtProgressLoop();
 }
 
 // 미니 플레이어 버튼들
 miniToggle.addEventListener("click", () => {
-  const track = getCurrentTrack();
-  if (!track) return;
+  const track    = currentPlayback.track || getCurrentTrack();
+  const platform = currentPlayback.platform || resolvePlatform(track);
 
-  const platform =
-    track.platform ||
-    (track.videoId
-      ? "youtube"
-      : track.source?.includes("soundcloud.com")
-      ? "soundcloud"
-      : "youtube");
+  if (!track || !platform) return;
 
   if (platform === "soundcloud") {
     if (!scWidget) return;
     scWidget.isPaused((paused) => {
-      if (paused) scWidget.play();
-      else scWidget.pause();
+      if (paused) {
+        scWidget.play();
+        currentPlayback.isPlaying = true;
+      } else {
+        scWidget.pause();
+        currentPlayback.isPlaying = false;
+      }
+      updateMiniToggleUI();
     });
     return;
   }
 
-  if (!ytPlayer) return;
+  if (!ytPlayer || !window.YT) return;
   const state = ytPlayer.getPlayerState();
   if (state === YT.PlayerState.PLAYING) {
     ytPlayer.pauseVideo();
+    currentPlayback.isPlaying = false;
   } else {
     ytPlayer.playVideo();
+    currentPlayback.isPlaying = true;
   }
+  updateMiniToggleUI();
 });
 
 miniHide.textContent = "⏭";
+
+function playNextInCurrentAlbum() {
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
+
+  const idx = tracks.findIndex((t) => t.id === currentTrackId);
+  if (idx < 0) return;
+
+  const next = tracks[idx + 1];
+  if (!next) return;
+
+  playTrack(next.id);
+}
+
 miniHide.addEventListener("click", () => {
-  // 현재 트랙을 강제로 '끝난 것'처럼 처리해서
-  // 앨범 내 다음 트랙 → 다음 앨범 순서 로직을 그대로 사용
-  handleTrackEnded();
+  playNextInCurrentAlbum();
 });
+
 
 // 타임라인 드래그
 miniSeek.addEventListener("input", () => {
