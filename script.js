@@ -151,10 +151,6 @@ let currentPlayback = {
   durationSec: 0,
 };
 
-// SoundCloud Widget Player
-let scWidget     = null;
-let scDurationMs = 0;
-
 // ===== 4. 공통 유틸 =====
 
 function pickAlbumImage(album) {
@@ -1060,68 +1056,6 @@ function onPlayerStateChange(event) {
 }
 
 
-// SoundCloud iframe + Widget API (iframe은 숨겨진 상태로만 사용)
-function renderSoundCloudPlayer(track) {
-  if (!playerContainer || !track.source) {
-    alert("이 트랙에는 SoundCloud 링크가 없습니다.");
-    return;
-  }
-
-  const iframe = document.getElementById("sc-player");
-  if (!iframe) return;
-
-    iframe.src = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
-    track.source
-  )}&visual=false&show_artwork=false&show_user=false&show_reposts=false&auto_play=true`;
-
-   const checkReady = setInterval(() => {
-    if (window.SC) {
-      scWidget = SC.Widget(iframe);
-      scWidget.bind(SC.Widget.Events.READY, () => {
-        clearInterval(checkReady);
-
-        // 매 곡마다 길이 다시 읽기
-        scWidget.getDuration((d) => {
-          scDurationMs = d || 0;
-          // 길이를 다시 가져온 직후 한 번 UI 갱신
-          updateMiniPlayerProgress();
-        });
-
-        bindSoundCloudControls();
-      });
-    }
-  }, 200);
-}
-
-// SoundCloud 위젯과 미니플레이어 UI를 묶어 주는 함수
-function bindSoundCloudControls() {
-  if (!scWidget) return;
-
-  if (miniToggle) {
-    miniToggle.onclick = () => {
-      scWidget.isPaused((paused) => {
-        if (paused) scWidget.play();
-        else scWidget.pause();
-      });
-    };
-  }
-
-  // 여기서는 FINISH만 남겨둔 상태여야 합니다
-  scWidget.bind(SC.Widget.Events.FINISH, () => {
-    handleTrackEnded();
-  });
-
-  scWidget.bind(SC.Widget.Events.PLAY, () => {
-    isPlaying = true;
-    updatePlayButtonUI();
-  });
-
-  scWidget.bind(SC.Widget.Events.PAUSE, () => {
-    isPlaying = false;
-    updatePlayButtonUI();
-  });
-}
-
 // SoundCloud 진행도 → 미니플레이어 반영
 function updateMiniPlayerProgressFromSC(e) {
   const posMs = e.currentPosition || 0;
@@ -1391,12 +1325,7 @@ function updatePlayButtonUI() {
 
 
 function resolvePlatform(track) {
-  if (!track) return null;
-  if (track.platform === "soundcloud") return "soundcloud";
-  if (track.platform === "youtube") return "youtube";
-  if (track.source && track.source.includes("soundcloud.com")) return "soundcloud";
-  if (track.videoId) return "youtube";
-  return null;
+  return "youtube";
 }
 
 function stopYouTube() {
@@ -1408,33 +1337,17 @@ function stopYouTube() {
   stopYtProgressLoop();
 }
 
-function stopSoundCloud() {
-  if (scWidget && typeof scWidget.pause === "function") {
-    scWidget.pause();
-  }
-}
 
 function playTrackUnified(track) {
   if (!track) return;
 
-  const platform = resolvePlatform(track);
-  if (!platform) {
-    alert("YouTube 또는 SoundCloud 링크를 먼저 설정해 주세요.");
-    return;
-  }
-
   currentTrackId           = track.id;
   currentPlayback.track    = track;
-  currentPlayback.platform = platform;
+  currentPlayback.platform = "youtube";
 
-  if (platform === "soundcloud") {
-    stopYouTube();
-    renderSoundCloudPlayer(track);
-  } else {
-    stopSoundCloud();
-    playTrackOnYouTube(track);
-  }
+  playTrackOnYouTube(track);
 }
+
 
 function playTrackOnYouTube(track) {
   if (!track.videoId) {
@@ -1456,27 +1369,9 @@ function playTrackOnYouTube(track) {
 
 // 미니 플레이어 버튼들
 miniToggle.addEventListener("click", () => {
-  const track    = currentPlayback.track || getCurrentTrack();
-  const platform = currentPlayback.platform || resolvePlatform(track);
+  const track = currentPlayback.track || getCurrentTrack();
+  if (!track || !ytPlayer || !window.YT) return;
 
-  if (!track || !platform) return;
-
-  if (platform === "soundcloud") {
-    if (!scWidget) return;
-    scWidget.isPaused((paused) => {
-      if (paused) {
-        scWidget.play();
-        currentPlayback.isPlaying = true;
-      } else {
-        scWidget.pause();
-        currentPlayback.isPlaying = false;
-      }
-      updateMiniToggleUI();
-    });
-    return;
-  }
-
-  if (!ytPlayer || !window.YT) return;
   const state = ytPlayer.getPlayerState();
   if (state === YT.PlayerState.PLAYING) {
     ytPlayer.pauseVideo();
@@ -1487,6 +1382,7 @@ miniToggle.addEventListener("click", () => {
   }
   updateMiniToggleUI();
 });
+
 
 miniHide.textContent = "⏭";
 
@@ -1518,27 +1414,11 @@ miniSeek.addEventListener("input", () => {
 });
 
 miniSeek.addEventListener("change", () => {
-  const track = getCurrentTrack();
-  const platform =
-    track?.platform ||
-    (track?.videoId
-      ? "youtube"
-      : track?.source?.includes("soundcloud.com")
-      ? "soundcloud"
-      : "youtube");
-
-  const pct = Number(miniSeek.value) / 100;
-
-  if (platform === "soundcloud") {
-    if (!scWidget || !scDurationMs) return;
-    const targetMs = scDurationMs * pct;
-    scWidget.seekTo(targetMs);
-    return;
-  }
-
   if (!ytPlayer) return;
   const duration = ytPlayer.getDuration() || 0;
   if (!duration) return;
+
+  const pct    = Number(miniSeek.value) / 100;
   const newTime = duration * pct;
   ytPlayer.seekTo(newTime, true);
 });
@@ -1576,24 +1456,12 @@ if (trackAddBtn) {
     );
     if (!artist || !artist.trim()) return;
 
-    const rawUrl = prompt("YouTube 또는 SoundCloud 링크를 입력해 주세요.");
+    const rawUrl = prompt("YouTube 링크 또는 videoId 를 입력해 주세요.");
 if (!rawUrl || !rawUrl.trim()) return;
 
-const platform = detectPlatform(rawUrl);
-let videoId = "";
-let source = "";
-
-if (platform === "youtube") {
-  videoId = extractVideoId(rawUrl);
-  if (!videoId) {
-    alert("올바른 YouTube 링크가 아닙니다.");
-    return;
-  }
-  source = videoId;
-} else if (platform === "soundcloud") {
-  source = rawUrl.trim();
-} else {
-  alert("YouTube 또는 SoundCloud 링크만 지원합니다.");
+const videoId = extractVideoId(rawUrl);
+if (!videoId) {
+  alert("올바른 YouTube 링크가 아닙니다.");
   return;
 }
 
@@ -1602,11 +1470,10 @@ const newTrack = {
   title: title.trim(),
   artist: artist.trim(),
   albumName: currentTrackAlbum.name,
-  platform: platform || "youtube",
-  source,
-  videoId, // YouTube면 ID, SoundCloud면 빈 문자열
+  videoId,
   coverUrl: currentTrackAlbum.image,
 };
+
 
     tracks.push(newTrack);
 
