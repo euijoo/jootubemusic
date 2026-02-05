@@ -129,6 +129,62 @@ function saveMyAlbumsToStorage() {
   localStorage.setItem(LOCAL_KEY_ALBUMS, JSON.stringify(myAlbums));
 }
 
+
+function renderMyAlbums() {
+  myGrid.innerHTML = "";
+
+  const base = myAlbums.map((album, i) => ({ album, originalIndex: i }));
+  const filtered =
+    currentCategory === "all"
+      ? base
+      : base.filter(
+          ({ album }) => (album.category || "etc") === currentCategory
+        );
+
+  if (!filtered.length) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  filtered.forEach(({ album, originalIndex }) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    card.innerHTML = `
+      <div class="card-cover-wrap">
+        <img src="${album.image}" alt="${album.name}">
+        <button class="album-option-btn" data-index="${originalIndex}">⋮</button>
+      </div>
+      <div class="card-title"><span>${album.name}</span></div>
+      <div class="card-artist">${album.artist}</div>
+    `;
+
+    card.addEventListener("click", (e) => {
+      if (e.target.closest(".album-option-btn")) return;
+
+      if (!album.hasCover) {
+        openCoverModal(album);
+      } else {
+        openTrackModal(album);
+      }
+    });
+
+    const optionBtn = card.querySelector(".album-option-btn");
+    optionBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const idx = Number(optionBtn.dataset.index);
+      openAlbumOptionModal(myAlbums[idx], idx);
+    });
+
+    myGrid.appendChild(card);
+  });
+}
+
+
+
+
+
 function loadMyAlbumsFromStorage() {
   const json = localStorage.getItem(LOCAL_KEY_ALBUMS);
   if (!json) return;
