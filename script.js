@@ -783,6 +783,16 @@ function playTrack(id) {
     return;
   }
 
+  // 안전 장치: currentTrackAlbum이 비어 있으면, albumName/artist로 앨범 추정
+  if (!currentTrackAlbum) {
+    const guessedAlbum = myAlbums.find(
+      (a) => a.name === track.albumName && a.artist === track.artist
+    );
+    if (guessedAlbum) {
+      currentTrackAlbum = guessedAlbum;
+    }
+  }
+
   // 선택 표시
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
@@ -802,6 +812,7 @@ function playTrack(id) {
     playedTrackIdsInAlbum.add(id);
   }
 }
+
 
 
 function updateMiniToggleUI() {
