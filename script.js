@@ -1311,12 +1311,21 @@ miniSeek.addEventListener("change", () => {
 // ===== 11-1. Mini Player: Next Track =====
 
 function playNextInCurrentAlbum() {
+  console.log("playNextInCurrentAlbum", {
+    currentTrackAlbum,
+    tracksLen: Array.isArray(tracks) ? tracks.length : "not array",
+    currentTrackId,
+    ids: tracks.map(t => t.id),
+  });
+
   if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
 
   const idx = tracks.findIndex((t) => t.id === currentTrackId);
+  console.log("current index", idx);
   if (idx < 0) return;
 
   const next = tracks[idx + 1];
+  console.log("next track", next);
   if (!next) return;
 
   playTrack(next.id);
