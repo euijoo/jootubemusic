@@ -1388,26 +1388,6 @@ miniToggle.addEventListener("click", () => {
   updateMiniToggleUI();
 });
 
-
-miniHide.textContent = "⏭";
-
-function playNextInCurrentAlbum() {
-  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
-
-  const idx = tracks.findIndex((t) => t.id === currentTrackId);
-  if (idx < 0) return;
-
-  const next = tracks[idx + 1];
-  if (!next) return;
-
-  playTrack(next.id);
-}
-
-miniHide.addEventListener("click", () => {
-  playNextInCurrentAlbum();
-});
-
-
 // 타임라인 드래그
 miniSeek.addEventListener("input", () => {
   if (!ytPlayer) return;
