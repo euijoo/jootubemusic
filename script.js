@@ -75,6 +75,7 @@ const albumOptionClose       = document.getElementById("albumOptionClose");
 const albumOptionCoverBtn    = document.getElementById("albumOptionCoverBtn");
 const albumOptionDeleteBtn   = document.getElementById("albumOptionDeleteBtn");
 const albumOptionCategoryBtn = document.getElementById("albumOptionCategoryBtn");
+const albumOptionBackdrop  = document.getElementById("albumOptionBackdrop"); // ← 이 줄 추가
 
 // 카테고리 모달
 const categoryModal      = document.getElementById("categoryModal");
@@ -1369,18 +1370,21 @@ function closeVolumeModal() {
 }
 
 ["click", "touchend"].forEach((evt) => {
+  if (!miniCover) return;  // ← 이 줄 추가
   miniCover.addEventListener(evt, (e) => {
     e.preventDefault();
     e.stopPropagation();
     openVolumeModal();
   });
-});
+});;
 
 ["click", "touchend"].forEach((evt) => {
+  if (!volumeModalClose) return;
   volumeModalClose.addEventListener(evt, (e) => {
     e.preventDefault();
     closeVolumeModal();
   });
+  if (!volumeBackdrop) return;
   volumeBackdrop.addEventListener(evt, (e) => {
     if (e.target === volumeBackdrop) {
       e.preventDefault();
