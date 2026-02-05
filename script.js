@@ -823,6 +823,7 @@ function playTrack(id) {
   }
 }
 
+
 function updateMiniToggleUI() {
   if (!miniToggle) return;
   miniToggle.classList.remove("playing", "paused");
@@ -873,32 +874,17 @@ function createTrackListItem(album, trackData, index) {
       }
     }
 
-    const rawUrl = prompt(
-  "YouTube 또는 SoundCloud 링크를 입력해 주세요.",
-  t.platform === "soundcloud" ? t.source || "" : t.videoId || ""
-);
-if (rawUrl && rawUrl.trim()) {
-  const platform = detectPlatform(rawUrl);
-  if (platform === "youtube") {
-    const videoId = extractVideoId(rawUrl);
-    if (!videoId) {
-      alert("올바른 YouTube 링크가 아닙니다.");
-    } else {
-      t.platform = "youtube";
-      t.source = videoId;
-      t.videoId = videoId; // 하위 호환
+        const rawUrl = prompt("YouTube 링크 또는 videoId 를 입력해 주세요.", t.videoId || "");
+    if (rawUrl && rawUrl.trim()) {
+      const videoId = extractVideoId(rawUrl);
+      if (!videoId) {
+        alert("올바른 YouTube 링크가 아닙니다.");
+      } else {
+        t.videoId = videoId;
+      }
     }
-  } else if (platform === "soundcloud") {
-    t.platform = "soundcloud";
-    t.source = rawUrl.trim();
-    t.videoId = ""; // YouTube ID는 비움
-  } else {
-    alert("YouTube 또는 SoundCloud 링크만 지원합니다.");
-  }
-}
 
-editBtn.textContent =
-  t.platform === "soundcloud" || t.videoId ? "✎✓" : "✎";
+    editBtn.textContent = t.videoId ? "✎✓" : "✎";
 
     if (currentUser && currentTrackAlbum) {
       saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch((err) =>
@@ -1442,6 +1428,25 @@ miniSeek.addEventListener("change", () => {
   ytPlayer.seekTo(newTime, true);
 });
 
+// ===== 11-1. Mini Player: Next Track =====
+
+function playNextInCurrentAlbum() {
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
+
+  const idx = tracks.findIndex((t) => t.id === currentTrackId);
+  if (idx < 0) return;
+
+  const next = tracks[idx + 1];
+  if (!next) return;
+
+  playTrack(next.id);
+}
+
+// 미니플레이어 다음곡 버튼
+miniHide.textContent = "⏭";
+miniHide.addEventListener("click", () => {
+  playNextInCurrentAlbum();
+});
 
 // ===== 12. 카테고리 / 공통 이벤트 =====
 
