@@ -797,6 +797,13 @@ function playTrack(id) {
   const track = tracks.find((t) => t.id === id);
   if (!track) return;
 
+  // videoId 없는 트랙은 재생 불가 처리
+  if (!track.videoId || !track.videoId.trim()) {
+    alert("이 트랙에는 아직 YouTube 링크가 설정되어 있지 않습니다.");
+    return;
+  }
+
+  // 선택 표시
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
     .forEach((item) => item.classList.remove("selected-track"));
@@ -805,15 +812,18 @@ function playTrack(id) {
 
   currentTrackId = id;
 
+  // 미니플레이어 메타 / 표시
   updateNowPlaying(track);
-  miniPlayer.style.display = "flex";
 
+  // 실제 재생
   playTrackUnified(track);
 
   if (currentTrackAlbum) {
     playedTrackIdsInAlbum.add(id);
   }
 }
+
+
 
 function createTrackListItem(album, trackData, index) {
   const id = trackData.id;
