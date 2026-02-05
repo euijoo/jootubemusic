@@ -1,4 +1,4 @@
-// ===== 1. 외부 서비스 설정 (Firebase, Last.fm) =====
+// ===== 1. Firebase / Last.fm 설정 =====
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import {
@@ -35,17 +35,17 @@ const provider = new GoogleAuthProvider();
 const LASTFM_API_KEY = "7e0b8eb10fdc5cf81968b38fdd543cff";
 
 
-// ===== 2. DOM 요소 캐싱 =====
+// ===== 2. DOM 캐싱 =====
 
-// 검색창 / 버튼
+// 검색
 const searchInput = document.getElementById("searchInput");
 const searchBtn   = document.getElementById("searchBtn");
 
-// 로그인 UI
+// 로그인
 const authStatus    = document.getElementById("authStatus");
 const authToggleBtn = document.getElementById("authToggleBtn");
 
-// 내 앨범 그리드
+// 내 앨범
 const myGrid = document.getElementById("myGrid");
 const empty  = document.getElementById("empty");
 
@@ -53,7 +53,7 @@ const empty  = document.getElementById("empty");
 const categoryBar   = document.getElementById("categoryBar");
 let currentCategory = "all";
 
-// 검색 결과 모달
+// 검색 모달
 const searchModal   = document.getElementById("searchModal");
 const modalGrid     = document.getElementById("modalGrid");
 const modalClose    = document.getElementById("modalClose");
@@ -75,9 +75,9 @@ const albumOptionClose       = document.getElementById("albumOptionClose");
 const albumOptionCoverBtn    = document.getElementById("albumOptionCoverBtn");
 const albumOptionDeleteBtn   = document.getElementById("albumOptionDeleteBtn");
 const albumOptionCategoryBtn = document.getElementById("albumOptionCategoryBtn");
-const albumOptionBackdrop  = document.getElementById("albumOptionBackdrop"); // ← 이 줄 추가
+const albumOptionBackdrop    = document.getElementById("albumOptionBackdrop");
 
-// 카테고리 모달
+// 카테고리 관리 모달
 const categoryModal      = document.getElementById("categoryModal");
 const categoryBackdrop   = document.getElementById("categoryBackdrop");
 const categoryModalClose = document.getElementById("categoryModalClose");
@@ -93,7 +93,7 @@ const miniArtist = document.getElementById("miniArtist");
 const miniToggle = document.getElementById("miniToggle");
 const miniHide   = document.getElementById("miniHide");
 
-// 타임라인 UI
+// 타임라인
 const miniSeek        = document.getElementById("miniSeek");
 const miniCurrentTime = document.getElementById("miniCurrentTime");
 const miniDuration    = document.getElementById("miniDuration");
@@ -115,7 +115,7 @@ const coverPreview    = document.getElementById("coverPreview");
 const coverSaveBtn    = document.getElementById("coverSaveBtn");
 
 
-// ===== 3. 상태 (State) =====
+// ===== 3. 상태 =====
 
 let isPlaying   = false;
 let myAlbums    = [];
@@ -132,14 +132,16 @@ function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
 }
 
-// 카테고리 목록 상태 + LocalStorage
-let customCategories      = ["kpop", "pop", "ost", "etc"];
-const LOCAL_KEY_ALBUMS    = "jootubemusic.myAlbums";
+// 카테고리 + LocalStorage 키
+let customCategories       = ["kpop", "pop", "ost", "etc"];
+const LOCAL_KEY_ALBUMS     = "jootubemusic.myAlbums";
 const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 
 // YouTube IFrame Player
 let ytPlayer      = null;
 let ytUpdateTimer = null;
+
+
 // ===== 4. 공통 유틸 =====
 
 function pickAlbumImage(album) {
@@ -201,7 +203,9 @@ function extractVideoId(input) {
     const parts = u.pathname.split("/");
     const last = parts.pop() || parts.pop();
     if (last && /^[a-zA-Z0-9_-]{8,}$/.test(last)) return last;
-  } catch (e) {}
+  } catch (e) {
+    // ignore
+  }
 
   return "";
 }
@@ -374,6 +378,8 @@ async function loadTracksForAlbumFromFirestore(album) {
   list.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   return list;
 }
+
+
 // ===== 7. Last.fm API =====
 
 async function searchAlbums(query) {
@@ -408,17 +414,19 @@ async function fetchAlbumTracks(artist, albumName) {
 // ===== 8. 검색 모달 =====
 
 function openModal(query) {
-  modalTitle.textContent = `"${query}" 검색 결과`;
-  searchModal.style.display = "flex";
+  if (!searchModal) return;
+  modalTitle.textContent     = `"${query}" 검색 결과`;
+  searchModal.style.display  = "flex";
 }
 
 function closeModal() {
+  if (!searchModal) return;
   searchModal.style.display = "none";
-  modalGrid.innerHTML = "";
+  if (modalGrid) modalGrid.innerHTML = "";
 }
 
-
 function renderSearchResults(albums) {
+  if (!modalGrid) return;
   modalGrid.innerHTML = "";
 
   if (!albums.length) {
@@ -448,7 +456,6 @@ function renderSearchResults(albums) {
         (a) => a.name === title && a.artist === artist
       );
 
-
       if (!exists) {
         const newAlbum = {
           name: title,
@@ -461,15 +468,17 @@ function renderSearchResults(albums) {
         renderMyAlbums();
         saveMyAlbumsToStorage();
         if (currentUser) syncMyAlbumsToFirestore();
-        
+
         closeModal();
-        openCategoryModal(0); // 방금 추가한 앨범은 인덱스 0
+        openCategoryModal(0);
         return;
       }
 
-      // 이미 있는 앨범
-      const albumObj = myAlbums.find((a) => a.name === title && a.artist === artist);
-      if (albumObj) {
+      const albumObj = myAlbums.find(
+        (a) => a.name === title && a.artist === artist
+      );
+      if (!albumObj) return;
+
       if (!albumObj.hasCover) {
         closeModal();
         openCoverModal(albumObj);
@@ -477,7 +486,6 @@ function renderSearchResults(albums) {
         closeModal();
         openTrackModal(albumObj);
       }
-              }
     });
 
     modalGrid.appendChild(card);
@@ -485,19 +493,24 @@ function renderSearchResults(albums) {
 }
 
 async function handleSearch() {
+  if (!searchInput) return;
   const q = searchInput.value.trim();
   if (!q) return;
 
   openModal(q);
-  modalGrid.innerHTML = '<div class="empty">검색 중...</div>';
+  if (modalGrid) {
+    modalGrid.innerHTML = '<div class="empty">검색 중...</div>';
+  }
 
   try {
     const albums = await searchAlbums(q);
     renderSearchResults(albums);
   } catch (err) {
     console.error(err);
-    modalGrid.innerHTML =
-      '<div class="empty">검색 중 오류가 발생했습니다.</div>';
+    if (modalGrid) {
+      modalGrid.innerHTML =
+        '<div class="empty">검색 중 오류가 발생했습니다.</div>';
+    }
   }
 }
 
@@ -529,8 +542,6 @@ async function updateAlbumCategory(index, newCategory) {
   const album = myAlbums[index];
   if (!album) return;
 
-  console.log("updateAlbumCategory", { index, before: album.category, newCategory });
-
   album.category = newCategory;
   renderMyAlbums();
   saveMyAlbumsToStorage();
@@ -548,28 +559,29 @@ async function updateAlbumCategory(index, newCategory) {
   }
 }
 
-
-// 카테고리 모달용 상태/함수
 let categoryTargetIndex = null;
 
 function openCategoryModal(index) {
-  console.log("openCategoryModal called with index:", index); // 디버그용
-  categoryTargetIndex = index;
-  renderCategoryChips();
+  if (!categoryModal) return;
+  categoryTargetIndex        = index;
   categoryModal.style.display = "flex";
+  renderCategoryChips();
 }
 
 function closeCategoryModal() {
+  if (!categoryModal) return;
   categoryModal.style.display = "none";
-  categoryTargetIndex = null;
+  categoryTargetIndex         = null;
 }
 
 function renderCategoryChips() {
+  if (!categoryListEl) return;
+
   categoryListEl.innerHTML = "";
   const album = myAlbums[categoryTargetIndex];
   const currentCat = album ? album.category || "etc" : null;
 
-  // 1) 드롭다운 select 생성
+  // select
   const select = document.createElement("select");
   select.className = "category-select";
   select.style.cssText =
@@ -585,13 +597,7 @@ function renderCategoryChips() {
 
   select.addEventListener("change", (e) => {
     const selectedCat = e.target.value;
-    console.log(
-      "category selected:",
-      selectedCat,
-      "targetIndex:",
-      categoryTargetIndex
-    );
-    currentCategory = selectedCat;
+    currentCategory   = selectedCat;
 
     if (categoryBar) {
       categoryBar.querySelectorAll(".category-btn").forEach((b) => {
@@ -606,7 +612,7 @@ function renderCategoryChips() {
 
   categoryListEl.appendChild(select);
 
-  // 2) 버튼 칩 컨테이너
+  // 버튼 칩
   const buttonContainer = document.createElement("div");
   buttonContainer.style.cssText =
     "display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;";
@@ -619,8 +625,8 @@ function renderCategoryChips() {
     btn.dataset.category = cat;
 
     if (cat === currentCat) {
-      btn.style.background = "#007bff";
-      btn.style.color = "white";
+      btn.style.background  = "#007bff";
+      btn.style.color       = "white";
       btn.style.borderColor = "#007bff";
     }
 
@@ -636,9 +642,10 @@ function renderCategoryChips() {
 }
 
 function renderMyAlbums() {
+  if (!myGrid || !empty) return;
+
   myGrid.innerHTML = "";
 
-  // 1) myAlbums 전체에 originalIndex를 붙인 뒤, currentCategory로 필터
   const base = myAlbums.map((album, i) => ({ album, originalIndex: i }));
   const filtered =
     currentCategory === "all"
@@ -653,7 +660,6 @@ function renderMyAlbums() {
   }
   empty.style.display = "none";
 
-  // 2) filtered의 각 아이템에서 album, originalIndex를 분해해서 사용
   filtered.forEach(({ album, originalIndex }) => {
     const card = document.createElement("div");
     card.className = "card";
@@ -678,68 +684,81 @@ function renderMyAlbums() {
     });
 
     const optionBtn = card.querySelector(".album-option-btn");
-    optionBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const idx = Number(optionBtn.dataset.index); // 항상 myAlbums 인덱스
-      const target = myAlbums[idx];
-      if (!target) return;
-
-      openAlbumOptionModal(target, idx);
-    });
+    if (optionBtn) {
+      optionBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const idx    = Number(optionBtn.dataset.index);
+        const target = myAlbums[idx];
+        if (!target) return;
+        openAlbumOptionModal(target, idx);
+      });
+    }
 
     myGrid.appendChild(card);
   });
 }
 
+
 // ===== 10. 커버 입력 모달 =====
+
 let pendingCoverAlbum = null;
 
 function openCoverModal(album) {
-  pendingCoverAlbum = album;
+  if (!coverModal) return;
+  pendingCoverAlbum         = album;
   coverModalTitle.textContent = `${album.artist} - ${album.name}`;
-  coverInfo.textContent =
+  coverInfo.textContent       =
     "이 앨범에는 공식 커버가 없어 보입니다. 사용할 커버 이미지 URL을 입력해 주세요.";
-  coverUrlInput.value = "";
-  coverPreview.src = album.image || "";
-  coverModal.style.display = "flex";
+  coverUrlInput.value        = "";
+  coverPreview.src           = album.image || "";
+  coverModal.style.display   = "flex";
 }
 
 function closeCoverModal() {
+  if (!coverModal) return;
   coverModal.style.display = "none";
-  pendingCoverAlbum = null;
+  pendingCoverAlbum        = null;
 }
 
-// URL 입력 시 미리보기 업데이트
-coverUrlInput.addEventListener("input", () => {
-  const url = coverUrlInput.value.trim();
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    coverPreview.src = url;
-  }
-});
+if (coverUrlInput && coverPreview) {
+  coverUrlInput.addEventListener("input", () => {
+    const url = coverUrlInput.value.trim();
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      coverPreview.src = url;
+    }
+  });
+}
 
-coverSaveBtn.addEventListener("click", () => {
-  if (!pendingCoverAlbum) return;
+if (coverSaveBtn) {
+  coverSaveBtn.addEventListener("click", () => {
+    if (!pendingCoverAlbum) return;
 
-  const url = coverUrlInput.value.trim();
-  if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    alert("올바른 이미지 URL을 입력해 주세요.");
-    return;
-  }
+    const url = coverUrlInput.value.trim();
+    if (!url.startsWith("http://") && !url.startsWith("https://")) {
+      alert("올바른 이미지 URL을 입력해 주세요.");
+      return;
+    }
 
-  pendingCoverAlbum.image = url;
-  pendingCoverAlbum.hasCover = true;
+    pendingCoverAlbum.image   = url;
+    pendingCoverAlbum.hasCover = true;
 
-  renderMyAlbums();
-  saveMyAlbumsToStorage();
-  if (currentUser) syncMyAlbumsToFirestore();
+    renderMyAlbums();
+    saveMyAlbumsToStorage();
+    if (currentUser) syncMyAlbumsToFirestore();
 
-  const album = pendingCoverAlbum;
-  closeCoverModal();
-  openTrackModal(album);
-});
+    const album = pendingCoverAlbum;
+    closeCoverModal();
+    openTrackModal(album);
+  });
+}
 
-coverModalClose.addEventListener("click", closeCoverModal);
-coverBackdrop.addEventListener("click", closeCoverModal);
+if (coverModalClose) {
+  coverModalClose.addEventListener("click", closeCoverModal);
+}
+if (coverBackdrop) {
+  coverBackdrop.addEventListener("click", closeCoverModal);
+}
+
 
 // ===== 11. 트랙 모달 + YouTube Player =====
 
@@ -752,7 +771,9 @@ function selectTrackOnly(id) {
     .querySelectorAll("#trackModal #trackList li.selected-track")
     .forEach((item) => item.classList.remove("selected-track"));
 
-  const li = trackList.querySelector(`[data-track-id="${id}"]`);
+  const li = trackList
+    ? trackList.querySelector(`[data-track-id="${id}"]`)
+    : null;
   if (li) li.classList.add("selected-track");
 
   currentTrackId = id;
@@ -765,13 +786,16 @@ function playTrack(id) {
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
     .forEach((item) => item.classList.remove("selected-track"));
-  const li = trackList.querySelector(`[data-track-id="${id}"]`);
+
+  const li = trackList
+    ? trackList.querySelector(`[data-track-id="${id}"]`)
+    : null;
   if (li) li.classList.add("selected-track");
 
   currentTrackId = id;
 
   updateNowPlaying(track);
-  miniPlayer.style.display = "flex";
+  if (miniPlayer) miniPlayer.style.display = "flex";
 
   playTrackOnYouTube(track);
 
@@ -798,60 +822,67 @@ function createTrackListItem(album, trackData, index) {
   const editBtn   = li.querySelector(".track-edit-btn");
   const titleSpan = li.querySelector(".track-title-text");
 
-  line.addEventListener("click", (e) => {
-    e.stopPropagation();
-    playTrack(id);
-  });
+  if (line) {
+    line.addEventListener("click", (e) => {
+      e.stopPropagation();
+      playTrack(id);
+    });
+  }
 
-  editBtn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const t = tracks.find((t) => t.id === id);
-    if (!t) return;
+  if (editBtn) {
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const t = tracks.find((t) => t.id === id);
+      if (!t) return;
 
-    const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
-    if (newTitle && newTitle.trim()) {
-      t.title = newTitle.trim();
-      if (titleSpan) titleSpan.textContent = t.title;
+      const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
+      if (newTitle && newTitle.trim()) {
+        t.title = newTitle.trim();
+        if (titleSpan) titleSpan.textContent = t.title;
 
-      const current = getCurrentTrack();
-      if (current && current.id === id) {
-        miniTitle.textContent = t.title;
+        const current = getCurrentTrack();
+        if (current && current.id === id) {
+          miniTitle.textContent = t.title;
+        }
       }
-    }
 
-    const rawUrl = prompt(
-      "YouTube videoId 또는 링크를 입력해 주세요.",
-      t.videoId || ""
-    );
-    if (rawUrl && rawUrl.trim()) {
-      const videoId = extractVideoId(rawUrl);
-      if (!videoId) {
-        alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
-      } else {
-        t.videoId = videoId;
-      }
-    }
-
-    editBtn.textContent = t.videoId ? "✎✓" : "✎";
-
-    if (currentUser && currentTrackAlbum) {
-      saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch((err) =>
-        console.error(
-          "saveTracksForAlbumToFirestore (edit track) error",
-          err
-        )
+      const rawUrl = prompt(
+        "YouTube videoId 또는 링크를 입력해 주세요.",
+        t.videoId || ""
       );
-    }
-  });
+      if (rawUrl && rawUrl.trim()) {
+        const videoId = extractVideoId(rawUrl);
+        if (!videoId) {
+          alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
+        } else {
+          t.videoId = videoId;
+        }
+      }
+
+      editBtn.textContent = t.videoId ? "✎✓" : "✎";
+
+      if (currentUser && currentTrackAlbum) {
+        saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch(
+          (err) =>
+            console.error(
+              "saveTracksForAlbumToFirestore (edit track) error",
+              err
+            )
+        );
+      }
+    });
+  }
 
   return li;
 }
 
 function openTrackModal(album) {
-  currentTrackAlbum = album;
+  if (!trackModal || !trackList) return;
+
+  currentTrackAlbum           = album;
   trackModalTitle.textContent = `${album.artist} - ${album.name}`;
-  trackList.innerHTML = "<li>트랙 불러오는 중...</li>";
-  trackModal.style.display = "flex";
+  trackList.innerHTML         = "<li>트랙 불러오는 중...</li>";
+  trackModal.style.display    = "flex";
 
   (async () => {
     try {
@@ -884,7 +915,7 @@ function openTrackModal(album) {
         });
       }
 
-      tracks = loadedTracks;
+      tracks                = loadedTracks;
       playedTrackIdsInAlbum = new Set();
 
       trackList.innerHTML = "";
@@ -936,7 +967,7 @@ async function autoPlayRandomTrackFromAlbum(album) {
     currentTrackAlbum        = album;
     tracks                   = loadedTracks;
     playedTrackIdsInAlbum    = new Set();
-    const next = playable[Math.floor(Math.random() * playable.length)];
+    const next               = playable[Math.floor(Math.random() * playable.length)];
     playTrack(next.id);
   } catch (err) {
     console.error("autoPlayRandomTrackFromAlbum error", err);
@@ -944,17 +975,20 @@ async function autoPlayRandomTrackFromAlbum(album) {
 }
 
 function closeTrackModal() {
+  if (!trackModal || !trackList) return;
   trackModal.style.display = "none";
   trackList.innerHTML      = "";
   currentTrackAlbum        = null;
 }
 
-// YouTube IFrame API 로드
+
+// ===== 12. YouTube IFrame API =====
+
 (function injectYouTubeAPI() {
   if (document.getElementById("yt-iframe-api")) return;
   const tag = document.createElement("script");
-  tag.id  = "yt-iframe-api";
-  tag.src = "https://www.youtube.com/iframe_api";
+  tag.id    = "yt-iframe-api";
+  tag.src   = "https://www.youtube.com/iframe_api";
   document.head.appendChild(tag);
 })();
 
@@ -984,6 +1018,7 @@ function onPlayerReady() {
 }
 
 function updatePlayButtonUI() {
+  if (!miniToggle) return;
   miniToggle.textContent = isPlaying ? "II" : "▶";
 }
 
@@ -993,14 +1028,14 @@ function onPlayerStateChange(event) {
 
   if (state === YT.PlayerState.PLAYING) {
     isPlaying = true;
-    miniToggle.textContent = "II";
+    updatePlayButtonUI();
     startYtProgressLoop();
   } else if (
     state === YT.PlayerState.PAUSED ||
     state === YT.PlayerState.ENDED
   ) {
     isPlaying = false;
-    miniToggle.textContent = "▶";
+    updatePlayButtonUI();
     if (state === YT.PlayerState.ENDED) {
       stopYtProgressLoop();
       handleTrackEnded();
@@ -1038,17 +1073,19 @@ function handleTrackEnded() {
   autoPlayRandomTrackFromAlbum(nextAlbum);
 }
 
-// 내 모든 앨범에서 videoId가 있는 트랙 중 랜덤
+
+// ===== 13. 랜덤 재생 (전체 앨범) =====
+
 async function playRandomTrackFromAllAlbums() {
   if (!currentUser) return;
 
-  const uid = currentUser.uid;
-  const albumsSnap = await getDocs(userAlbumsColRef(uid));
-  const allPlayableTracks = [];
+  const uid            = currentUser.uid;
+  const albumsSnap     = await getDocs(userAlbumsColRef(uid));
+  const allPlayable    = [];
 
   for (const albumDoc of albumsSnap.docs) {
     const albumData = albumDoc.data();
-    const album = {
+    const album     = {
       name: albumData.name,
       artist: albumData.artist,
       image: albumData.image,
@@ -1060,7 +1097,7 @@ async function playRandomTrackFromAllAlbums() {
     tracksSnap.forEach((docSnap) => {
       const d = docSnap.data();
       if (d.videoId) {
-        allPlayableTracks.push({
+        allPlayable.push({
           id: d.id,
           title: d.title,
           artist: d.artist,
@@ -1073,21 +1110,22 @@ async function playRandomTrackFromAllAlbums() {
     });
   }
 
-  if (!allPlayableTracks.length) return;
+  if (!allPlayable.length) return;
 
-  const random = allPlayableTracks[
-    Math.floor(Math.random() * allPlayableTracks.length)
-  ];
+  const random = allPlayable[Math.floor(Math.random() * allPlayable.length)];
 
-  currentTrackAlbum        = random._album;
-  tracks                   = allPlayableTracks.filter(
+  currentTrackAlbum     = random._album;
+  tracks                = allPlayable.filter(
     (t) => t.albumName === random.albumName
   );
-  currentTrackId           = random.id;
-  playedTrackIdsInAlbum    = new Set([random.id]);
+  currentTrackId        = random.id;
+  playedTrackIdsInAlbum = new Set([random.id]);
 
   playTrack(random.id);
 }
+
+
+// ===== 14. 미니 플레이어 진행도 =====
 
 function startYtProgressLoop() {
   if (ytUpdateTimer) return;
@@ -1103,9 +1141,9 @@ function stopYtProgressLoop() {
 
 function updateMiniPlayerProgress() {
   if (!ytPlayer || typeof ytPlayer.getDuration !== "function") {
-    miniCurrentTime.textContent = "00:00";
-    miniDuration.textContent    = "00:00";
-    miniSeek.value              = 0;
+    if (miniCurrentTime) miniCurrentTime.textContent = "00:00";
+    if (miniDuration)    miniDuration.textContent    = "00:00";
+    if (miniSeek)        miniSeek.value              = 0;
     return;
   }
 
@@ -1113,32 +1151,34 @@ function updateMiniPlayerProgress() {
   const current  = ytPlayer.getCurrentTime() || 0;
 
   if (!duration) {
-    miniCurrentTime.textContent = "00:00";
-    miniDuration.textContent    = "00:00";
-    miniSeek.value              = 0;
+    if (miniCurrentTime) miniCurrentTime.textContent = "00:00";
+    if (miniDuration)    miniDuration.textContent    = "00:00";
+    if (miniSeek)        miniSeek.value              = 0;
     return;
   }
 
-  miniCurrentTime.textContent = formatTime(current);
-  miniDuration.textContent    = formatTime(duration);
-  miniSeek.value              = (current / duration) * 100;
+  if (miniCurrentTime) miniCurrentTime.textContent = formatTime(current);
+  if (miniDuration)    miniDuration.textContent    = formatTime(duration);
+  if (miniSeek)        miniSeek.value              = (current / duration) * 100;
 }
 
 function updateNowPlaying(track) {
+  if (!track) return;
+
   const coverUrl = track.coverUrl || "";
 
-  miniTitle.textContent  = track.title;
-  miniArtist.textContent = track.artist || track.albumName || "";
+  if (miniTitle)  miniTitle.textContent  = track.title;
+  if (miniArtist) miniArtist.textContent = track.artist || track.albumName || "";
 
   if (miniCover) {
     if (coverUrl) miniCover.src = coverUrl;
     else miniCover.removeAttribute("src");
   }
 
-  miniSeek.value              = 0;
-  miniCurrentTime.textContent = "00:00";
-  miniDuration.textContent    = "00:00";
-  miniPlayer.style.display    = "flex";
+  if (miniSeek)        miniSeek.value              = 0;
+  if (miniCurrentTime) miniCurrentTime.textContent = "00:00";
+  if (miniDuration)    miniDuration.textContent    = "00:00";
+  if (miniPlayer)      miniPlayer.style.display    = "flex";
 }
 
 function playTrackOnYouTube(track) {
@@ -1155,41 +1195,52 @@ function playTrackOnYouTube(track) {
   ytPlayer.playVideo();
 }
 
-// 미니 플레이어 버튼들
-miniToggle.addEventListener("click", () => {
-  if (!ytPlayer) return;
-  const state = ytPlayer.getPlayerState();
-  if (state === YT.PlayerState.PLAYING) {
-    ytPlayer.pauseVideo();
-  } else {
-    ytPlayer.playVideo();
-  }
-});
 
-miniHide.textContent = "⏭";
-miniHide.addEventListener("click", () => {
-  playRandomTrackFromAllAlbums();
-});
+// ===== 15. 미니 플레이어 / 타임라인 이벤트 =====
 
-// 타임라인 드래그
-miniSeek.addEventListener("input", () => {
-  if (!ytPlayer) return;
-  const duration = ytPlayer.getDuration() || 0;
-  if (!duration) return;
-  const pct         = Number(miniSeek.value) / 100;
-  const previewTime = duration * pct;
-  miniCurrentTime.textContent = formatTime(previewTime);
-});
+if (miniToggle) {
+  miniToggle.addEventListener("click", () => {
+    if (!ytPlayer) return;
+    const state = ytPlayer.getPlayerState();
+    if (state === YT.PlayerState.PLAYING) {
+      ytPlayer.pauseVideo();
+    } else {
+      ytPlayer.playVideo();
+    }
+  });
+}
 
-miniSeek.addEventListener("change", () => {
-  if (!ytPlayer) return;
-  const duration = ytPlayer.getDuration() || 0;
-  if (!duration) return;
-  const pct    = Number(miniSeek.value) / 100;
-  const newTime = duration * pct;
-  ytPlayer.seekTo(newTime, true);
-});
-// ===== 12. 카테고리 / 공통 이벤트 =====
+if (miniHide) {
+  miniHide.textContent = "⏭";
+  miniHide.addEventListener("click", () => {
+    playRandomTrackFromAllAlbums();
+  });
+}
+
+if (miniSeek) {
+  miniSeek.addEventListener("input", () => {
+    if (!ytPlayer) return;
+    const duration = ytPlayer.getDuration() || 0;
+    if (!duration) return;
+    const pct         = Number(miniSeek.value) / 100;
+    const previewTime = duration * pct;
+    if (miniCurrentTime) {
+      miniCurrentTime.textContent = formatTime(previewTime);
+    }
+  });
+
+  miniSeek.addEventListener("change", () => {
+    if (!ytPlayer) return;
+    const duration = ytPlayer.getDuration() || 0;
+    if (!duration) return;
+    const pct    = Number(miniSeek.value) / 100;
+    const newTime = duration * pct;
+    ytPlayer.seekTo(newTime, true);
+  });
+}
+
+
+// ===== 16. 카테고리 / 공통 버튼 =====
 
 if (categoryBar) {
   categoryBar.addEventListener("click", (e) => {
@@ -1207,7 +1258,6 @@ if (categoryBar) {
   });
 }
 
-// 추가 트랙 버튼 (수동 추가)
 if (trackAddBtn) {
   trackAddBtn.addEventListener("click", () => {
     if (!currentTrackAlbum) return;
@@ -1241,12 +1291,14 @@ if (trackAddBtn) {
 
     tracks.push(newTrack);
 
-    const li = createTrackListItem(
-      currentTrackAlbum,
-      newTrack,
-      tracks.length - 1
-    );
-    trackList.appendChild(li);
+    if (trackList) {
+      const li = createTrackListItem(
+        currentTrackAlbum,
+        newTrack,
+        tracks.length - 1
+      );
+      trackList.appendChild(li);
+    }
 
     if (currentUser && currentTrackAlbum) {
       saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch((err) =>
@@ -1257,12 +1309,13 @@ if (trackAddBtn) {
 }
 
 
-// ===== 13. 앨범 옵션 모달 =====
+// ===== 17. 앨범 옵션 모달 =====
 
 let albumOptionTargetIndex = null;
 let albumOptionTargetAlbum = null;
 
 function openAlbumOptionModal(album, index) {
+  if (!albumOptionModal || !albumOptionTitle) return;
   albumOptionTargetAlbum = album;
   albumOptionTargetIndex = index;
 
@@ -1271,90 +1324,124 @@ function openAlbumOptionModal(album, index) {
 }
 
 function closeAlbumOptionModal() {
+  if (!albumOptionModal) return;
   albumOptionModal.style.display = "none";
   albumOptionTargetAlbum = null;
   albumOptionTargetIndex = null;
 }
 
-albumOptionClose.addEventListener("click", closeAlbumOptionModal);
+if (albumOptionClose) {
+  albumOptionClose.addEventListener("click", closeAlbumOptionModal);
+}
 
-albumOptionModal.addEventListener("click", (e) => {
-  if (e.target === albumOptionModal) {
-    closeAlbumOptionModal();
-  }
-});
-
-albumOptionCoverBtn.addEventListener("click", () => {
-  if (!albumOptionTargetAlbum) return;
-  const target = albumOptionTargetAlbum;
-  closeAlbumOptionModal();
-  openCoverModal(target);
-});
-
-albumOptionDeleteBtn.addEventListener("click", () => {
-  if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
-
-  const album = albumOptionTargetAlbum;
-  const ok = confirm(`"${album.artist} - ${album.name}" 앨범을 삭제하시겠습니까?`);
-  if (!ok) return;
-
-  const idx = albumOptionTargetIndex;
-  closeAlbumOptionModal();
-  deleteAlbumAtIndex(idx);
-});
-
-albumOptionCategoryBtn.addEventListener("click", () => {
-  console.log("albumOptionCategoryBtn clicked", {
-    albumOptionTargetIndex,
-    albumOptionTargetAlbum,
+if (albumOptionModal) {
+  albumOptionModal.addEventListener("click", (e) => {
+    if (e.target === albumOptionModal) {
+      closeAlbumOptionModal();
+    }
   });
-  if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
-  closeAlbumOptionModal();
-  openCategoryModal(albumOptionTargetIndex);
-});
+}
+
+if (albumOptionCoverBtn) {
+  albumOptionCoverBtn.addEventListener("click", () => {
+    if (!albumOptionTargetAlbum) return;
+    const target = albumOptionTargetAlbum;
+    closeAlbumOptionModal();
+    openCoverModal(target);
+  });
+}
+
+if (albumOptionDeleteBtn) {
+  albumOptionDeleteBtn.addEventListener("click", () => {
+    if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
+
+    const album = albumOptionTargetAlbum;
+    const ok = confirm(
+      `"${album.artist} - ${album.name}" 앨범을 삭제하시겠습니까?`
+    );
+    if (!ok) return;
+
+    const idx = albumOptionTargetIndex;
+    closeAlbumOptionModal();
+    deleteAlbumAtIndex(idx);
+  });
+}
+
+if (albumOptionCategoryBtn) {
+  albumOptionCategoryBtn.addEventListener("click", () => {
+    if (albumOptionTargetIndex == null || !albumOptionTargetAlbum) return;
+    closeAlbumOptionModal();
+    openCategoryModal(albumOptionTargetIndex);
+  });
+}
+
+if (albumOptionBackdrop) {
+  albumOptionBackdrop.addEventListener("click", (e) => {
+    if (e.target === albumOptionBackdrop) {
+      closeAlbumOptionModal();
+    }
+  });
+}
 
 
-// ===== 14. 모달/검색/카테고리 모달 이벤트 =====
+// ===== 18. 검색 / 모달 공통 이벤트 =====
 
-// 검색 모달
-searchBtn.addEventListener("click", handleSearch);
-searchInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleSearch();
-});
-modalClose.addEventListener("click", closeModal);
-modalBackdrop.addEventListener("click", closeModal);
+if (searchBtn) {
+  searchBtn.addEventListener("click", handleSearch);
+}
+if (searchInput) {
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleSearch();
+  });
+}
+if (modalClose) {
+  modalClose.addEventListener("click", closeModal);
+}
+if (modalBackdrop) {
+  modalBackdrop.addEventListener("click", closeModal);
+}
 
-// 트랙 모달
-trackModalClose.addEventListener("click", closeTrackModal);
-trackBackdrop.addEventListener("click", (e) => {
-  if (e.target === trackBackdrop) {
-    closeTrackModal();
-  }
-});
+if (trackModalClose) {
+  trackModalClose.addEventListener("click", closeTrackModal);
+}
+if (trackBackdrop) {
+  trackBackdrop.addEventListener("click", (e) => {
+    if (e.target === trackBackdrop) {
+      closeTrackModal();
+    }
+  });
+}
 
-// 카테고리 모달
-categoryModalClose.addEventListener("click", closeCategoryModal);
-categoryBackdrop.addEventListener("click", (e) => {
-  if (e.target === categoryBackdrop) closeCategoryModal();
-});
+if (categoryModalClose) {
+  categoryModalClose.addEventListener("click", closeCategoryModal);
+}
+if (categoryBackdrop) {
+  categoryBackdrop.addEventListener("click", (e) => {
+    if (e.target === categoryBackdrop) closeCategoryModal();
+  });
+}
 
-categoryAddBtn.addEventListener("click", () => {
-  const name = (categoryNewInput.value || "").trim().toLowerCase();
-  if (!name) return;
-  if (customCategories.includes(name)) {
-    alert("이미 존재하는 카테고리입니다.");
-    return;
-  }
-  customCategories.push(name);
-  saveCategoriesToStorage();
-  categoryNewInput.value = "";
-  renderCategoryChips();
-});
+if (categoryAddBtn) {
+  categoryAddBtn.addEventListener("click", () => {
+    const name = (categoryNewInput.value || "").trim().toLowerCase();
+    if (!name) return;
+    if (customCategories.includes(name)) {
+      alert("이미 존재하는 카테고리입니다.");
+      return;
+    }
+    customCategories.push(name);
+    saveCategoriesToStorage();
+    categoryNewInput.value = "";
+    renderCategoryChips();
+  });
+}
 
 
-// ===== 15. 볼륨 모달 (모바일 호환) =====
+// ===== 19. 볼륨 모달 =====
 
 function openVolumeModal() {
+  if (!volumeModal || !volumeSlider) return;
+
   if (!ytPlayer || typeof ytPlayer.getVolume !== "function") {
     volumeSlider.value = 100;
   } else {
@@ -1366,34 +1453,38 @@ function openVolumeModal() {
 }
 
 function closeVolumeModal() {
+  if (!volumeModal) return;
   volumeModal.style.display = "none";
 }
 
 ["click", "touchend"].forEach((evt) => {
-  if (!miniCover) return;  // ← 이 줄 추가
+  if (!miniCover) return;
   miniCover.addEventListener(evt, (e) => {
     e.preventDefault();
     e.stopPropagation();
     openVolumeModal();
   });
-});;
+});
 
 ["click", "touchend"].forEach((evt) => {
-  if (!volumeModalClose) return;
-  volumeModalClose.addEventListener(evt, (e) => {
-    e.preventDefault();
-    closeVolumeModal();
-  });
-  if (!volumeBackdrop) return;
-  volumeBackdrop.addEventListener(evt, (e) => {
-    if (e.target === volumeBackdrop) {
+  if (volumeModalClose) {
+    volumeModalClose.addEventListener(evt, (e) => {
       e.preventDefault();
       closeVolumeModal();
-    }
-  });
+    });
+  }
+  if (volumeBackdrop) {
+    volumeBackdrop.addEventListener(evt, (e) => {
+      if (e.target === volumeBackdrop) {
+        e.preventDefault();
+        closeVolumeModal();
+      }
+    });
+  }
 });
 
 ["input", "change", "touchend"].forEach((evt) => {
+  if (!volumeSlider) return;
   volumeSlider.addEventListener(evt, () => {
     const v = Math.max(0, Math.min(100, Number(volumeSlider.value)));
     if (ytPlayer && typeof ytPlayer.setVolume === "function") {
@@ -1403,7 +1494,7 @@ function closeVolumeModal() {
 });
 
 
-// ===== 16. 키보드(ESC/스페이스) =====
+// ===== 20. 키보드 단축키 =====
 
 window.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
@@ -1411,6 +1502,8 @@ window.addEventListener("keydown", (e) => {
     closeTrackModal();
     closeCoverModal();
     closeCategoryModal();
+    closeAlbumOptionModal();
+    closeVolumeModal();
   }
 });
 
@@ -1424,7 +1517,13 @@ window.addEventListener("keydown", (e) => {
     active.isContentEditable;
   if (isInput) return;
 
-  if (miniPlayer.style.display === "none" || !miniPlayer.offsetParent) return;
+  if (
+    !miniPlayer ||
+    miniPlayer.style.display === "none" ||
+    !miniPlayer.offsetParent
+  ) {
+    return;
+  }
 
   e.preventDefault();
 
@@ -1437,27 +1536,35 @@ window.addEventListener("keydown", (e) => {
     ytPlayer.playVideo();
   }
 });
-// ===== 17. Firebase Auth =====
 
-authToggleBtn.addEventListener("click", async () => {
-  try {
-    if (currentUser) {
-      await signOut(auth);
-    } else {
-      await signInWithPopup(auth, provider);
+
+// ===== 21. Firebase Auth =====
+
+if (authToggleBtn) {
+  authToggleBtn.addEventListener("click", async () => {
+    try {
+      if (currentUser) {
+        await signOut(auth);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+    } catch (e) {
+      console.error("auth toggle error", e);
+      alert("로그인/로그아웃 중 오류: " + (e.code || e.message));
     }
-  } catch (e) {
-    console.error("auth toggle error", e);
-    alert("로그인/로그아웃 중 오류: " + (e.code || e.message));
-  }
-});
+  });
+}
 
 onAuthStateChanged(auth, async (user) => {
   currentUser = user || null;
 
   if (user) {
-    authStatus.textContent    = `${user.displayName || "사용자"}`;
-    authToggleBtn.textContent = "Logout";
+    if (authStatus) {
+      authStatus.textContent = `${user.displayName || "사용자"}`;
+    }
+    if (authToggleBtn) {
+      authToggleBtn.textContent = "Logout";
+    }
 
     try {
       await loadMyAlbumsFromFirestore();
@@ -1465,13 +1572,15 @@ onAuthStateChanged(auth, async (user) => {
       console.error("loadMyAlbumsFromFirestore error", e);
     }
   } else {
-    authStatus.textContent    = "";
-    authToggleBtn.textContent = "Login";
+    if (authStatus) authStatus.textContent = "";
+    if (authToggleBtn) authToggleBtn.textContent = "Login";
 
     myAlbums = [];
     renderMyAlbums();
   }
 });
 
-// 로컬 앨범 초기 로드
+
+// ===== 22. 초기 로드 =====
+
 loadMyAlbumsFromStorage();
