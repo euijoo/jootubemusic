@@ -777,6 +777,13 @@ function playTrack(id) {
   const track = tracks.find((t) => t.id === id);
   if (!track) return;
 
+  // 1) 먼저 링크 있는지 확인
+  if (!track.videoId || !track.videoId.trim()) {
+    alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
+    return; // 여기서 바로 종료 → 미니플레이어 / 선택 상태 건드리지 않음
+  }
+
+  // 2) 여기부터는 '재생 가능한 트랙'만 내려옴
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
     .forEach((item) => item.classList.remove("selected-track"));
