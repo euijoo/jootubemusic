@@ -1220,8 +1220,6 @@ if (miniToggle) {
   });
 }
 
-const miniHide = document.getElementById("miniHide"); // 상단 DOM 캐싱
-
 
 if (miniHide) {
   miniHide.textContent = "⏭";
