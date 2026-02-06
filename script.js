@@ -777,15 +777,10 @@ function playTrack(id) {
   const track = tracks.find((t) => t.id === id);
   if (!track) return;
 
-  // 링크(YouTube videoId)가 없는 트랙이면 아무 것도 하지 않음
-  if (!track.videoId || !track.videoId.trim()) {
-    alert("이 트랙에는 아직 YouTube 링크가 없습니다.");
-    return;
-  }
-
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
     .forEach((item) => item.classList.remove("selected-track"));
+
   const li = trackList
     ? trackList.querySelector(`[data-track-id="${id}"]`)
     : null;
@@ -802,7 +797,6 @@ function playTrack(id) {
     playedTrackIdsInAlbum.add(id);
   }
 }
-
 
 function createTrackListItem(album, trackData, index) {
   const id = trackData.id;
@@ -1199,7 +1193,7 @@ function updateNowPlaying(track) {
 
 function playTrackOnYouTube(track) {
   if (!track.videoId) {
-    alert("먼저 이 트랙의 링크를 입력해 주세요.");
+    alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
     return;
   }
   if (!ytPlayer || typeof ytPlayer.loadVideoById !== "function") {
