@@ -760,6 +760,24 @@ function getCurrentTrack() {
   return tracks.find((t) => t.id === currentTrackId) || null;
 }
 
+function getNextPlayableTrackInCurrentAlbum() {
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) {
+    return null;
+  }
+
+  const currentIndex = tracks.findIndex((t) => t.id === currentTrackId);
+  if (currentIndex === -1) return null;
+
+  for (let i = currentIndex + 1; i < tracks.length; i += 1) {
+    const t = tracks[i];
+    if (t.videoId && t.videoId.trim()) {
+      return t;
+    }
+  }
+
+  return null;
+}
+
 function selectTrackOnly(id) {
   document
     .querySelectorAll("#trackModal #trackList li.selected-track")
@@ -1045,39 +1063,22 @@ function onPlayerStateChange(event) {
 }
 
 function handleTrackEnded() {
-  if (currentTrackAlbum && Array.isArray(tracks) && tracks.length) {
-    const notPlayed = tracks.filter((t) => !playedTrackIdsInAlbum.has(t.id));
-
-    if (notPlayed.length) {
-      const next = notPlayed[Math.floor(Math.random() * notPlayed.length)];
-      playTrack(next.id);
-      return;
-    }
-
-    const currentAlbumKey = getAlbumKey(currentTrackAlbum);
-    playedAlbumKeys.add(currentAlbumKey);
-  }
-
-  const remainingAlbums = myAlbums.filter((album) => {
-    const key = getAlbumKey(album);
-    return !playedAlbumKeys.has(key);
-  });
-
-  if (!remainingAlbums.length) {
-    playedTrackIdsInAlbum.clear();
-    playedAlbumKeys.clear();
+  // 1) 같은 앨범의 다음 트랙(순서대로, videoId 있는 것만)으로 이동
+  const nextTrack = getNextPlayableTrackInCurrentAlbum();
+  if (nextTrack) {
+    playTrack(nextTrack.id);
     return;
   }
 
-  const nextAlbum =
-    remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
-  autoPlayRandomTrackFromAlbum(nextAlbum);
+  // 2) 현재 앨범의 마지막 곡이라면 → 다른 앨범에서 랜덤으로 재생
+  const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
+  playRandomTrackFromAllAlbums(excludeKey);
 }
 
 
 // ===== 13. 랜덤 재생 (전체 앨범) =====
 
-async function playRandomTrackFromAllAlbums() {
+async function playRandomTrackFromAllAlbums(excludeAlbumKey = null) {
   if (!currentUser) return;
 
   const uid            = currentUser.uid;
@@ -1086,13 +1087,18 @@ async function playRandomTrackFromAllAlbums() {
 
   for (const albumDoc of albumsSnap.docs) {
     const albumData = albumDoc.data();
-    const album     = {
+    const album = {
       name: albumData.name,
       artist: albumData.artist,
       image: albumData.image,
       hasCover: albumData.hasCover,
       category: albumData.category || "etc",
     };
+
+    const albumKey = getAlbumKey(album);
+    if (excludeAlbumKey && albumKey === excludeAlbumKey) {
+      continue;
+    }
 
     const tracksSnap = await getDocs(albumTracksColRef(uid, album));
     tracksSnap.forEach((docSnap) => {
@@ -1214,7 +1220,16 @@ if (miniToggle) {
 if (miniHide) {
   miniHide.textContent = "⏭";
   miniHide.addEventListener("click", () => {
-    playRandomTrackFromAllAlbums();
+    const nextTrack = getNextPlayableTrackInCurrentAlbum();
+
+    if (nextTrack) {
+      // 같은 앨범에서 다음 트랙(순서대로) 재생
+      playTrack(nextTrack.id);
+    } else {
+      // 현재 앨범의 마지막 곡이면 → 다른 앨범에서 랜덤 재생
+      const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
+      playRandomTrackFromAllAlbums(excludeKey);
+    }
   });
 }
 
