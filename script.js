@@ -1084,44 +1084,32 @@ function handleTrackEnded() {
 async function playRandomTrackFromAllAlbums(excludeAlbumKey = null) {
   if (!currentUser) return;
 
-  // "다른 앨범 랜덤 재생"을 하더라도, 선택된 앨범의 트랙은 Firestore의 index 기준으로
-  // 정렬된 전체 목록을 다시 로드해서 이후 "다음 곡"이 순서대로 동작하게 만든다.
   const candidates = Array.isArray(myAlbums)
     ? myAlbums.filter((a) => getAlbumKey(a) !== excludeAlbumKey)
     : [];
 
   if (!candidates.length) return;
 
-  // 무작위 선택을 위해 섞기
   const shuffled = [...candidates].sort(() => Math.random() - 0.5);
 
   for (const album of shuffled) {
     const loadedTracks = await loadTracksForAlbumFromFirestore(album);
     if (!Array.isArray(loadedTracks) || !loadedTracks.length) continue;
 
-    const playable = loadedTracks
-  .filter((t) => t.videoId && t.videoId.trim());
+    const firstPlayableInOrder = loadedTracks.find(
+      (t) => t.videoId && t.videoId.trim()
+    );
+    if (!firstPlayableInOrder) continue;
 
-if (!playable.length) continue;
+    currentTrackAlbum = album;
+    tracks = loadedTracks;
+    currentTrackId = firstPlayableInOrder.id;
+    playedTrackIdsInAlbum = new Set([firstPlayableInOrder.id]);
 
-// 1) playable 배열이 이미 순서대로라면:
-const firstPlayable = playable[0];
-
-// 만약 Firestore index 기준으로 정렬한 tracks 배열(loadedTracks)을
-// 그대로 쓰고 싶다면, 그 안에서 첫 번째 playable을 찾는 방식도 가능:
-const firstPlayableInOrder = loadedTracks.find(
-  (t) => t.videoId && t.videoId.trim()
-);
-if (!firstPlayableInOrder) continue;
-
-currentTrackAlbum = album;
-tracks = loadedTracks; // index 기준 정렬된 전체 목록 그대로 유지
-currentTrackId = firstPlayableInOrder.id;
-playedTrackIdsInAlbum = new Set([firstPlayableInOrder.id]);
-
-playTrack(firstPlayableInOrder.id);
-return;
-
+    playTrack(firstPlayableInOrder.id);
+    return;
+  }
+}
 
 // ===== 14. 미니 플레이어 진행도 =====
 
