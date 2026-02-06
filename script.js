@@ -755,6 +755,83 @@ if (coverBackdrop) {
 
 
 // ===== 11. 트랙 모달 + YouTube Player =====
+// 트랙 리스트 하나 렌더링
+function createTrackListItem(album, trackData, index) {
+  const id = trackData.id;
+  const li = document.createElement("li");
+  li.dataset.trackId = id;
+
+  li.innerHTML = `
+    <span class="track-index">${index + 1}</span>
+    <div class="track-line">
+      <span class="track-title-text">${trackData.title}</span>
+      <span class="track-dots"></span>
+      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
+    </div>
+  `;
+
+  const line      = li.querySelector(".track-line");
+  const editBtn   = li.querySelector(".track-edit-btn");
+  const titleSpan = li.querySelector(".track-title-text");
+
+  // 트랙 클릭 → 재생
+  if (line) {
+    line.addEventListener("click", (e) => {
+      e.stopPropagation();
+      playTrack(id);
+    });
+  }
+
+  // 편집 버튼 → 제목 / videoId 수정
+  if (editBtn) {
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const t = tracks.find((t) => t.id === id);
+      if (!t) return;
+
+      const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
+      if (newTitle && newTitle.trim()) {
+        t.title = newTitle.trim();
+        if (titleSpan) titleSpan.textContent = t.title;
+
+        const current = getCurrentTrack();
+        if (current && current.id === id && miniTitle) {
+          miniTitle.textContent = t.title;
+        }
+      }
+
+      const rawUrl = prompt(
+        "YouTube videoId 또는 링크를 입력해 주세요.",
+        t.videoId || ""
+      );
+      if (rawUrl && rawUrl.trim()) {
+        const videoId = extractVideoId(rawUrl);
+        if (!videoId) {
+          alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
+        } else {
+          t.videoId = videoId;
+        }
+      }
+
+      editBtn.textContent = t.videoId ? "✎✓" : "✎";
+
+      if (currentUser && currentTrackAlbum) {
+        saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch(
+          (err) => console.error(
+            "saveTracksForAlbumToFirestore (edit track) error",
+            err
+          )
+        );
+      }
+    });
+  }
+
+  return li;
+}
+
+
+
+
 
 function openTrackModal(album) {
   if (!trackModal || !trackList) return;
