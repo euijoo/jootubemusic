@@ -756,38 +756,28 @@ if (coverBackdrop) {
 
 // ===== 11. 트랙 모달 + YouTube Player =====
 
-function playTrack(id) {
-  const track = tracks.find((t) => t.id === id);
-  if (!track) return;
-
-  // 1) 먼저 링크 있는지 확인
-  if (!track.videoId || !track.videoId.trim()) {
-    alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
-    return; // 여기서 바로 종료 → 미니플레이어 / 선택 상태 건드리지 않음
-  }
-
-  // 2) 여기부터는 '재생 가능한 트랙'만 내려옴
-  document
-    .querySelectorAll("#trackModal #trackList li.selected-track")
-    .forEach((item) => item.classList.remove("selected-track"));
-
-  const li = trackList
-    ? trackList.querySelector(`[data-track-id="${id}"]`)
-    : null;
-  if (li) li.classList.add("selected-track");
-
-  currentTrackId = id;
-
-  updateNowPlaying(track);
-  if (miniPlayer) miniPlayer.style.display = "flex";
-
-  playTrackOnYouTube(track);
-
-  if (currentTrackAlbum) {
-    playedTrackIdsInAlbum.add(id);
-  }
+function getCurrentTrack() {
+  return tracks.find((t) => t.id === currentTrackId) || null;
 }
 
+// 같은 앨범 안에서 "현재 트랙" 기준 다음 재생 가능한 트랙 찾기
+function getNextPlayableTrackInCurrentAlbum() {
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) {
+    return null;
+  }
+
+  const currentIndex = tracks.findIndex((t) => t.id === currentTrackId);
+  if (currentIndex === -1) return null;
+
+  for (let i = currentIndex + 1; i < tracks.length; i += 1) {
+    const t = tracks[i];
+    if (t.videoId && t.videoId.trim()) {
+      return t;
+    }
+  }
+
+  return null;
+}
 
 // 트랙 리스트 하나 렌더링
 function createTrackListItem(album, trackData, index) {
@@ -851,10 +841,11 @@ function createTrackListItem(album, trackData, index) {
 
       if (currentUser && currentTrackAlbum) {
         saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch(
-          (err) => console.error(
-            "saveTracksForAlbumToFirestore (edit track) error",
-            err
-          )
+          (err) =>
+            console.error(
+              "saveTracksForAlbumToFirestore (edit track) error",
+              err
+            )
         );
       }
     });
@@ -863,9 +854,37 @@ function createTrackListItem(album, trackData, index) {
   return li;
 }
 
+function playTrack(id) {
+  const track = tracks.find((t) => t.id === id);
+  if (!track) return;
 
+  // 1) 먼저 링크 있는지 확인
+  if (!track.videoId || !track.videoId.trim()) {
+    alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
+    return; // 여기서 바로 종료 → 미니플레이어 / 선택 상태 건드리지 않음
+  }
 
+  // 2) 여기부터는 '재생 가능한 트랙'만 내려옴
+  document
+    .querySelectorAll("#trackModal #trackList li.selected-track")
+    .forEach((item) => item.classList.remove("selected-track"));
 
+  const li = trackList
+    ? trackList.querySelector(`[data-track-id="${id}"]`)
+    : null;
+  if (li) li.classList.add("selected-track");
+
+  currentTrackId = id;
+
+  updateNowPlaying(track);
+  if (miniPlayer) miniPlayer.style.display = "flex";
+
+  playTrackOnYouTube(track);
+
+  if (currentTrackAlbum) {
+    playedTrackIdsInAlbum.add(id);
+  }
+}
 
 function openTrackModal(album) {
   if (!trackModal || !trackList) return;
@@ -915,8 +934,8 @@ function openTrackModal(album) {
         trackList.appendChild(li);
       });
 
-      // ✅ 이미 재생 중인 트랙이 이 앨범에 있으면 그대로 유지,
-      //    없을 때만 첫 곡으로 초기화
+      // 이미 재생 중인 트랙이 이 앨범에 있으면 그대로 유지,
+      // 없을 때만 첫 곡으로 초기화
       if (!currentTrackId || !tracks.some((t) => t.id === currentTrackId)) {
         if (tracks.length) {
           currentTrackId = tracks[0].id;
@@ -929,7 +948,6 @@ function openTrackModal(album) {
     }
   })();
 }
-
 
 async function autoPlayRandomTrackFromAlbum(album) {
   try {
@@ -957,14 +975,15 @@ async function autoPlayRandomTrackFromAlbum(album) {
       });
     }
 
-    const playable = loadedTracks.filter((t) => t.videoId);
+    const playable = loadedTracks.filter((t) => t.videoId && t.videoId.trim());
     if (!playable.length) return;
 
-    currentTrackAlbum        = album;
-    tracks                   = loadedTracks;
-    playedTrackIdsInAlbum    = new Set();
-    const next               = playable[Math.floor(Math.random() * playable.length)];
-    playTrack(next.id);
+    currentTrackAlbum     = album;
+    tracks                = loadedTracks;
+    currentTrackId        = playable[0].id;       // 그 앨범의 첫 playable 트랙
+    playedTrackIdsInAlbum = new Set([currentTrackId]);
+
+    playTrack(currentTrackId);
   } catch (err) {
     console.error("autoPlayRandomTrackFromAlbum error", err);
   }
@@ -999,6 +1018,8 @@ window.onYouTubeIframeAPIReady = function () {
       modestbranding: 1,
       rel: 0,
       playsinline: 1,
+      enablejsapi: 1,
+      origin: window.location.origin,
     },
     events: {
       onReady: onPlayerReady,
@@ -1039,15 +1060,14 @@ function onPlayerStateChange(event) {
   }
 }
 
+// 곡 종료 시 처리: 현재 앨범 다음곡 → 없으면 다른 앨범 첫곡 랜덤
 function handleTrackEnded() {
-  // 1) 같은 앨범의 다음 트랙(순서대로, videoId 있는 것만)으로 이동
   const nextTrack = getNextPlayableTrackInCurrentAlbum();
   if (nextTrack) {
     playTrack(nextTrack.id);
     return;
   }
 
-  // 2) 현재 앨범의 마지막 곡이라면 → 다른 앨범에서 랜덤으로 재생
   const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
   playRandomTrackFromAllAlbums(excludeKey);
 }
@@ -1070,17 +1090,19 @@ async function playRandomTrackFromAllAlbums(excludeAlbumKey = null) {
     const loadedTracks = await loadTracksForAlbumFromFirestore(album);
     if (!Array.isArray(loadedTracks) || !loadedTracks.length) continue;
 
+    // Firestore index 순서대로 정렬된 loadedTracks에서
+    // videoId 있는 첫 번째 트랙만 선택
     const firstPlayableInOrder = loadedTracks.find(
       (t) => t.videoId && t.videoId.trim()
     );
     if (!firstPlayableInOrder) continue;
 
-    currentTrackAlbum = album;
-    tracks = loadedTracks;
-    currentTrackId = firstPlayableInOrder.id;
-    playedTrackIdsInAlbum = new Set([firstPlayableInOrder.id]);
+    currentTrackAlbum     = album;
+    tracks                = loadedTracks;
+    currentTrackId        = firstPlayableInOrder.id;
+    playedTrackIdsInAlbum = new Set([currentTrackId]);
 
-    playTrack(firstPlayableInOrder.id);
+    playTrack(currentTrackId);
     return;
   }
 }
