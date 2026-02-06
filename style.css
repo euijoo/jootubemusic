@@ -744,97 +744,6 @@ header {
     bottom: 20px;
   }
 }
-/* ===== 볼륨 모달 레이아웃 리셋 ===== */
-#volumeModal {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  display: none;              /* 기본은 숨김 */
-  align-items: center;
-  justify-content: center;
-}
-
-/* 배경 어둡게(투명도 낮춤) */
-#volumeBackdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);  /* 0.8 → 0.4 정도로 줄임 */
-}
-
-/* 가운데 박스 */
-#volumeModal .modal-content {
-  position: relative;
-  z-index: 1;
-  background: #1f2933;         /* 진한 회색 */
-  border-radius: 16px;
-  padding: 16px 20px;
-  min-width: 260px;
-  max-width: 90vw;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
-
-/* 헤더 텍스트, 닫기 버튼 */
-#volumeModal .modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  color: #f9fafb;
-}
-
-/* 슬라이더 래퍼 */
-#volumeModal .volume-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px 0 4px;
-}
-
-/* 슬라이더 자체 (가로) */
-#volumeSlider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 220px;
-  height: 4px;
-  background: #4b5563;
-  border-radius: 999px;
-  outline: none;
-}
-
-/* 썸(동그라미) */
-#volumeSlider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: #3b82f6;
-  border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
-}
-
-#volumeSlider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: #3b82f6;
-  border-radius: 50%;
-  border: none;
-}
-
-/* 터치 최적화 */
-#volumeModal *,
-#volumeModal *::before,
-#volumeModal *::after {
-  touch-action: manipulation;
-}
-
-
-/* iOS Safari + Android 특화 */
-@supports (-webkit-touch-callout: none) {
-  #volumeModal {
-    -webkit-overflow-scrolling: touch !important;
-  }
-}
-
 /* 공통 모달 레이아웃 (trackModal, coverModal, albumOptionModal 모두 공유) */
 .modal {
   position: fixed;
@@ -1033,14 +942,16 @@ header {
 
 #player-container {
   position: relative;
-  width: 300px; height: 60px;
+  width: 300px;
+  height: 60px;
   /* 기존 미니플레이어 스타일 */
 }
 
 #sc-player {
   opacity: 0 !important;
   visibility: hidden !important;
-  width: 1px !important; height: 1px !important;
+  width: 1px !important;
+  height: 1px !important;
   z-index: -1;
   pointer-events: none;
 }
