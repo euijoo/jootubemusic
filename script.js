@@ -1063,34 +1063,19 @@ function handleTrackEnded() {
   }
 
   const nextAlbum =
-  remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
-autoPlayRandomTrackFromAlbum(nextAlbum);
+    remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
+  autoPlayRandomTrackFromAlbum(nextAlbum);
 }
 
 
-// ===== 13. 현재 앨범 다음 곡 =====
-
-function playNextInCurrentAlbum() {
-  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
-
-  const idx = tracks.findIndex((t) => t.id === currentTrackId);
-  if (idx < 0) return;
-
-  const next = tracks[idx + 1];
-  if (!next) return; // 마지막 곡이면 수동 ⏭은 아무 동작 안 함 (끝까지 들으면 handleTrackEnded가 처리)
-
-  playTrack(next.id);
-}
-
-
-// ===== 14. 랜덤 재생 (전체 앨범) =====
+// ===== 13. 랜덤 재생 (전체 앨범) =====
 
 async function playRandomTrackFromAllAlbums() {
   if (!currentUser) return;
 
-  const uid         = currentUser.uid;
-  const albumsSnap  = await getDocs(userAlbumsColRef(uid));
-  const allPlayable = [];
+  const uid            = currentUser.uid;
+  const albumsSnap     = await getDocs(userAlbumsColRef(uid));
+  const allPlayable    = [];
 
   for (const albumDoc of albumsSnap.docs) {
     const albumData = albumDoc.data();
@@ -1134,7 +1119,7 @@ async function playRandomTrackFromAllAlbums() {
 }
 
 
-// ===== 15. 미니 플레이어 진행도 =====
+// ===== 14. 미니 플레이어 진행도 =====
 
 function startYtProgressLoop() {
   if (ytUpdateTimer) return;
@@ -1147,7 +1132,6 @@ function stopYtProgressLoop() {
     ytUpdateTimer = null;
   }
 }
-
 
 function updateMiniPlayerProgress() {
   if (!ytPlayer || typeof ytPlayer.getDuration !== "function") {
@@ -1223,7 +1207,7 @@ if (miniToggle) {
 if (miniHide) {
   miniHide.textContent = "⏭";
   miniHide.addEventListener("click", () => {
-    playNextInCurrentAlbum();
+    playRandomTrackFromAllAlbums();
   });
 }
 
