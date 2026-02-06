@@ -756,145 +756,6 @@ if (coverBackdrop) {
 
 // ===== 11. 트랙 모달 + YouTube Player =====
 
-function getCurrentTrack() {
-  return tracks.find((t) => t.id === currentTrackId) || null;
-}
-
-function getNextPlayableTrackInCurrentAlbum() {
-  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) {
-    return null;
-  }
-
-  const currentIndex = tracks.findIndex((t) => t.id === currentTrackId);
-  if (currentIndex === -1) return null;
-
-  for (let i = currentIndex + 1; i < tracks.length; i += 1) {
-    const t = tracks[i];
-    if (t.videoId && t.videoId.trim()) {
-      return t;
-    }
-  }
-
-  return null;
-}
-
-function selectTrackOnly(id) {
-  document
-    .querySelectorAll("#trackModal #trackList li.selected-track")
-    .forEach((item) => item.classList.remove("selected-track"));
-
-  const li = trackList
-    ? trackList.querySelector(`[data-track-id="${id}"]`)
-    : null;
-  if (li) li.classList.add("selected-track");
-
-  currentTrackId = id;
-}
-
-function playTrack(id) {
-  const track = tracks.find((t) => t.id === id);
-  if (!track) return;
-
-  // 1) 먼저 링크 있는지 확인
-  if (!track.videoId || !track.videoId.trim()) {
-    alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
-    return; // 여기서 바로 종료 → 미니플레이어 / 선택 상태 건드리지 않음
-  }
-
-  // 2) 여기부터는 '재생 가능한 트랙'만 내려옴
-  document
-    .querySelectorAll("#trackModal #trackList li.selected-track")
-    .forEach((item) => item.classList.remove("selected-track"));
-
-  const li = trackList
-    ? trackList.querySelector(`[data-track-id="${id}"]`)
-    : null;
-  if (li) li.classList.add("selected-track");
-
-  currentTrackId = id;
-
-  updateNowPlaying(track);
-  if (miniPlayer) miniPlayer.style.display = "flex";
-
-  playTrackOnYouTube(track);
-
-  if (currentTrackAlbum) {
-    playedTrackIdsInAlbum.add(id);
-  }
-}
-
-function createTrackListItem(album, trackData, index) {
-  const id = trackData.id;
-  const li = document.createElement("li");
-  li.dataset.trackId = id;
-
-  li.innerHTML = `
-    <span class="track-index">${index + 1}</span>
-    <div class="track-line">
-      <span class="track-title-text">${trackData.title}</span>
-      <span class="track-dots"></span>
-      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
-    </div>
-  `;
-
-  const line      = li.querySelector(".track-line");
-  const editBtn   = li.querySelector(".track-edit-btn");
-  const titleSpan = li.querySelector(".track-title-text");
-
-  if (line) {
-    line.addEventListener("click", (e) => {
-      e.stopPropagation();
-      playTrack(id);
-    });
-  }
-
-  if (editBtn) {
-    editBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const t = tracks.find((t) => t.id === id);
-      if (!t) return;
-
-      const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
-      if (newTitle && newTitle.trim()) {
-        t.title = newTitle.trim();
-        if (titleSpan) titleSpan.textContent = t.title;
-
-        const current = getCurrentTrack();
-        if (current && current.id === id) {
-          miniTitle.textContent = t.title;
-        }
-      }
-
-      const rawUrl = prompt(
-        "YouTube videoId 또는 링크를 입력해 주세요.",
-        t.videoId || ""
-      );
-      if (rawUrl && rawUrl.trim()) {
-        const videoId = extractVideoId(rawUrl);
-        if (!videoId) {
-          alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
-        } else {
-          t.videoId = videoId;
-        }
-      }
-
-      editBtn.textContent = t.videoId ? "✎✓" : "✎";
-
-      if (currentUser && currentTrackAlbum) {
-        saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch(
-          (err) =>
-            console.error(
-              "saveTracksForAlbumToFirestore (edit track) error",
-              err
-            )
-        );
-      }
-    });
-  }
-
-  return li;
-}
-
 function openTrackModal(album) {
   if (!trackModal || !trackList) return;
 
@@ -943,12 +804,13 @@ function openTrackModal(album) {
         trackList.appendChild(li);
       });
 
-      if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
-  // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
-  if (tracks.length) {
-    currentTrackId = tracks[0].id;
-  }
-}
+      // ✅ 이미 재생 중인 트랙이 이 앨범에 있으면 그대로 유지,
+      //    없을 때만 첫 곡으로 초기화
+      if (!currentTrackId || !tracks.some((t) => t.id === currentTrackId)) {
+        if (tracks.length) {
+          currentTrackId = tracks[0].id;
+        }
+      }
     } catch (err) {
       console.error(err);
       trackList.innerHTML =
@@ -956,6 +818,7 @@ function openTrackModal(album) {
     }
   })();
 }
+
 
 async function autoPlayRandomTrackFromAlbum(album) {
   try {
