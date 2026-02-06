@@ -760,7 +760,6 @@ function getCurrentTrack() {
   return tracks.find((t) => t.id === currentTrackId) || null;
 }
 
-// 같은 앨범 안에서 "현재 트랙" 기준 다음 재생 가능한 트랙 찾기
 function getNextPlayableTrackInCurrentAlbum() {
   if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) {
     return null;
@@ -779,79 +778,17 @@ function getNextPlayableTrackInCurrentAlbum() {
   return null;
 }
 
-// 트랙 리스트 하나 렌더링
-function createTrackListItem(album, trackData, index) {
-  const id = trackData.id;
-  const li = document.createElement("li");
-  li.dataset.trackId = id;
+function selectTrackOnly(id) {
+  document
+    .querySelectorAll("#trackModal #trackList li.selected-track")
+    .forEach((item) => item.classList.remove("selected-track"));
 
-  li.innerHTML = `
-    <span class="track-index">${index + 1}</span>
-    <div class="track-line">
-      <span class="track-title-text">${trackData.title}</span>
-      <span class="track-dots"></span>
-      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
-    </div>
-  `;
+  const li = trackList
+    ? trackList.querySelector(`[data-track-id="${id}"]`)
+    : null;
+  if (li) li.classList.add("selected-track");
 
-  const line      = li.querySelector(".track-line");
-  const editBtn   = li.querySelector(".track-edit-btn");
-  const titleSpan = li.querySelector(".track-title-text");
-
-  // 트랙 클릭 → 재생
-  if (line) {
-    line.addEventListener("click", (e) => {
-      e.stopPropagation();
-      playTrack(id);
-    });
-  }
-
-  // 편집 버튼 → 제목 / videoId 수정
-  if (editBtn) {
-    editBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const t = tracks.find((t) => t.id === id);
-      if (!t) return;
-
-      const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
-      if (newTitle && newTitle.trim()) {
-        t.title = newTitle.trim();
-        if (titleSpan) titleSpan.textContent = t.title;
-
-        const current = getCurrentTrack();
-        if (current && current.id === id && miniTitle) {
-          miniTitle.textContent = t.title;
-        }
-      }
-
-      const rawUrl = prompt(
-        "YouTube videoId 또는 링크를 입력해 주세요.",
-        t.videoId || ""
-      );
-      if (rawUrl && rawUrl.trim()) {
-        const videoId = extractVideoId(rawUrl);
-        if (!videoId) {
-          alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
-        } else {
-          t.videoId = videoId;
-        }
-      }
-
-      editBtn.textContent = t.videoId ? "✎✓" : "✎";
-
-      if (currentUser && currentTrackAlbum) {
-        saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch(
-          (err) =>
-            console.error(
-              "saveTracksForAlbumToFirestore (edit track) error",
-              err
-            )
-        );
-      }
-    });
-  }
-
-  return li;
+  currentTrackId = id;
 }
 
 function playTrack(id) {
@@ -884,6 +821,78 @@ function playTrack(id) {
   if (currentTrackAlbum) {
     playedTrackIdsInAlbum.add(id);
   }
+}
+
+function createTrackListItem(album, trackData, index) {
+  const id = trackData.id;
+  const li = document.createElement("li");
+  li.dataset.trackId = id;
+
+  li.innerHTML = `
+    <span class="track-index">${index + 1}</span>
+    <div class="track-line">
+      <span class="track-title-text">${trackData.title}</span>
+      <span class="track-dots"></span>
+      <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
+    </div>
+  `;
+
+  const line      = li.querySelector(".track-line");
+  const editBtn   = li.querySelector(".track-edit-btn");
+  const titleSpan = li.querySelector(".track-title-text");
+
+  if (line) {
+    line.addEventListener("click", (e) => {
+      e.stopPropagation();
+      playTrack(id);
+    });
+  }
+
+  if (editBtn) {
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const t = tracks.find((t) => t.id === id);
+      if (!t) return;
+
+      const newTitle = prompt("트랙 제목을 입력해 주세요.", t.title || "");
+      if (newTitle && newTitle.trim()) {
+        t.title = newTitle.trim();
+        if (titleSpan) titleSpan.textContent = t.title;
+
+        const current = getCurrentTrack();
+        if (current && current.id === id) {
+          miniTitle.textContent = t.title;
+        }
+      }
+
+      const rawUrl = prompt(
+        "YouTube videoId 또는 링크를 입력해 주세요.",
+        t.videoId || ""
+      );
+      if (rawUrl && rawUrl.trim()) {
+        const videoId = extractVideoId(rawUrl);
+        if (!videoId) {
+          alert("올바른 YouTube videoId 또는 링크가 아닙니다.");
+        } else {
+          t.videoId = videoId;
+        }
+      }
+
+      editBtn.textContent = t.videoId ? "✎✓" : "✎";
+
+      if (currentUser && currentTrackAlbum) {
+        saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch(
+          (err) =>
+            console.error(
+              "saveTracksForAlbumToFirestore (edit track) error",
+              err
+            )
+        );
+      }
+    });
+  }
+
+  return li;
 }
 
 function openTrackModal(album) {
@@ -934,13 +943,12 @@ function openTrackModal(album) {
         trackList.appendChild(li);
       });
 
-      // 이미 재생 중인 트랙이 이 앨범에 있으면 그대로 유지,
-      // 없을 때만 첫 곡으로 초기화
-      if (!currentTrackId || !tracks.some((t) => t.id === currentTrackId)) {
-        if (tracks.length) {
-          currentTrackId = tracks[0].id;
-        }
-      }
+      if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
+  // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
+  if (tracks.length) {
+    currentTrackId = tracks[0].id;
+  }
+}
     } catch (err) {
       console.error(err);
       trackList.innerHTML =
@@ -975,15 +983,14 @@ async function autoPlayRandomTrackFromAlbum(album) {
       });
     }
 
-    const playable = loadedTracks.filter((t) => t.videoId && t.videoId.trim());
+    const playable = loadedTracks.filter((t) => t.videoId);
     if (!playable.length) return;
 
-    currentTrackAlbum     = album;
-    tracks                = loadedTracks;
-    currentTrackId        = playable[0].id;       // 그 앨범의 첫 playable 트랙
-    playedTrackIdsInAlbum = new Set([currentTrackId]);
-
-    playTrack(currentTrackId);
+    currentTrackAlbum        = album;
+    tracks                   = loadedTracks;
+    playedTrackIdsInAlbum    = new Set();
+    const next               = playable[Math.floor(Math.random() * playable.length)];
+    playTrack(next.id);
   } catch (err) {
     console.error("autoPlayRandomTrackFromAlbum error", err);
   }
@@ -1018,8 +1025,6 @@ window.onYouTubeIframeAPIReady = function () {
       modestbranding: 1,
       rel: 0,
       playsinline: 1,
-      enablejsapi: 1,
-      origin: window.location.origin,
     },
     events: {
       onReady: onPlayerReady,
@@ -1060,14 +1065,15 @@ function onPlayerStateChange(event) {
   }
 }
 
-// 곡 종료 시 처리: 현재 앨범 다음곡 → 없으면 다른 앨범 첫곡 랜덤
 function handleTrackEnded() {
+  // 1) 같은 앨범의 다음 트랙(순서대로, videoId 있는 것만)으로 이동
   const nextTrack = getNextPlayableTrackInCurrentAlbum();
   if (nextTrack) {
     playTrack(nextTrack.id);
     return;
   }
 
+  // 2) 현재 앨범의 마지막 곡이라면 → 다른 앨범에서 랜덤으로 재생
   const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
   playRandomTrackFromAllAlbums(excludeKey);
 }
@@ -1090,19 +1096,17 @@ async function playRandomTrackFromAllAlbums(excludeAlbumKey = null) {
     const loadedTracks = await loadTracksForAlbumFromFirestore(album);
     if (!Array.isArray(loadedTracks) || !loadedTracks.length) continue;
 
-    // Firestore index 순서대로 정렬된 loadedTracks에서
-    // videoId 있는 첫 번째 트랙만 선택
     const firstPlayableInOrder = loadedTracks.find(
       (t) => t.videoId && t.videoId.trim()
     );
     if (!firstPlayableInOrder) continue;
 
-    currentTrackAlbum     = album;
-    tracks                = loadedTracks;
-    currentTrackId        = firstPlayableInOrder.id;
-    playedTrackIdsInAlbum = new Set([currentTrackId]);
+    currentTrackAlbum = album;
+    tracks = loadedTracks;
+    currentTrackId = firstPlayableInOrder.id;
+    playedTrackIdsInAlbum = new Set([firstPlayableInOrder.id]);
 
-    playTrack(currentTrackId);
+    playTrack(firstPlayableInOrder.id);
     return;
   }
 }
