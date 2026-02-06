@@ -98,12 +98,6 @@ const miniSeek        = document.getElementById("miniSeek");
 const miniCurrentTime = document.getElementById("miniCurrentTime");
 const miniDuration    = document.getElementById("miniDuration");
 
-// 볼륨 모달
-const volumeModal      = document.getElementById("volumeModal");
-const volumeBackdrop   = document.getElementById("volumeBackdrop");
-const volumeModalClose = document.getElementById("volumeModalClose");
-const volumeSlider     = document.getElementById("volumeSlider");
-
 // 커버 입력 모달
 const coverModal      = document.getElementById("coverModal");
 const coverBackdrop   = document.getElementById("coverBackdrop");
@@ -1069,19 +1063,34 @@ function handleTrackEnded() {
   }
 
   const nextAlbum =
-    remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
-  autoPlayRandomTrackFromAlbum(nextAlbum);
+  remainingAlbums[Math.floor(Math.random() * remainingAlbums.length)];
+autoPlayRandomTrackFromAlbum(nextAlbum);
 }
 
 
-// ===== 13. 랜덤 재생 (전체 앨범) =====
+// ===== 13. 현재 앨범 다음 곡 =====
+
+function playNextInCurrentAlbum() {
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length) return;
+
+  const idx = tracks.findIndex((t) => t.id === currentTrackId);
+  if (idx < 0) return;
+
+  const next = tracks[idx + 1];
+  if (!next) return; // 마지막 곡이면 수동 ⏭은 아무 동작 안 함 (끝까지 들으면 handleTrackEnded가 처리)
+
+  playTrack(next.id);
+}
+
+
+// ===== 14. 랜덤 재생 (전체 앨범) =====
 
 async function playRandomTrackFromAllAlbums() {
   if (!currentUser) return;
 
-  const uid            = currentUser.uid;
-  const albumsSnap     = await getDocs(userAlbumsColRef(uid));
-  const allPlayable    = [];
+  const uid         = currentUser.uid;
+  const albumsSnap  = await getDocs(userAlbumsColRef(uid));
+  const allPlayable = [];
 
   for (const albumDoc of albumsSnap.docs) {
     const albumData = albumDoc.data();
@@ -1125,7 +1134,7 @@ async function playRandomTrackFromAllAlbums() {
 }
 
 
-// ===== 14. 미니 플레이어 진행도 =====
+// ===== 15. 미니 플레이어 진행도 =====
 
 function startYtProgressLoop() {
   if (ytUpdateTimer) return;
@@ -1138,6 +1147,7 @@ function stopYtProgressLoop() {
     ytUpdateTimer = null;
   }
 }
+
 
 function updateMiniPlayerProgress() {
   if (!ytPlayer || typeof ytPlayer.getDuration !== "function") {
@@ -1213,7 +1223,7 @@ if (miniToggle) {
 if (miniHide) {
   miniHide.textContent = "⏭";
   miniHide.addEventListener("click", () => {
-    playRandomTrackFromAllAlbums();
+    playNextInCurrentAlbum();
   });
 }
 
@@ -1435,108 +1445,6 @@ if (categoryAddBtn) {
     renderCategoryChips();
   });
 }
-
-
-// ===== 19. 볼륨 모달 =====
-
-function openVolumeModal() {
-  if (!volumeModal || !volumeSlider) return;
-
-  if (!ytPlayer || typeof ytPlayer.getVolume !== "function") {
-    volumeSlider.value = 100;
-  } else {
-    const v = ytPlayer.getVolume();
-    volumeSlider.value = Number.isFinite(v) ? v : 100;
-  }
-  volumeModal.style.display = "flex";
-  volumeModal.style.zIndex  = "9999";
-}
-
-function closeVolumeModal() {
-  if (!volumeModal) return;
-  volumeModal.style.display = "none";
-}
-
-["click", "touchend"].forEach((evt) => {
-  if (!miniCover) return;
-  miniCover.addEventListener(evt, (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openVolumeModal();
-  });
-});
-
-["click", "touchend"].forEach((evt) => {
-  if (volumeModalClose) {
-    volumeModalClose.addEventListener(evt, (e) => {
-      e.preventDefault();
-      closeVolumeModal();
-    });
-  }
-  if (volumeBackdrop) {
-    volumeBackdrop.addEventListener(evt, (e) => {
-      if (e.target === volumeBackdrop) {
-        e.preventDefault();
-        closeVolumeModal();
-      }
-    });
-  }
-});
-
-["input", "change", "touchend"].forEach((evt) => {
-  if (!volumeSlider) return;
-  volumeSlider.addEventListener(evt, () => {
-    const v = Math.max(0, Math.min(100, Number(volumeSlider.value)));
-    if (ytPlayer && typeof ytPlayer.setVolume === "function") {
-      ytPlayer.setVolume(v);
-    }
-  });
-});
-
-
-// ===== 20. 키보드 단축키 =====
-
-window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    closeModal();
-    closeTrackModal();
-    closeCoverModal();
-    closeCategoryModal();
-    closeAlbumOptionModal();
-    closeVolumeModal();
-  }
-});
-
-window.addEventListener("keydown", (e) => {
-  if (e.code !== "Space") return;
-
-  const active = document.activeElement;
-  const isInput =
-    active.tagName === "INPUT" ||
-    active.tagName === "TEXTAREA" ||
-    active.isContentEditable;
-  if (isInput) return;
-
-  if (
-    !miniPlayer ||
-    miniPlayer.style.display === "none" ||
-    !miniPlayer.offsetParent
-  ) {
-    return;
-  }
-
-  e.preventDefault();
-
-  if (!ytPlayer) return;
-
-  const state = ytPlayer.getPlayerState?.();
-  if (state === YT.PlayerState.PLAYING) {
-    ytPlayer.pauseVideo();
-  } else {
-    ytPlayer.playVideo();
-  }
-});
-
 
 // ===== 21. Firebase Auth =====
 
