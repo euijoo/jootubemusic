@@ -1077,7 +1077,7 @@ function playNextInCurrentAlbum() {
   if (idx < 0) return;
 
   const next = tracks[idx + 1];
-  if (!next) return; // 마지막 곡이면 수동 ⏭은 아무 동작 안 함 (끝까지 들으면 handleTrackEnded가 처리)
+  if (!next) return;
 
   playTrack(next.id);
 }
@@ -1219,6 +1219,9 @@ if (miniToggle) {
     }
   });
 }
+
+const miniHide = document.getElementById("miniHide"); // 상단 DOM 캐싱
+
 
 if (miniHide) {
   miniHide.textContent = "⏭";
