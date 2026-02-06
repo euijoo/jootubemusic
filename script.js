@@ -1081,54 +1081,34 @@ function handleTrackEnded() {
 async function playRandomTrackFromAllAlbums(excludeAlbumKey = null) {
   if (!currentUser) return;
 
-  const uid            = currentUser.uid;
-  const albumsSnap     = await getDocs(userAlbumsColRef(uid));
-  const allPlayable    = [];
+  // "다른 앨범 랜덤 재생"을 하더라도, 선택된 앨범의 트랙은 Firestore의 index 기준으로
+  // 정렬된 전체 목록을 다시 로드해서 이후 "다음 곡"이 순서대로 동작하게 만든다.
+  const candidates = Array.isArray(myAlbums)
+    ? myAlbums.filter((a) => getAlbumKey(a) !== excludeAlbumKey)
+    : [];
 
-  for (const albumDoc of albumsSnap.docs) {
-    const albumData = albumDoc.data();
-    const album = {
-      name: albumData.name,
-      artist: albumData.artist,
-      image: albumData.image,
-      hasCover: albumData.hasCover,
-      category: albumData.category || "etc",
-    };
+  if (!candidates.length) return;
 
-    const albumKey = getAlbumKey(album);
-    if (excludeAlbumKey && albumKey === excludeAlbumKey) {
-      continue;
-    }
+  // 무작위 선택을 위해 섞기
+  const shuffled = [...candidates].sort(() => Math.random() - 0.5);
 
-    const tracksSnap = await getDocs(albumTracksColRef(uid, album));
-    tracksSnap.forEach((docSnap) => {
-      const d = docSnap.data();
-      if (d.videoId) {
-        allPlayable.push({
-          id: d.id,
-          title: d.title,
-          artist: d.artist,
-          albumName: d.albumName,
-          videoId: d.videoId,
-          coverUrl: d.coverUrl || album.image,
-          _album: album,
-        });
-      }
-    });
+  for (const album of shuffled) {
+    const loadedTracks = await loadTracksForAlbumFromFirestore(album);
+    if (!Array.isArray(loadedTracks) || !loadedTracks.length) continue;
+
+    const playable = loadedTracks.filter((t) => t.videoId && t.videoId.trim());
+    if (!playable.length) continue;
+
+    const randomTrack = playable[Math.floor(Math.random() * playable.length)];
+
+    currentTrackAlbum = album;
+    tracks = loadedTracks; // 정렬된 전체 트랙 목록(중요)
+    currentTrackId = randomTrack.id;
+    playedTrackIdsInAlbum = new Set([randomTrack.id]);
+
+    playTrack(randomTrack.id);
+    return;
   }
-
-  if (!allPlayable.length) return;
-
-  const random = allPlayable[Math.floor(Math.random() * allPlayable.length)];
-
-  currentTrackAlbum     = random._album;
-  tracks                = allPlayable.filter(
-    (t) => t.albumName === random.albumName
-  );
-  currentTrackId        = random.id;
-  playedTrackIdsInAlbum = new Set([random.id]);
-
-  playTrack(random.id);
 }
 
 
