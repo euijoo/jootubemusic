@@ -27,9 +27,9 @@ const firebaseConfig = {
   measurementId: "G-VQHP01ZXKM",
 };
 
-const app      = initializeApp(firebaseConfig);
-const auth     = getAuth(app);
-const db       = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 const LASTFM_API_KEY = "7e0b8eb10fdc5cf81968b38fdd543cff";
@@ -39,100 +39,100 @@ const LASTFM_API_KEY = "7e0b8eb10fdc5cf81968b38fdd543cff";
 
 // 검색
 const searchInput = document.getElementById("searchInput");
-const searchBtn   = document.getElementById("searchBtn");
+const searchBtn = document.getElementById("searchBtn");
 
 // 로그인
-const authStatus    = document.getElementById("authStatus");
+const authStatus = document.getElementById("authStatus");
 const authToggleBtn = document.getElementById("authToggleBtn");
 
 // 내 앨범
 const myGrid = document.getElementById("myGrid");
-const empty  = document.getElementById("empty");
+const empty = document.getElementById("empty");
 
 // 카테고리 바
-const categoryBar   = document.getElementById("categoryBar");
+const categoryBar = document.getElementById("categoryBar");
 let currentCategory = "all";
 
 // 검색 모달
-const searchModal   = document.getElementById("searchModal");
-const modalGrid     = document.getElementById("modalGrid");
-const modalClose    = document.getElementById("modalClose");
+const searchModal = document.getElementById("searchModal");
+const modalGrid = document.getElementById("modalGrid");
+const modalClose = document.getElementById("modalClose");
 const modalBackdrop = document.getElementById("modalBackdrop");
-const modalTitle    = document.getElementById("modalTitle");
+const modalTitle = document.getElementById("modalTitle");
 
 // 트랙 모달
-const trackModal      = document.getElementById("trackModal");
-const trackBackdrop   = document.getElementById("trackBackdrop");
+const trackModal = document.getElementById("trackModal");
+const trackBackdrop = document.getElementById("trackBackdrop");
 const trackModalClose = document.getElementById("trackModalClose");
 const trackModalTitle = document.getElementById("trackModalTitle");
-const trackList       = document.getElementById("trackList");
-const trackAddBtn     = document.getElementById("trackAddBtn");
+const trackList = document.getElementById("trackList");
+const trackAddBtn = document.getElementById("trackAddBtn");
 
 // 앨범 옵션 모달
-const albumOptionModal       = document.getElementById("albumOptionModal");
-const albumOptionTitle       = document.getElementById("albumOptionTitle");
-const albumOptionClose       = document.getElementById("albumOptionClose");
-const albumOptionCoverBtn    = document.getElementById("albumOptionCoverBtn");
-const albumOptionDeleteBtn   = document.getElementById("albumOptionDeleteBtn");
+const albumOptionModal = document.getElementById("albumOptionModal");
+const albumOptionTitle = document.getElementById("albumOptionTitle");
+const albumOptionClose = document.getElementById("albumOptionClose");
+const albumOptionCoverBtn = document.getElementById("albumOptionCoverBtn");
+const albumOptionDeleteBtn = document.getElementById("albumOptionDeleteBtn");
 const albumOptionCategoryBtn = document.getElementById("albumOptionCategoryBtn");
-const albumOptionBackdrop    = document.getElementById("albumOptionBackdrop");
+const albumOptionBackdrop = document.getElementById("albumOptionBackdrop");
 
 // 카테고리 관리 모달
-const categoryModal      = document.getElementById("categoryModal");
-const categoryBackdrop   = document.getElementById("categoryBackdrop");
+const categoryModal = document.getElementById("categoryModal");
+const categoryBackdrop = document.getElementById("categoryBackdrop");
 const categoryModalClose = document.getElementById("categoryModalClose");
-const categoryListEl     = document.getElementById("categoryList");
-const categoryNewInput   = document.getElementById("categoryNewInput");
-const categoryAddBtn     = document.getElementById("categoryAddBtn");
+const categoryListEl = document.getElementById("categoryList");
+const categoryNewInput = document.getElementById("categoryNewInput");
+const categoryAddBtn = document.getElementById("categoryAddBtn");
 
 // 미니 플레이어
 const miniPlayer = document.getElementById("miniPlayer");
-const miniCover  = document.getElementById("miniCover");
-const miniTitle  = document.getElementById("miniTitle");
+const miniCover = document.getElementById("miniCover");
+const miniTitle = document.getElementById("miniTitle");
 const miniArtist = document.getElementById("miniArtist");
 const miniToggle = document.getElementById("miniToggle");
-const miniHide   = document.getElementById("miniHide");
+const miniHide = document.getElementById("miniHide");
 
 // 타임라인
-const miniSeek        = document.getElementById("miniSeek");
+const miniSeek = document.getElementById("miniSeek");
 const miniCurrentTime = document.getElementById("miniCurrentTime");
-const miniDuration    = document.getElementById("miniDuration");
+const miniDuration = document.getElementById("miniDuration");
 
 // 커버 입력 모달
-const coverModal      = document.getElementById("coverModal");
-const coverBackdrop   = document.getElementById("coverBackdrop");
+const coverModal = document.getElementById("coverModal");
+const coverBackdrop = document.getElementById("coverBackdrop");
 const coverModalClose = document.getElementById("coverModalClose");
 const coverModalTitle = document.getElementById("coverModalTitle");
-const coverInfo       = document.getElementById("coverInfo");
-const coverUrlInput   = document.getElementById("coverUrlInput");
-const coverPreview    = document.getElementById("coverPreview");
-const coverSaveBtn    = document.getElementById("coverSaveBtn");
+const coverInfo = document.getElementById("coverInfo");
+const coverUrlInput = document.getElementById("coverUrlInput");
+const coverPreview = document.getElementById("coverPreview");
+const coverSaveBtn = document.getElementById("coverSaveBtn");
 
 
 // ===== 3. 상태 =====
 
-let isPlaying   = false;
-let myAlbums    = [];
+let isPlaying = false;
+let myAlbums = [];
 let currentUser = null;
 
-let tracks            = [];  // { id, title, artist, albumName, videoId, coverUrl }
-let currentTrackId    = null;
+let tracks = []; // { id, title, artist, albumName, videoId, coverUrl }
+let currentTrackId = null;
 let currentTrackAlbum = null;
 
 let playedTrackIdsInAlbum = new Set();
-let playedAlbumKeys       = new Set();
+let playedAlbumKeys = new Set();
 
 function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
 }
 
 // 카테고리 + LocalStorage 키
-let customCategories       = ["kpop", "pop", "ost", "etc"];
-const LOCAL_KEY_ALBUMS     = "jootubemusic.myAlbums";
+let customCategories = ["kpop", "pop", "ost", "etc"];
+const LOCAL_KEY_ALBUMS = "jootubemusic.myAlbums";
 const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 
 // YouTube IFrame Player
-let ytPlayer      = null;
+let ytPlayer = null;
 let ytUpdateTimer = null;
 
 
