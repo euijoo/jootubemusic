@@ -943,9 +943,12 @@ function openTrackModal(album) {
         trackList.appendChild(li);
       });
 
-      if (tracks.length && !currentTrackId) {
-        currentTrackId = tracks[0].id;
-      }
+      if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
+  // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
+  if (tracks.length) {
+    currentTrackId = tracks[0].id;
+  }
+}
     } catch (err) {
       console.error(err);
       trackList.innerHTML =
@@ -1096,20 +1099,28 @@ async function playRandomTrackFromAllAlbums(excludeAlbumKey = null) {
     const loadedTracks = await loadTracksForAlbumFromFirestore(album);
     if (!Array.isArray(loadedTracks) || !loadedTracks.length) continue;
 
-    const playable = loadedTracks.filter((t) => t.videoId && t.videoId.trim());
-    if (!playable.length) continue;
+    const playable = loadedTracks
+  .filter((t) => t.videoId && t.videoId.trim());
 
-    const randomTrack = playable[Math.floor(Math.random() * playable.length)];
+if (!playable.length) continue;
 
-    currentTrackAlbum = album;
-    tracks = loadedTracks; // 정렬된 전체 트랙 목록(중요)
-    currentTrackId = randomTrack.id;
-    playedTrackIdsInAlbum = new Set([randomTrack.id]);
+// 1) playable 배열이 이미 순서대로라면:
+const firstPlayable = playable[0];
 
-    playTrack(randomTrack.id);
-    return;
-  }
-}
+// 만약 Firestore index 기준으로 정렬한 tracks 배열(loadedTracks)을
+// 그대로 쓰고 싶다면, 그 안에서 첫 번째 playable을 찾는 방식도 가능:
+const firstPlayableInOrder = loadedTracks.find(
+  (t) => t.videoId && t.videoId.trim()
+);
+if (!firstPlayableInOrder) continue;
+
+currentTrackAlbum = album;
+tracks = loadedTracks; // index 기준 정렬된 전체 목록 그대로 유지
+currentTrackId = firstPlayableInOrder.id;
+playedTrackIdsInAlbum = new Set([firstPlayableInOrder.id]);
+
+playTrack(firstPlayableInOrder.id);
+return;
 
 
 // ===== 14. 미니 플레이어 진행도 =====
