@@ -1137,17 +1137,19 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%; /* 명시적 너비 */
 }
 
 #mobileSearchInput {
   flex: 1;
+  min-width: 0; /* flex 아이템이 축소되도록 */
   padding: 10px 16px;
   border-radius: 24px;
   border: none;
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
   outline: none;
-  font-size: 14px;
+  font-size: 16px; /* 16px 이상 */
 }
 
 #mobileSearchInput::placeholder {
@@ -1161,11 +1163,13 @@ body {
   font-size: 24px;
   width: 40px;
   height: 40px;
+  flex-shrink: 0; /* 버튼 크기 고정 */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 }
+
 
 /* 반응형: 768px 이하 (모바일) */
 @media (max-width: 768px) {
