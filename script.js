@@ -1429,29 +1429,43 @@ if (categoryAddBtn) {
   });
 }
 
-// ===== 기존 앨범 마이그레이션 (한 번만 실행) =====
+// ===== 기존 앨범 마이그레이션 (강제 실행) =====
 async function migrateOldAlbums() {
   if (!currentUser) return;
+  if (!myAlbums || myAlbums.length === 0) return;
   
   let needUpdate = false;
   const baseTime = Date.now();
   
-  // 현재 배열 순서 = 표시 순서 (맨 앞이 최신)
+  console.log('마이그레이션 시작:', myAlbums.length + '개 앨범');
+  
+  // 현재 배열 순서대로 타임스탬프 부여
   myAlbums.forEach((album, index) => {
     if (!album.createdAt) {
       album.createdAt = baseTime - (index * 1000);
       needUpdate = true;
+      console.log(`- ${album.name} (${album.artist}): createdAt 추가`);
     }
   });
   
   if (needUpdate) {
-    console.log('✅ 기존 앨범에 타임스탬프 추가 완료');
+    console.log('✅ 타임스탬프 추가 완료, 저장 중...');
+    
+    // LocalStorage 저장
     saveMyAlbumsToStorage();
+    
+    // Firestore 저장
     await syncMyAlbumsToFirestore();
     
-    // 정렬 후 재렌더링
+    // 정렬
     myAlbums.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    
+    // 재렌더링
     renderMyAlbums();
+    
+    console.log('✅ 마이그레이션 완료!');
+  } else {
+    console.log('모든 앨범에 이미 createdAt 있음');
   }
 }
 
