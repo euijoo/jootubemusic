@@ -1477,3 +1477,38 @@ onAuthStateChanged(auth, async (user) => {
 // ===== 22. 초기 로드 =====
 
 loadMyAlbumsFromStorage();
+
+// ===== 모바일 검색 모달 =====
+const mobileSearchBtn = document.querySelector('.mobile-search-btn');
+const mobileSearchModal = document.getElementById('mobileSearchModal');
+const mobileSearchInput = document.getElementById('mobileSearchInput');
+const mobileSearchClose = document.getElementById('mobileSearchClose');
+
+if (mobileSearchBtn) {
+  mobileSearchBtn.addEventListener('click', () => {
+    mobileSearchModal.style.display = 'block';
+    mobileSearchInput.focus();
+  });
+}
+
+if (mobileSearchClose) {
+  mobileSearchClose.addEventListener('click', () => {
+    mobileSearchModal.style.display = 'none';
+    mobileSearchInput.value = '';
+  });
+}
+
+if (mobileSearchInput) {
+  mobileSearchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      const query = mobileSearchInput.value.trim();
+      if (query) {
+        document.getElementById('searchInput').value = query;
+        document.getElementById('searchBtn').click();
+        mobileSearchModal.style.display = 'none';
+        mobileSearchInput.value = '';
+      }
+    }
+  });
+}
+
