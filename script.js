@@ -221,13 +221,15 @@ function loadMyAlbumsFromStorage() {
     if (!json) return;
     const arr = JSON.parse(json);
     if (Array.isArray(arr)) {
-      myAlbums = arr;
+      // ✅ 정렬 추가
+      myAlbums = arr.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
       renderMyAlbums();
     }
   } catch (e) {
-    console.error("loadMyAlbumsFromStorage error", e);
+    console.error('loadMyAlbumsFromStorage error', e);
   }
 }
+
 
 function loadCategoriesFromStorage() {
   try {
@@ -264,27 +266,22 @@ function userAlbumsColRef(uid) {
 
 async function syncMyAlbumsToFirestore() {
   if (!currentUser) return;
-
-  const uid    = currentUser.uid;
+  const uid = currentUser.uid;
   const colRef = userAlbumsColRef(uid);
-
-  const ops = myAlbums.map((album) => {
+  
+  const ops = myAlbums.map(album => {
     const albumId = `${album.artist} - ${album.name}`;
-    const docRef  = doc(colRef, albumId);
-    return setDoc(
-      docRef,
-      {
-        name: album.name,
-        artist: album.artist,
-        image: album.image,
-        hasCover: album.hasCover ?? true,
-        category: album.category || "etc",
-        createdAt: Date.now(),
-      },
-      { merge: true }
-    );
+    const docRef = doc(colRef, albumId);
+    return setDoc(docRef, {
+      name: album.name,
+      artist: album.artist,
+      image: album.image,
+      hasCover: album.hasCover ?? true,
+      category: album.category || 'etc',
+      createdAt: album.createdAt || Date.now() // ✅ 기존 값 유지!
+    }, { merge: true });
   });
-
+  
   await Promise.all(ops);
 }
 
@@ -445,27 +442,28 @@ function renderSearchResults(albums) {
       <div class="card-artist">${artist}</div>
     `;
 
-    card.addEventListener("click", () => {
-      const exists = myAlbums.some(
-        (a) => a.name === title && a.artist === artist
-      );
-
-      if (!exists) {
-        const newAlbum = {
-          name: title,
-          artist,
-          image: imgUrl,
-          hasCover: hasRealCover(album),
-          category: "etc",
-        };
-        myAlbums.unshift(newAlbum);
-        renderMyAlbums();
-        saveMyAlbumsToStorage();
-        if (currentUser) syncMyAlbumsToFirestore();
-
-        closeModal();
-        openCategoryModal(0);
-        return;
+    card.addEventListener('click', () => {
+  const exists = myAlbums.some(a => a.name === title && a.artist === artist);
+  
+  if (!exists) {
+    const newAlbum = {
+      name: title,
+      artist,
+      image: imgUrl,
+      hasCover: hasRealCover(album),
+      category: 'etc',
+      createdAt: Date.now() // ✅ 추가!
+    };
+    myAlbums.unshift(newAlbum);
+    renderMyAlbums();
+    saveMyAlbumsToStorage();
+    
+    if (currentUser) {
+      syncMyAlbumsToFirestore();
+    }
+    closeModal();
+    openCategoryModal(0);
+    return;
       }
 
       const albumObj = myAlbums.find(
