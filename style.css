@@ -1031,36 +1031,130 @@ body {
   pointer-events: none;
 }
 
-// ===== 모바일 검색 모달 =====
-const mobileSearchBtn = document.querySelector('.mobile-search-btn');
-const mobileSearchModal = document.getElementById('mobileSearchModal');
-const mobileSearchInput = document.getElementById('mobileSearchInput');
-const mobileSearchClose = document.getElementById('mobileSearchClose');
+/* 모바일 검색 아이콘 & 모달 추가 */
 
-if (mobileSearchBtn) {
-  mobileSearchBtn.addEventListener('click', () => {
-    mobileSearchModal.style.display = 'block';
-    mobileSearchInput.focus();
-  });
+.mobile-search-btn {
+  display: none;
 }
 
-if (mobileSearchClose) {
-  mobileSearchClose.addEventListener('click', () => {
-    mobileSearchModal.style.display = 'none';
-    mobileSearchInput.value = '';
-  });
+.desktop-search {
+  display: flex;
 }
 
-if (mobileSearchInput) {
-  mobileSearchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      const query = mobileSearchInput.value.trim();
-      if (query) {
-        document.getElementById('searchInput').value = query;
-        document.getElementById('searchBtn').click();
-        mobileSearchModal.style.display = 'none';
-        mobileSearchInput.value = '';
-      }
-    }
-  });
+.mobile-search-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #000000;
+  z-index: 1000;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-search-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#mobileSearchInput {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 24px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  outline: none;
+  font-size: 14px;
+}
+
+#mobileSearchInput::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mobile-search-close {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* 반응형: 768px 이하 (모바일) */
+@media (max-width: 768px) {
+  .topbar {
+    height: 60px;
+    padding: 0 16px;
+    gap: 12px;
+  }
+  
+  .topbar-left {
+    flex: 1;
+    gap: 12px;
+    justify-content: flex-start;
+  }
+  
+  .topbar-right {
+    flex: 0 0 auto;
+  }
+  
+  .desktop-search {
+    display: none !important;
+  }
+  
+  .mobile-search-btn {
+    display: flex;
+  }
+  
+  .icon-nav {
+    gap: 4px;
+  }
+  
+  .icon-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .logo-text {
+    font-size: 14px;
+  }
+  
+  .auth-btn-amazon {
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-status {
+    display: none;
+  }
+  
+  .content {
+    padding: 16px;
+  }
+  
+  .mini-player-amazon {
+    padding: 10px 12px;
+  }
+  
+  .mini-cover-amazon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+  }
 }
