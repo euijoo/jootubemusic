@@ -635,57 +635,60 @@ function renderCategoryChips() {
 
 function renderMyAlbums() {
   if (!myGrid || !empty) return;
-
-  myGrid.innerHTML = "";
-
-  const base = myAlbums.map((album, i) => ({ album, originalIndex: i }));
-  const filtered =
-    currentCategory === "all"
-      ? base
-      : base.filter(
-          ({ album }) => (album.category || "etc") === currentCategory
-        );
-
+  myGrid.innerHTML = '';
+  
+  // ✅ createdAt 기준으로 정렬 후 인덱스 매핑
+  const sorted = [...myAlbums].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const base = sorted.map((album, i) => {
+    const originalIndex = myAlbums.indexOf(album);
+    return { album, originalIndex };
+  });
+  
+  const filtered = currentCategory === 'all' 
+    ? base 
+    : base.filter(({ album }) => (album.category || 'etc') === currentCategory);
+  
   if (!filtered.length) {
-    empty.style.display = "block";
+    empty.style.display = 'block';
     return;
   }
-  empty.style.display = "none";
-
+  
+  empty.style.display = 'none';
+  
   filtered.forEach(({ album, originalIndex }) => {
-    const card = document.createElement("div");
-    card.className = "card";
-
+    const card = document.createElement('div');
+    card.className = 'card';
+    
     card.innerHTML = `
       <div class="card-cover-wrap">
-        <img src="${album.image}" alt="${album.name}">
+        <img src="${album.image}" alt="${album.name}" />
         <button class="album-option-btn" data-index="${originalIndex}">⋮</button>
       </div>
       <div class="card-title"><span>${album.name}</span></div>
       <div class="card-artist">${album.artist}</div>
     `;
-
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".album-option-btn")) return;
-
+    
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.album-option-btn')) return;
+      
       if (!album.hasCover) {
         openCoverModal(album);
       } else {
         openTrackModal(album);
       }
     });
-
-    const optionBtn = card.querySelector(".album-option-btn");
+    
+    const optionBtn = card.querySelector('.album-option-btn');
     if (optionBtn) {
-      optionBtn.addEventListener("click", (e) => {
+      optionBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const idx    = Number(optionBtn.dataset.index);
+        const idx = Number(optionBtn.dataset.index);
         const target = myAlbums[idx];
         if (!target) return;
         openAlbumOptionModal(target, idx);
       });
     }
-
+    
     myGrid.appendChild(card);
   });
 }
