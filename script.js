@@ -1450,6 +1450,32 @@ if (authToggleBtn) {
   });
 }
 
+onAuthStateChanged(auth, async (user) => {
+  currentUser = user || null;
+
+  if (user) {
+    if (authStatus) {
+      authStatus.textContent = user.displayName || "사용자";
+    }
+    if (authToggleBtn) {
+      authToggleBtn.textContent = "Logout";
+    }
+
+    try {
+      await loadMyAlbumsFromFirestore();
+    } catch (e) {
+      console.error("loadMyAlbumsFromFirestore error", e);
+    }
+  } else {
+    if (authStatus) authStatus.textContent = "";
+    if (authToggleBtn) authToggleBtn.textContent = "Login";
+
+    myAlbums = [];
+    renderMyAlbums();
+  }
+});
+
+
 // ===== 22. 초기 로드 =====
 
 loadMyAlbumsFromStorage();
