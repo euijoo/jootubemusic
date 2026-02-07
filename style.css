@@ -9,103 +9,232 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: #000000;
   color: #f5f5f5;
+}
+
+/* ===== 1-1. Amazon Music 스타일 App Shell ===== */
+
+.app-shell {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-}
-
-main {
-  flex: 1;
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* 전체 레이아웃 */
-.app-shell { ... }
-
-.topbar { ... }
-.topbar-left, .topbar-center, .topbar-right { ... }
-.main-nav { ... }
-.nav-item { ... }
-
-.search-bar-top { ... }
-
-.app-body { ... }
-.sidebar { ... }
-.sidebar-section { ... }
-.sidebar-link { ... }
-
-.content { ... }
-
-.app-body .content .search-bar { display:none; }
-
-@media (max-width: 900px) { ... }
-@media (max-width: 640px) { ... }
-
-
-
-/* ===== 2. Header & Auth ===== */
-
-header {
-  background: #007E6E;
+  background: #000000;
   color: #f5f5f5;
+}
+
+/* ===== Topbar (Amazon Music 스타일) ===== */
+.topbar {
+  background: #000000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 60px;
   padding: 0 24px;
-  height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.topbar-left,
+.topbar-center,
+.topbar-right {
   display: flex;
   align-items: center;
 }
 
-.header-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
+.topbar-left {
+  flex: 0 0 auto;
+  gap: 20px;
 }
 
-.header-left,
-.header-right {
-  flex: 1;
-  display: flex;
-  align-items: center;
+.topbar-center {
+  flex: 1 1 auto;
+  justify-content: center;
+  max-width: 600px;
 }
 
+.topbar-right {
+  flex: 0 0 auto;
+  gap: 12px;
+}
+
+/* 로고 */
 .logo {
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.logo span {
+.logo-text {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 16px;
   color: #ffffff;
-}
-
-.header-right {
-  justify-content: flex-end;
-  gap: 10px;
-  font-size: 12px;
-}
-
-.auth-status {
-  opacity: 0.8;
   white-space: nowrap;
 }
 
-.auth-btn {
-  padding: 6px 10px;
-  border-radius: 4px;
-  border: none;
-  font-size: 11px;
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.25);
-  color: #f5f5f5;
+/* 아이콘 메뉴 */
+.icon-nav {
+  display: flex;
+  gap: 8px;
 }
 
-.auth-btn:hover {
-  background: rgba(0, 0, 0, 0.4);
+.icon-nav-btn {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.icon-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #00d9e1;
+}
+
+.icon-nav-active {
+  color: #00d9e1 !important;
+}
+
+/* 상단 검색바 */
+.search-bar-top {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-bar-top input {
+  width: 100%;
+  padding: 10px 48px 10px 16px;
+  border-radius: 24px;
+  border: none;
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+  font-size: 14px;
+}
+
+.search-bar-top input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.search-bar-top button {
+  position: absolute;
+  right: 8px;
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.6);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.search-bar-top button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Auth */
+.auth-status {
+  opacity: 0.8;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.auth-btn-amazon {
+  padding: 8px 24px;
+  border-radius: 24px;
+  border: 1px solid #00d9e1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #00d9e1;
+  color: #000000;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.auth-btn-amazon:hover {
+  background: #00bfce;
+  border-color: #00bfce;
+}
+
+/* 본문 레이아웃 */
+.app-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+/* 사이드바 */
+.sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px 16px;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sidebar-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 4px;
+}
+
+.sidebar-link {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  padding: 8px 12px;
+  text-align: left;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link-active,
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #00d9e1;
+}
+
+.sidebar-categories {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* 메인 콘텐츠 */
+.content {
+  padding: 24px;
+  background: #000000;
+}
+
+/* 기존 search-bar 숨김 */
+.app-body .content .search-bar {
+  display: none;
 }
 
 
@@ -220,7 +349,6 @@ header {
   background: radial-gradient(circle at top left, #32204f, #080818);
 }
 
-/* 커버 + 삭제 버튼 래퍼 */
 .card-cover-wrap {
   position: relative;
 }
@@ -234,11 +362,10 @@ header {
   background: #000000;
 }
 
-/* 앨범 삭제 버튼 (커버 왼쪽 상단, 눈에 덜 띄게) */
 .album-option-btn {
   position: absolute;
   top: 6px;
-  left: 6px;      /* ✅ right 대신 left */
+  left: 6px;
   width: 22px;
   height: 22px;
   border-radius: 999px;
@@ -282,9 +409,7 @@ header {
   margin-top: 16px;
   text-align: center;
 }
-
-
-/* ===== 6. Common Modal (Search / Cover / Track) ===== */
+/* ===== 6. Common Modal ===== */
 
 .modal {
   position: fixed;
@@ -292,26 +417,31 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 9000;
 }
 
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.75);
 }
 
 .modal-content {
   position: relative;
+  z-index: 1;
   max-width: 900px;
   width: calc(100% - 32px);
   max-height: calc(100% - 80px);
-  background: #000000;
+  background: #111827;
   border-radius: 16px;
   padding: 16px;
   overflow: auto;
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.modal-content-compact {
+  max-width: 420px;
 }
 
 .modal-header {
@@ -324,484 +454,15 @@ header {
 .modal-header span {
   font-size: 14px;
   font-weight: 600;
+  color: #f9fafb;
 }
 
 .modal-close {
   border: none;
-  background: #000000;
+  background: transparent;
   color: rgba(255, 255, 255, 0.8);
   font-size: 20px;
   cursor: pointer;
-}
-
-
-/* ===== 7. Track Modal (터미널 스타일) ===== */
-
-#trackModal {
-  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
-    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-
-#trackModal .modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at top, rgba(0, 255, 80, 0.1), transparent 55%),
-    #000000;
-  opacity: 0.96;
-}
-
-#trackModal .modal-content {
-  background: #050505;
-  color: #a8ff60;
-  border-radius: 0;
-  border: 1px solid #00ff80;
-  box-shadow:
-    0 0 16px rgba(0, 255, 128, 0.7),
-    0 0 40px rgba(0, 255, 128, 0.3);
-  max-width: 420px;
-  width: 90%;
-  margin: 40px auto;
-  padding: 16px 18px 14px;
-}
-
-/* 헤더 라인 + 제목 + 버튼 정렬 */
-#trackModal .modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(168, 255, 96, 0.4);
-  padding-bottom: 6px;
-  margin-bottom: 10px;
-}
-
-#trackModal #trackModalTitle {
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-#trackModal .modal-header > div {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* 커버 변경 버튼 */
-#trackModal #trackCoverChangeBtn {
-  border: 1px solid #00ff80;
-  background: transparent;
-  color: #a8ff60;
-  padding: 2px 8px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-/* 닫기 버튼 */
-#trackModal #trackModalClose {
-  border: none;
-  background: transparent;
-  color: #ff4b6e;
-  font-size: 18px;
-  line-height: 1;
-  padding: 0 4px;
-  cursor: pointer;
-}
-
-/* 트랙 리스트 */
-
-.track-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.track-title-text {
-  flex: 0 1 auto;
-}
-
-.track-dots {
-  flex: 1 1 auto;          /* 제목과 버튼 사이 남는 공간 채우기 */
-  white-space: nowrap;     /* 언더바 한 줄로만 */
-  overflow: hidden;        /* 넘치는 부분은 잘라내기 */
-  text-overflow: clip;
-  opacity: 0.4;
-  font-size: 12px;
-}
-
-.track-edit-btn {
-  flex: 0 0 auto;
-}
-
-
-
-
-#trackModal #trackList {
-  list-style: none;
-  margin: 8px 0 10px;
-  padding: 0;
-  font-size: 11px;
-}
-
-/* 각 줄을 점선 구분 */
-#trackModal #trackList li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3px 0;
-  border-bottom: 1px dotted rgba(168, 255, 96, 0.35);
-  cursor: pointer;
-}
-
-#trackModal #trackList li:hover {
-  background: #050a05;
-}
-
-/* 번호 */
-#trackModal #trackList .track-index {
-  color: #66ff99;
-  font-size: 14px;
-  margin-right: 8px;
-  min-width: 16px;
-  text-align: right;
-}
-
-/* 트랙 한 줄 레이아웃: 제목 왼쪽, 점선, 오른쪽 끝에 버튼 */
-#trackModal #trackList .track-line {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  gap: 6px;
-}
-
-#trackModal #trackList .track-title-text {
-  flex: 0 1 auto;
-  font-size: 14px;      /* 제목 폰트도 조금 키우기 */
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 제목 끝부터 버튼까지 점선 채우기 */
-#trackModal #trackList .track-dots {
-  flex: 1;
-  border-bottom: 1px dotted rgba(255,255,255,0.3);
-  margin: 0 4px;
-}
-
-/* 수정 버튼 (작은 네온 버튼) */
-#trackModal .track-edit-btn {
-  border-radius: 999px;
-  border: none;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(168, 255, 96, 0.12);
-  color: #a8ff60;
-  cursor: pointer;
-  font-size: 12px;
-}
-
-#trackModal .track-edit-btn:hover {
-  background: rgba(168, 255, 96, 0.28);
-}
-
-/* 선택된 트랙 강조 */
-#trackModal #trackList li.selected-track {
-  background-color: #ff00ff;
-}
-
-/* add tracks 버튼 */
-.track-add-btn {
-  margin-top: 8px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-
-/* ===== 8. Cover Input Modal ===== */
-
-.cover-input {
-  width: 100%;
-  padding: 8px 10px;
-  margin: 8px 0;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(12, 12, 32, 0.9);
-  color: #f5f5f5;
-  font-size: 13px;
-}
-
-.cover-preview-wrap {
-  margin: 10px 0;
-  text-align: center;
-}
-
-.cover-preview {
-  width: 160px;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 12px;
-  background: #151525;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.cover-save-btn {
-  width: 100%;
-  margin-top: 6px;
-  padding: 8px 0;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(135deg, #ff4b9f, #ffc857);
-  color: #050510;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.cover-style-btn {
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid #fff;
-  background: transparent;
-  color: #fff;
-  font-size: 6px;
-  cursor: pointer;
-}
-
-
-/* ===== 9. Mini Player ===== */
-.mini-toggle {
-  position: relative;
-  width: 32px;
-  height: 32px;
-}
-
-/* 재생 상태: ▶ */
-.mini-toggle.playing::before {
-  content: "II";              /* 일시정지 모양 */
-  font-size: 14px;
-  color: #fff;
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 멈춤 상태: ▶ */
-.mini-toggle.paused::before {
-  content: "▶";
-  font-size: 14px;
-  color: #fff;
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-
-
-.mini-player {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 12px;
-  width: min(480px, 100% - 24px);
-  background: rgba(8, 8, 24, 0.96);
-  border-radius: 999px;
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-}
-
-.mini-cover {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #151525;
-}
-
-.mini-meta {
-  flex: 1;
-  min-width: 0;
-}
-
-.mini-meta-title {
-  font-size: 13px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.mini-meta-artist {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.mini-timeline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.mini-time {
-  font-size: 11px;
-  color: #ccc;
-  width: 40px;
-  text-align: center;
-}
-
-.mini-seek {
-  flex: 1;
-  -webkit-appearance: none;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
-  outline: none;
-}
-
-/* WebKit thumb */
-.mini-seek::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-
-/* Firefox */
-.mini-seek::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #fff;
-  cursor: pointer;
-}
-
-.mini-btn {
-  border-radius: 999px;
-  border: none;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.09);
-  color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-
-/* ===== 10. Responsive Breakpoints ===== */
-
-/* 모바일 전용 (예: 아이폰 세로) */
-@media (max-width: 600px) {
-  header {
-    padding: 12px 14px;
-  }
-
-  main {
-    padding: 14px;
-  }
-
-  .mini-player {
-    bottom: 60px;
-    width: calc(100% - 24px);
-  }
-}
-
-/* 태블릿 이상 (768px~) */
-@media (min-width: 768px) {
-  main {
-    max-width: 900px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  }
-
-  .card-title {
-    font-size: 15px;
-  }
-
-  .card-artist {
-    font-size: 13px;
-  }
-}
-
-/* 데스크톱 이상 (1024px~) */
-@media (min-width: 1024px) {
-  main {
-    max-width: 1200px;
-  }
-
-  header {
-    height: 72px;
-  }
-
-  .logo {
-    font-size: 20px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  }
-
-  .mini-player {
-    width: min(640px, 100% - 40px);
-    bottom: 20px;
-  }
-}
-/* 공통 모달 레이아웃 (trackModal, coverModal, albumOptionModal 모두 공유) */
-.modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 9000;
-}
-
-.modal-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-}
-
-.modal-content {
-  position: relative;
-  z-index: 1;
-  background: #111827;
-  border-radius: 16px;
-  padding: 16px 20px;
-  max-width: 420px;
-  width: 90vw;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 12px;
-  color: #f9fafb;
 }
 
 .modal-body {
@@ -809,14 +470,33 @@ header {
   color: #e5e7eb;
 }
 
-.modal-close {
-  background: transparent;
-  border: none;
-  color: #9ca3af;
-  font-size: 20px;
+.option-btn {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5f5f5;
   cursor: pointer;
+  font-size: 14px;
+  text-align: left;
 }
 
+.option-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.option-danger {
+  color: #ff4b6e;
+  border-color: rgba(255, 75, 110, 0.3);
+}
+
+.option-danger:hover {
+  background: rgba(255, 75, 110, 0.1);
+}
+
+/* Category Modal */
 .category-list-modal {
   display: flex;
   flex-wrap: wrap;
@@ -874,54 +554,66 @@ header {
   color: #9ca3af;
 }
 
-/* ===== jootubemusic 모달 네온 공통 테마 ===== */
-.modal {
+
+/* ===== 7. Track Modal (터미널 스타일) ===== */
+
+#trackModal {
   font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(
-      circle at top,
-      rgba(0, 255, 80, 0.12),
-      transparent 55%
-    ),
-    #000000;
+#trackModal .modal-backdrop {
+  background: radial-gradient(circle at top, rgba(0, 255, 80, 0.1), transparent 55%), #000000;
   opacity: 0.96;
 }
 
-.modal-content {
-  position: relative;
-  z-index: 1;
+#trackModal .modal-content {
   background: #050505;
   color: #a8ff60;
   border-radius: 0;
   border: 1px solid #00ff80;
-  box-shadow:
-    0 0 16px rgba(0, 255, 128, 0.7),
-    0 0 40px rgba(0, 255, 128, 0.3);
+  box-shadow: 0 0 16px rgba(0, 255, 128, 0.7), 0 0 40px rgba(0, 255, 128, 0.3);
   max-width: 420px;
-  width: 90vw;
+  width: 90%;
   margin: 40px auto;
   padding: 16px 18px 14px;
 }
 
-.modal-header {
+#trackModal .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 10px;
   border-bottom: 1px solid rgba(168, 255, 96, 0.4);
   padding-bottom: 6px;
-  color: #a8ff60;
+  margin-bottom: 10px;
 }
 
-.modal-close {
+#trackModal #trackModalTitle {
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#trackModal .modal-header > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#trackModal #trackCoverChangeBtn {
+  border: 1px solid #00ff80;
   background: transparent;
+  color: #a8ff60;
+  padding: 2px 8px;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+#trackModal #trackModalClose {
   border: none;
+  background: transparent;
   color: #ff4b6e;
   font-size: 18px;
   line-height: 1;
@@ -929,46 +621,405 @@ header {
   cursor: pointer;
 }
 
-/* ===== Navbar Logo (Spotify 스타일) ===== */
+#trackModal #trackList {
+  list-style: none;
+  margin: 8px 0 10px;
+  padding: 0;
+  font-size: 11px;
+}
 
-.logo {
+#trackModal #trackList li {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  border-bottom: 1px dotted rgba(168, 255, 96, 0.35);
+  cursor: pointer;
+}
+
+#trackModal #trackList li:hover {
+  background: #050a05;
+}
+
+#trackModal #trackList .track-index {
+  color: #66ff99;
+  font-size: 14px;
+  margin-right: 8px;
+  min-width: 16px;
+  text-align: right;
+}
+
+#trackModal #trackList .track-line {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 6px;
+}
+
+#trackModal #trackList .track-title-text {
+  flex: 0 1 auto;
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#trackModal #trackList .track-dots {
+  flex: 1;
+  border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+  margin: 0 4px;
+}
+
+#trackModal .track-edit-btn {
+  border-radius: 999px;
+  border: none;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(168, 255, 96, 0.12);
+  color: #a8ff60;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#trackModal .track-edit-btn:hover {
+  background: rgba(168, 255, 96, 0.28);
+}
+
+#trackModal #trackList li.selected-track {
+  background-color: #ff00ff;
+}
+
+.track-add-btn {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid #00ff80;
+  background: transparent;
+  color: #a8ff60;
+  border-radius: 4px;
+}
+
+
+/* ===== 8. Cover Input Modal ===== */
+
+.cover-input {
+  width: 100%;
+  padding: 8px 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(12, 12, 32, 0.9);
+  color: #f5f5f5;
+  font-size: 13px;
+}
+
+.cover-preview-wrap {
+  margin: 10px 0;
+  text-align: center;
+}
+
+.cover-preview {
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #151525;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cover-save-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 0;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #ff4b9f, #ffc857);
+  color: #050510;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.cover-style-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-size: 6px;
+  cursor: pointer;
+}
+/* ===== 9. Mini Player (Amazon Music 스타일) ===== */
+
+.mini-player-amazon {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: rgba(20, 20, 20, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  gap: 20px;
+  backdrop-filter: blur(20px);
+  z-index: 99;
+}
+
+.mini-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mini-cover-amazon {
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: #151525;
+  flex-shrink: 0;
+}
+
+.mini-meta-amazon {
+  min-width: 0;
+  flex: 1;
+}
+
+.mini-meta-title-amazon {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #ffffff;
+}
+
+.mini-meta-artist-amazon {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mini-center {
+  display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
 }
 
-/* 원형 로고 마크 */
-.logo-mark {
-  position: relative;
-  width: 30px;
-  height: 30px;
+.mini-play-btn {
+  border: none;
   border-radius: 50%;
-  background: #1db954;              /* Spotify 느낌 그린 */
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  box-shadow: 0 0 0 0px rgba(0,0,0,0.35);
+  background: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  font-size: 18px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.mini-play-btn:hover {
+  transform: scale(1.06);
+}
+
+.mini-play-btn.playing::before {
+  content: "II";
+  font-size: 14px;
+  font-weight: 700;
+  color: #000000;
+}
+
+.mini-play-btn.paused::before {
+  content: "▶";
+  font-size: 14px;
+  color: #000000;
+  margin-left: 2px;
+}
+
+.mini-timeline-amazon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.mini-time-amazon {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  width: 40px;
+  text-align: center;
+}
+
+.mini-seek-amazon {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+  cursor: pointer;
+}
+
+.mini-seek-amazon::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00d9e1;
+  cursor: pointer;
+}
+
+.mini-seek-amazon::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #00d9e1;
+  cursor: pointer;
+  border: none;
+}
+
+.mini-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.mini-hide-btn {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.mini-hide-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* 기존 미니 플레이어 (사용 안 함, 숨김) */
+.mini-player {
+  display: none !important;
 }
 
 
-/* 텍스트 */
-.logo-text {
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  font-size: 12px;
-  text-transform: lowercase;
-  color: #fefefe;
+/* ===== 10. Responsive Breakpoints ===== */
+
+@media (max-width: 1024px) {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .sidebar {
+    display: none;
+  }
+  
+  .mini-player-amazon {
+    grid-template-columns: 1fr;
+    padding: 12px 16px;
+  }
+  
+  .mini-left {
+    order: 1;
+  }
+  
+  .mini-center {
+    order: 2;
+  }
+  
+  .mini-right {
+    display: none;
+  }
 }
 
-/* jootubemusic 중 joo / music 컬러를 쪼개고 싶다면 span으로 나눠서 색 다르게도 가능 */
+@media (max-width: 768px) {
+  .topbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    gap: 12px;
+  }
+  
+  .topbar-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .topbar-center {
+    width: 100%;
+    order: 3;
+    max-width: 100%;
+  }
+  
+  .topbar-right {
+    order: 2;
+  }
+  
+  .icon-nav {
+    gap: 4px;
+  }
+  
+  .icon-nav-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
 
+@media (max-width: 600px) {
+  .content {
+    padding: 16px;
+  }
+  
+  .mini-player-amazon {
+    padding: 10px 12px;
+  }
+  
+  .mini-cover-amazon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+  }
+}
+
+
+/* ===== 11. Player Container (YouTube IFrame 숨김) ===== */
 
 #player-container {
-  position: relative;
-  width: 300px;
-  height: 60px;
-  /* 기존 미니플레이어 스타일 */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 #sc-player {
