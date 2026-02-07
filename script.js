@@ -115,7 +115,7 @@ let isPlaying = false;
 let myAlbums = [];
 let currentUser = null;
 
-let tracks = []; // { id, title, artist, albumName, videoId, coverUrl }
+let tracks = [];
 let currentTrackId = null;
 let currentTrackAlbum = null;
 
@@ -126,15 +126,21 @@ function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
 }
 
-// 카테고리 + LocalStorage 키
 let customCategories = ["kpop", "pop", "ost", "etc"];
 const LOCAL_KEY_ALBUMS = "jootubemusic.myAlbums";
 const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 
-// YouTube IFrame Player
 let ytPlayer = null;
 let ytUpdateTimer = null;
 
+// ✅ 디버깅용 전역 노출 (개발 중에만)
+window.DEBUG = {
+  get currentTrackAlbum() { return currentTrackAlbum; },
+  get currentTrackId() { return currentTrackId; },
+  get tracks() { return tracks; },
+  get myAlbums() { return myAlbums; },
+  get currentUser() { return currentUser; },
+};
 
 // ===== 4. 공통 유틸 =====
 
