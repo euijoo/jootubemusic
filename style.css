@@ -22,6 +22,30 @@ main {
   width: 100%;
 }
 
+/* 전체 레이아웃 */
+.app-shell { ... }
+
+.topbar { ... }
+.topbar-left, .topbar-center, .topbar-right { ... }
+.main-nav { ... }
+.nav-item { ... }
+
+.search-bar-top { ... }
+
+.app-body { ... }
+.sidebar { ... }
+.sidebar-section { ... }
+.sidebar-link { ... }
+
+.content { ... }
+
+.app-body .content .search-bar { display:none; }
+
+@media (max-width: 900px) { ... }
+@media (max-width: 640px) { ... }
+
+
+
 /* ===== 2. Header & Auth ===== */
 
 header {
