@@ -12,59 +12,71 @@
     
     <!-- ===== 상단 네비게이션 바 ===== -->
     <header class="topbar">
-      <div class="topbar-left">
-        <!-- 로고 -->
-        <div class="logo">
-          <span class="logo-text">jootubemusic</span>
-        </div>
+  <div class="topbar-left">
+    <div class="logo">
+      <span class="logo-text">jootubemusic</span>
+    </div>
 
-        <!-- 홈/팟캐스트/라이브러리 아이콘 메뉴 -->
-        <nav class="icon-nav">
-          <button class="icon-nav-btn icon-nav-active" data-view="home" title="Home">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-            </svg>
-          </button>
-          <button class="icon-nav-btn" data-view="podcasts" title="Podcasts">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-          </button>
-          <button class="icon-nav-btn" data-view="library" title="Library">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
-            </svg>
-          </button>
-          
-          <!-- 모바일 전용 검색 아이콘 -->
-          <button class="icon-nav-btn mobile-search-btn" title="Search">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-          </button>
-        </nav>
+    <!-- PC/태블릿용 아이콘 (왼쪽) - class 추가 -->
+    <nav class="icon-nav desktop-only">
+      <button class="icon-nav-btn icon-nav-active" data-view="home" title="Home">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </button>
+      <button class="icon-nav-btn" data-view="podcasts" title="Podcasts">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </button>
+      <button class="icon-nav-btn" data-view="library" title="Library">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+      </button>
+    </nav>
+  </div>
 
-        <!-- PC/태블릿용 검색바 -->
-        <div class="search-bar-top desktop-search">
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="앨범, 아티스트, 트랙 검색"
-          />
-          <button id="searchBtn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+  <div class="topbar-right">
+    <!-- 모바일용 아이콘 (오른쪽) - class 추가 -->
+    <nav class="icon-nav mobile-only">
+      <button class="icon-nav-btn icon-nav-active" data-view="home" title="Home">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+      </button>
+      <button class="icon-nav-btn" data-view="podcasts" title="Podcasts">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+      </button>
+      <button class="icon-nav-btn" data-view="library" title="Library">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+      </button>
+      
+      <!-- 모바일 전용 검색 아이콘 -->
+      <button class="icon-nav-btn mobile-search-btn" title="Search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+      </button>
+    </nav>
 
-      <!-- 우측 로그인/로그아웃 -->
-      <div class="topbar-right">
-        <span id="authStatus" class="auth-status"></span>
-        <button id="authToggleBtn" class="auth-btn-amazon">Sign In</button>
-      </div>
-    </header>
+    <!-- PC/태블릿용 검색바 -->
+    <div class="search-bar-top desktop-search">
+      <input id="searchInput" type="text" placeholder="앨범, 아티스트, 트랙 검색" />
+      <button id="searchBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+      </button>
+    </div>
+
+    <button id="authToggleBtn" class="auth-btn-amazon">Sign In</button>
+  </div>
+</header>
 
     <!-- 본문 레이아웃 -->
     <div class="app-body">
