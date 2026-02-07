@@ -23,13 +23,15 @@ body {
 
 /* ===== Topbar ===== */
 .topbar {
-  background: #000000;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   height: 60px;
   padding: 0 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 양쪽 끝 정렬 */
+  justify-content: space-between;
   gap: 20px;
   position: sticky;
   top: 0;
@@ -141,6 +143,7 @@ body {
 
 /* Auth */
 .auth-status {
+  display: none; 
   opacity: 0.8;
   white-space: nowrap;
   font-size: 12px;
