@@ -1007,9 +1007,11 @@ async function autoPlayRandomTrackFromAlbum(album) {
 function closeTrackModal() {
   if (!trackModal || !trackList) return;
   trackModal.style.display = "none";
-  trackList.innerHTML      = "";
-  currentTrackAlbum        = null;
+  trackList.innerHTML = "";
+  // currentTrackAlbum과 tracks는 유지 (재생 계속되도록)
 }
+
+
 
 
 // ===== 12. YouTube IFrame API =====
