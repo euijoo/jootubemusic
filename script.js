@@ -1429,6 +1429,32 @@ if (categoryAddBtn) {
   });
 }
 
+// ===== 기존 앨범 마이그레이션 (한 번만 실행) =====
+async function migrateOldAlbums() {
+  if (!currentUser) return;
+  
+  let needUpdate = false;
+  const baseTime = Date.now();
+  
+  // 현재 배열 순서 = 표시 순서 (맨 앞이 최신)
+  myAlbums.forEach((album, index) => {
+    if (!album.createdAt) {
+      album.createdAt = baseTime - (index * 1000);
+      needUpdate = true;
+    }
+  });
+  
+  if (needUpdate) {
+    console.log('✅ 기존 앨범에 타임스탬프 추가 완료');
+    saveMyAlbumsToStorage();
+    await syncMyAlbumsToFirestore();
+    
+    // 정렬 후 재렌더링
+    myAlbums.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    renderMyAlbums();
+  }
+}
+
 // ===== 21. Firebase Auth =====
 
 if (authToggleBtn) {
@@ -1459,6 +1485,7 @@ onAuthStateChanged(auth, async (user) => {
 
     try {
       await loadMyAlbumsFromFirestore();
+      await migrateOldAlbums(); // ✅ 여기에 추가!
     } catch (e) {
       console.error("loadMyAlbumsFromFirestore error", e);
     }
@@ -1470,7 +1497,6 @@ onAuthStateChanged(auth, async (user) => {
     renderMyAlbums();
   }
 });
-
 
 // ===== 22. 초기 로드 =====
 
