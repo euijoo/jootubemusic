@@ -70,9 +70,15 @@ body {
 }
 
 /* 아이콘 메뉴 */
-.icon-nav {
+/* PC/태블릿: 왼쪽만 표시 */
+.icon-nav.desktop-only {
   display: flex;
   gap: 8px;
+}
+
+/* PC/태블릿: 오른쪽 아이콘 숨김 */
+.icon-nav.mobile-only {
+  display: none;
 }
 
 .icon-nav-btn {
@@ -182,27 +188,36 @@ body {
     height: 60px;
     padding: 0 16px;
     gap: 12px;
-    justify-content: space-between; /* 양쪽 끝 정렬 */
+    justify-content: space-between;
   }
   
-  /* 왼쪽: 로고만 */
   .topbar-left {
     flex: 0 0 auto;
   }
   
-  /* 오른쪽: 아이콘 + 로그인 */
   .topbar-right {
     flex: 1;
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: 8px;
   }
   
-  /* 데스크톱 검색바 숨김 */
+  /* 왼쪽 데스크톱 아이콘 숨김 */
+  .icon-nav.desktop-only {
+    display: none !important;
+  }
+  
+  /* 오른쪽 모바일 아이콘 표시 */
+  .icon-nav.mobile-only {
+    display: flex !important;
+    gap: 4px;
+  }
+  
   .desktop-search {
     display: none !important;
   }
   
-  /* 모바일 검색 아이콘 표시 */
   .mobile-search-btn {
     display: flex !important;
   }
