@@ -182,15 +182,19 @@ body {
     height: 60px;
     padding: 0 16px;
     gap: 12px;
+    justify-content: space-between; /* 양쪽 끝 정렬 */
   }
   
+  /* 왼쪽: 로고만 */
   .topbar-left {
     flex: 0 0 auto;
   }
   
+  /* 오른쪽: 아이콘 + 로그인 */
   .topbar-right {
     flex: 1;
-    justify-content: flex-end; /* 오른쪽 정렬 */
+    justify-content: flex-end;
+    gap: 8px;
   }
   
   /* 데스크톱 검색바 숨김 */
@@ -203,8 +207,11 @@ body {
     display: flex !important;
   }
   
+  /* 아이콘 네비를 오른쪽으로 */
   .icon-nav {
+    display: flex;
     gap: 4px;
+    order: -1; /* 로그인 버튼보다 앞에 */
   }
   
   .icon-nav-btn {
