@@ -637,9 +637,10 @@ function renderMyAlbums() {
   if (!myGrid || !empty) return;
   myGrid.innerHTML = '';
   
-  // ✅ createdAt 기준으로 정렬 후 인덱스 매핑
+  // ✅ createdAt 기준 정렬
   const sorted = [...myAlbums].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  const base = sorted.map((album, i) => {
+  
+  const base = sorted.map((album) => {
     const originalIndex = myAlbums.indexOf(album);
     return { album, originalIndex };
   });
@@ -1432,46 +1433,6 @@ if (categoryAddBtn) {
   });
 }
 
-// ===== 기존 앨범 마이그레이션 (강제 실행) =====
-async function migrateOldAlbums() {
-  if (!currentUser) return;
-  if (!myAlbums || myAlbums.length === 0) return;
-  
-  let needUpdate = false;
-  const baseTime = Date.now();
-  
-  console.log('마이그레이션 시작:', myAlbums.length + '개 앨범');
-  
-  // 현재 배열 순서대로 타임스탬프 부여
-  myAlbums.forEach((album, index) => {
-    if (!album.createdAt) {
-      album.createdAt = baseTime - (index * 1000);
-      needUpdate = true;
-      console.log(`- ${album.name} (${album.artist}): createdAt 추가`);
-    }
-  });
-  
-  if (needUpdate) {
-    console.log('✅ 타임스탬프 추가 완료, 저장 중...');
-    
-    // LocalStorage 저장
-    saveMyAlbumsToStorage();
-    
-    // Firestore 저장
-    await syncMyAlbumsToFirestore();
-    
-    // 정렬
-    myAlbums.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    
-    // 재렌더링
-    renderMyAlbums();
-    
-    console.log('✅ 마이그레이션 완료!');
-  } else {
-    console.log('모든 앨범에 이미 createdAt 있음');
-  }
-}
-
 // ===== 21. Firebase Auth =====
 
 if (authToggleBtn) {
@@ -1488,32 +1449,6 @@ if (authToggleBtn) {
     }
   });
 }
-
-onAuthStateChanged(auth, async (user) => {
-  currentUser = user || null;
-
-  if (user) {
-    if (authStatus) {
-      authStatus.textContent = `${user.displayName || "사용자"}`;
-    }
-    if (authToggleBtn) {
-      authToggleBtn.textContent = "Logout";
-    }
-
-    try {
-      await loadMyAlbumsFromFirestore();
-      await migrateOldAlbums(); // ✅ 여기에 추가!
-    } catch (e) {
-      console.error("loadMyAlbumsFromFirestore error", e);
-    }
-  } else {
-    if (authStatus) authStatus.textContent = "";
-    if (authToggleBtn) authToggleBtn.textContent = "Login";
-
-    myAlbums = [];
-    renderMyAlbums();
-  }
-});
 
 // ===== 22. 초기 로드 =====
 
