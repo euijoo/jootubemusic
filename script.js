@@ -1027,6 +1027,8 @@ window.onYouTubeIframeAPIReady = function () {
       modestbranding: 1,
       rel: 0,
       playsinline: 1,
+      disablekb: 1, // ✅ 키보드 이벤트 비활성화
+      fs: 0, // ✅ 전체화면 버튼 숨김
     },
     events: {
       onReady: onPlayerReady,
