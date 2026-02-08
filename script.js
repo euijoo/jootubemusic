@@ -85,18 +85,48 @@ const categoryListEl = document.getElementById("categoryList");
 const categoryNewInput = document.getElementById("categoryNewInput");
 const categoryAddBtn = document.getElementById("categoryAddBtn");
 
+// ===== 9. Mini Player DOM 요소 =====
 // 미니 플레이어
 const miniPlayer = document.getElementById("miniPlayer");
 const miniCover = document.getElementById("miniCover");
 const miniTitle = document.getElementById("miniTitle");
 const miniArtist = document.getElementById("miniArtist");
 const miniToggle = document.getElementById("miniToggle");
-const miniHide = document.getElementById("miniHide");
+// 새 레이아웃에서는 miniHide 없으면 이 줄은 제거해도 됨
+// const miniHide = document.getElementById("miniHide");
+const miniPrev = document.getElementById("miniPrev");
+const miniNext = document.getElementById("miniNext");
 
 // 타임라인
 const miniSeek = document.getElementById("miniSeek");
 const miniCurrentTime = document.getElementById("miniCurrentTime");
 const miniDuration = document.getElementById("miniDuration");
+
+// ===== Mini Player 버튼 이벤트 연결 =====
+
+// 이전곡 버튼
+miniPrev?.addEventListener("click", () => {
+  playPrevTrack();
+});
+
+// 다음곡 버튼
+miniNext?.addEventListener("click", () => {
+  playNextTrack();
+});
+
+// ===== Mini Player 컨트롤 이벤트 =====
+// 이전곡 버튼
+miniPrev?.addEventListener("click", () => {
+  // TODO: 실제 이전곡 함수 이름으로 교체
+  // 예: playPrevTrack();
+});
+
+// 다음곡 버튼
+miniNext?.addEventListener("click", () => {
+  // TODO: 실제 다음곡 함수 이름으로 교체
+  // 예: playNextTrack();
+});
+
 
 // 커버 입력 모달
 const coverModal = document.getElementById("coverModal");
@@ -1011,6 +1041,48 @@ function closeTrackModal() {
   // currentTrackAlbum과 tracks는 유지 (재생 계속되도록)
 }
 
+// ===== Mini Player: 이전/다음 트랙 함수 =====
+
+// 다음곡: 현재 앨범 내에서 다음 재생 가능한 트랙 → 없으면 랜덤
+function playNextTrack() {
+  const nextTrack = getNextPlayableTrackInCurrentAlbum();
+  if (nextTrack) {
+    playTrack(nextTrack.id);
+    return;
+  }
+
+  // 현재 앨범에 더 이상 재생할 곡이 없으면 다른 앨범에서 랜덤
+  const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
+  playRandomTrackFromAllAlbums(excludeKey);
+}
+
+// 이전곡: 현재 앨범에서 “현재 트랙 앞쪽”에서 마지막으로 재생 가능한 트랙 찾기
+function playPrevTrack() {
+  if (!currentTrackAlbum || !Array.isArray(tracks) || !tracks.length || !currentTrackId) {
+    return;
+  }
+
+  const currentIndex = tracks.findIndex((t) => t.id === currentTrackId);
+  if (currentIndex === -1) return;
+
+  // 현재 인덱스 기준으로 거꾸로 가면서 videoId 있는 트랙 찾기
+  for (let i = currentIndex - 1; i >= 0; i--) {
+    const t = tracks[i];
+    if (t.videoId && t.videoId.trim()) {
+      playTrack(t.id);
+      return;
+    }
+  }
+
+  // 앞쪽에 재생 가능한 트랙이 없으면, 맨 마지막 재생 가능한 트랙으로 점프 (옵션)
+  for (let i = tracks.length - 1; i > currentIndex; i--) {
+    const t = tracks[i];
+    if (t.videoId && t.videoId.trim()) {
+      playTrack(t.id);
+      return;
+    }
+  }
+}
 
 
 
