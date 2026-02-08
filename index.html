@@ -212,37 +212,64 @@
     </div>
   </div>
 
-  <!-- 미니 플레이어 (Amazon Music 스타일) -->
-<div id="miniPlayer" class="mini-player-amazon" style="display: none">
-  <div class="mini-left">
-    <img id="miniCover" class="mini-cover-amazon" alt="cover" />
-    <div class="mini-meta-amazon">
-      <div id="miniTitle" class="mini-meta-title-amazon"></div>
-      <div id="miniArtist" class="mini-meta-artist-amazon"></div>
+  <footer class="mini-player-amazon" id="miniPlayer">
+  <div class="mini-player-inner">
+    <!-- 왼쪽: 커버 + 정보 -->
+    <div class="mini-left">
+      <img id="miniCover" class="mini-cover-amazon" src="" alt="cover" />
+      <div class="mini-meta-amazon">
+        <div id="miniTitle" class="mini-meta-title-amazon"></div>
+        <div id="miniArtist" class="mini-meta-artist-amazon"></div>
+      </div>
     </div>
-  </div>
 
-  <div class="mini-center">
-    <button id="miniToggle" class="mini-play-btn"></button>
-    <div class="mini-timeline-amazon">
-      <span id="miniCurrentTime" class="mini-time-amazon">0:00</span>
+    <!-- 중앙: 타임라인 + 컨트롤 -->
+    <div class="mini-center">
+      <!-- 타임라인 (위, 시간 텍스트 없음) -->
+      <div class="mini-timeline-amazon">
+        <input
+          id="miniSeek"
+          type="range"
+          min="0"
+          max="100"
+          value="0"
+          class="mini-seek-amazon"
+        />
+      </div>
+
+      <!-- 컨트롤 버튼 라인 -->
+      <div class="mini-controls-row">
+        <!-- 반복, 랜덤은 JS가 아직 없으면 아예 버튼을 안 두거나 disabled 클래스로 표시 -->
+        <!-- 이전곡 버튼 -->
+        <button id="miniPrev" class="mini-icon-btn" aria-label="Previous">
+          ‹
+        </button>
+
+        <!-- 재생/일시정지 버튼 -->
+        <button id="miniToggle" class="mini-play-btn paused" aria-label="Play"></button>
+
+        <!-- 다음곡 버튼 -->
+        <button id="miniNext" class="mini-icon-btn" aria-label="Next">
+          ›
+        </button>
+      </div>
+    </div>
+
+    <!-- 오른쪽: 볼륨 -->
+    <div class="mini-right">
+      <span class="mini-volume-icon">🔊</span>
       <input
-        id="miniSeek"
-        class="mini-seek-amazon"
+        id="miniVolume"
         type="range"
         min="0"
         max="100"
-        step="0.1"
-        value="0"
+        value="100"
+        class="mini-volume-slider"
       />
-      <span id="miniDuration" class="mini-time-amazon">0:00</span>
     </div>
   </div>
+</footer>
 
-  <div class="mini-right">
-    <button id="miniHide" class="mini-hide-btn">✕</button>
-  </div>
-</div>
 
   <!-- YouTube IFrame 컨테이너 (숨김) -->
   <div id="player-container" class="player-container">
