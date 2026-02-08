@@ -835,35 +835,49 @@ body {
   font-size: 6px;
   cursor: pointer;
 }
-/* ===== 9. Mini Player (Amazon Music 스타일) ===== */
+/* ===== 9. Mini Player (센터 정렬 + 이전/다음 컨트롤 스타일) ===== */
 
+/* 전체 미니플레이어 바
+   - 화면 맨 아래 고정은 유지하되, 실제 컨텐츠는 가운데 max-width로 정렬 */
 .mini-player-amazon {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   width: 100%;
-  background: rgba(20, 20, 20, 0.98);
+  /* 상단바와 같은 불투명도/블러 값으로 맞추고 싶으면
+     여기 background / backdrop-filter 값을 상단바와 동일하게 맞추면 됨 */
+  background: rgba(20, 20, 20, 0.85);  /* 상단바와 같은 색/투명도로 맞추기 */
+  backdrop-filter: blur(20px);         /* 상단바와 같은 blur 수치 */
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 24px;
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  align-items: center;
-  gap: 20px;
-  backdrop-filter: blur(20px);
+  padding: 10px 0;                     /* 위아래만 살짝 여백, 전체 높이 얇게 */
   z-index: 99;
 }
 
+/* 안쪽 실제 플레이어 컨테이너
+   - 폭을 제한하고 가운데 정렬 (사진처럼 가운데 얇게 위치) */
+.mini-player-inner {
+  max-width: 960px;                    /* 가운데 바의 최대 폭 (값 줄이면 더 짧아짐) */
+  margin: 0 auto;                      /* 좌우 중앙 정렬 */
+  padding: 0 24px;                     /* 내부 좌우 여백 */
+  display: grid;
+  grid-template-columns: 1.4fr 1.2fr 0.8fr; 
+  /* [왼쪽 정보] [중앙 컨트롤] [오른쪽 볼륨] 비율 → 필요하면 숫자만 조절 */
+  align-items: center;
+  gap: 16px;
+}
+
+/* 왼쪽: 커버 + 제목/아티스트 (사진처럼 왼쪽에 정보) */
 .mini-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .mini-cover-amazon {
-  width: 56px;
-  height: 56px;
+  width: 40px;                         /* 사진처럼 작은 커버 */
+  height: 40px;
   border-radius: 4px;
   object-fit: cover;
   background: #151525;
@@ -872,11 +886,10 @@ body {
 
 .mini-meta-amazon {
   min-width: 0;
-  flex: 1;
 }
 
 .mini-meta-title-amazon {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -885,30 +898,101 @@ body {
 }
 
 .mini-meta-artist-amazon {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* 중앙: 타임라인(위) + 컨트롤 버튼(아래) */
 .mini-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.mini-play-btn {
+/* 타임라인: 위쪽에만 슬라이더, 시간 숫자는 표시하지 않음 */
+.mini-timeline-amazon {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* 시간 텍스트는 안 쓰므로 숨기거나 삭제해도 됨 */
+.mini-time-amazon {
+  display: none;                       /* 시간을 쓰고 싶지 않을 때 완전히 숨김 */
+}
+
+/* 타임라인 슬라이더 (위쪽 위치) */
+.mini-seek-amazon {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 3px;                         /* 아주 얇은 진행바 */
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  outline: none;
+  cursor: pointer;
+}
+
+.mini-seek-amazon::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00d9e1;
+  cursor: pointer;
+}
+
+.mini-seek-amazon::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #00d9e1;
+  cursor: pointer;
   border: none;
+}
+
+/* 중앙 하단: 이전 / 재생 / 다음 (+ 선택이면 반복/랜덤) 버튼 라인 */
+.mini-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;                           /* 버튼 사이 간격 */
+}
+
+/* 작은 원형 버튼 (이전/다음/랜덤/반복) */
+.mini-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;                     /* 아이콘 폰트 크기 */
+}
+
+/* 모바일에서도 터치하기 쉽도록 padding 조금 추가하고 싶으면 여기 조절 */
+.mini-icon-btn:active {
+  transform: scale(0.95);
+}
+
+/* 가운데 큰 재생 버튼 (사진처럼 크게) */
+.mini-play-btn {
+  border: 2px solid rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  color: #000000;
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
   cursor: pointer;
   font-size: 18px;
   position: relative;
@@ -916,93 +1000,69 @@ body {
 }
 
 .mini-play-btn:hover {
-  transform: scale(1.06);
+  transform: scale(1.05);
 }
 
+/* 재생/일시정지 상태 아이콘은 JS에서 .playing / .paused를 토글 */
 .mini-play-btn.playing::before {
-  content: "\f04b";
-  font-size: 14px;
-  font-weight: 700;
-  color: #000000;
+  content: "\\f04c";                   /* 일시정지 아이콘 코드 */
 }
 
 .mini-play-btn.paused::before {
-  content: "\f04c";
-  font-size: 14px;
-  color: #000000;
-  margin-left: 2px;
+  content: "\\f04b";                   /* 재생 아이콘 코드 */
 }
 
-.mini-timeline-amazon {
+/* 오른쪽: 볼륨 조절 등 */
+.mini-right {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  width: 100%;
 }
 
-.mini-time-amazon {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
-  width: 40px;
-  text-align: center;
+/* 볼륨 아이콘 */
+.mini-volume-icon {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.mini-seek-amazon {
-  flex: 1;
+/* 볼륨 슬라이더 */
+.mini-volume-slider {
+  width: 80px;
   -webkit-appearance: none;
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.25);
   outline: none;
   cursor: pointer;
 }
 
-.mini-seek-amazon::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #00d9e1;
-  cursor: pointer;
+/* 모바일 대응: 폭 좁아졌을 때도 버튼이 잘 보이게 정렬 변경 */
+@media (max-width: 640px) {
+  .mini-player-inner {
+    grid-template-columns: 1.6fr 1.4fr;  /* 왼쪽 정보 + 중앙 컨트롤만 표시 */
+  }
+
+  .mini-right {
+    display: none;                       /* 모바일에서는 볼륨 영역 생략 */
+  }
+
+  .mini-cover-amazon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .mini-controls-row {
+    gap: 12px;
+  }
+
+  .mini-icon-btn,
+  .mini-play-btn {
+    width: 36px;
+    height: 36px;                        /* 터치하기 충분한 크기 유지 */
+  }
 }
 
-.mini-seek-amazon::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #00d9e1;
-  cursor: pointer;
-  border: none;
-}
-
-.mini-right {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.mini-hide-btn {
-  border: none;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  border-radius: 4px;
-  font-size: 16px;
-}
-
-.mini-hide-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-/* 기존 미니 플레이어 (사용 안 함, 숨김) */
-.mini-player {
-  display: none !important;
-}
 
 
 /* ===== 10. Responsive Breakpoints ===== */
