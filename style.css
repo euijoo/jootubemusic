@@ -1060,28 +1060,13 @@ body {
   opacity: 0.8;
   transition: background 0.2s ease, opacity 0.2s ease;
 }
-/* 이전곡 아이콘 (폰트어썸: fast-backward / step-backward 등) */
-.mini-prev-btn::before {
-  content: "\f048";          /* 예: fa-backward */
-  font-family: "Font Awesome 5 Free"; /* 사용 중인 아이콘 폰트 패밀리로 맞추기 */
-  font-weight: 900;
-  font-size: 14px;
-}
-
-/* 다음곡 아이콘 (폰트어썸: fast-forward / step-forward 등) */
-.mini-next-btn::before {
-  content: "\f051";          /* 예: fa-forward */
-  font-family: "Font Awesome 5 Free";
-  font-weight: 900;
-  font-size: 14px;
-}
-
 
 .mini-prev-btn:hover,
 .mini-next-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   opacity: 1;
 }
+
 
 
 
