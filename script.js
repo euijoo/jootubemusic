@@ -1047,7 +1047,7 @@ window.onYouTubeIframeAPIReady = function () {
     },
   });
 };
-
+ 
 function onPlayerReady() {
   isPlaying = false;
   updatePlayButtonUI();
