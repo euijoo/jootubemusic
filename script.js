@@ -92,6 +92,9 @@ const miniTitle = document.getElementById("miniTitle");
 const miniArtist = document.getElementById("miniArtist");
 const miniToggle = document.getElementById("miniToggle");
 const miniHide = document.getElementById("miniHide");
+// 새로 추가: 이전/다음 버튼 캐싱
+const miniPrev = document.getElementById("miniPrev");
+const miniNext = document.getElementById("miniNext");
 
 // 타임라인
 const miniSeek = document.getElementById("miniSeek");
@@ -1196,6 +1199,7 @@ function playTrackOnYouTube(track) {
 
 // ===== 15. 미니 플레이어 / 타임라인 이벤트 =====
 
+// 재생 / 일시정지
 if (miniToggle) {
   miniToggle.addEventListener("click", () => {
     if (!ytPlayer) return;
@@ -1208,19 +1212,42 @@ if (miniToggle) {
   });
 }
 
-if (miniHide) {
-  miniHide.textContent = "⏭";
-  miniHide.addEventListener("click", () => {
+// ✅ 다음곡 버튼: 기존 miniHide 로직 이동
+if (miniNext) {
+  miniNext.addEventListener("click", () => {
     const nextTrack = getNextPlayableTrackInCurrentAlbum();
 
     if (nextTrack) {
-      // 같은 앨범에서 다음 트랙(순서대로) 재생
-      playTrack(nextTrack.id);
+      playTrack(nextTrack.id); // 같은 앨범 다음 트랙
     } else {
-      // 현재 앨범의 마지막 곡이면 → 다른 앨범에서 랜덤 재생
       const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
-      playRandomTrackFromAllAlbums(excludeKey);
+      playRandomTrackFromAllAlbums(excludeKey); // 다른 앨범 랜덤
     }
+  });
+}
+
+// ✅ 이전곡 버튼: 현재 인덱스 기준으로 이전으로 이동
+if (miniPrev) {
+  miniPrev.addEventListener("click", () => {
+    if (!currentTrackId || !Array.isArray(tracks) || !tracks.length) return;
+
+    const idx = tracks.findIndex(t => t.id === currentTrackId);
+    if (idx <= 0) return; // 첫 곡이면 아무 것도 안 함 (원하면 루프 처리도 가능)
+
+    for (let i = idx - 1; i >= 0; i -= 1) {
+      const t = tracks[i];
+      if (t.videoId && t.videoId.trim()) {
+        playTrack(t.id);
+        break;
+      }
+    }
+  });
+}
+
+if (miniHide) {
+  miniHide.textContent = "✕";
+  miniHide.addEventListener("click", () => {
+    if (miniPlayer) miniPlayer.style.display = "none";
   });
 }
 
