@@ -406,10 +406,33 @@ body {
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* 기본: 데스크톱 6열 */
 .grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+/* 1024px 이하: 자동으로 4~3열 정도로 줄어듦 */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+/* 768px 이하: 카드 조금 더 좁게 */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  }
+}
+
+/* 600px 이하: 2열 위주 */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+  }
 }
 
 .card {
