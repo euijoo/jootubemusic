@@ -897,14 +897,14 @@ body {
 }
 
 .mini-time-amazon {
+  width: 44px;        /* 고정 폭 */
+  text-align: center;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.7);
-  width: 44px;  /* 좌우 시간 레이블 고정폭 */
-  text-align: center;
 }
 
 .mini-seek-amazon {
-  flex: 1;  /* 타임라인이 가운데 영역 대부분을 차지 */
+  flex: 1;            /* 나머지 전부 타임라인 */
 }
 
 /* 왼쪽 메타 영역: 고정 레이아웃 + 말줄임 */
@@ -1056,6 +1056,38 @@ body {
 .mini-player {
   display: none !important;
 }
+
+/* 중앙 컨트롤 줄: 재생 옆에 이전/다음 */
+.mini-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.mini-prev-btn,
+.mini-next-btn {
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.mini-prev-btn:hover,
+.mini-next-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  opacity: 1;
+}
+
+
 
 
 /* ===== 10. Responsive Breakpoints ===== */
