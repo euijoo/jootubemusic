@@ -869,9 +869,10 @@ body {
   width: 100%;
   background: rgba(20, 20, 20, 0.98);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 40px; /* 양쪽 여백 살짝 증가 */
+  padding: 12px 40px;
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) minmax(320px, 2.5fr) minmax(160px, 1fr);
+  grid-template-columns: 280px minmax(420px, 1fr) 160px;
+  /*  왼쪽 280px 고정, 가운데는 나머지, 오른쪽 160px 고정  */
   align-items: center;
   gap: 24px;
   backdrop-filter: blur(20px);
