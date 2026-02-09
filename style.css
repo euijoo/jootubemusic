@@ -860,6 +860,7 @@ body {
 }
 /* ===== 9. Mini Player (Amazon Music 스타일) ===== */
 
+/* PC 기본 (1024px 이상 가정) */
 .mini-player-amazon {
   position: fixed;
   bottom: 0;
@@ -868,14 +869,44 @@ body {
   width: 100%;
   background: rgba(20, 20, 20, 0.98);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 24px;
+  padding: 12px 40px; /* 양쪽 여백 살짝 증가 */
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: minmax(220px, 1fr) minmax(320px, 2.5fr) minmax(160px, 1fr);
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   backdrop-filter: blur(20px);
   z-index: 99;
 }
+
+/* 중앙 영역 안에서 버튼+타임라인 정렬 */
+.mini-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;   /* 버튼 가운데 */
+  justify-content: center;
+  gap: 8px;
+  max-width: 700px;      /* 너무 길어지지 않도록 상한선 */
+  margin: 0 auto;        /* 중앙 열 자체도 가운데로 */
+}
+
+.mini-timeline-amazon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.mini-time-amazon {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  width: 44px;  /* 좌우 시간 레이블 고정폭 */
+  text-align: center;
+}
+
+.mini-seek-amazon {
+  flex: 1;  /* 타임라인이 가운데 영역 대부분을 차지 */
+}
+
 
 .mini-left {
   display: flex;
