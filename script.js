@@ -1178,6 +1178,21 @@ function updateMiniPlayerProgress() {
   if (miniSeek)        miniSeek.value              = (current / duration) * 100;
 }
 
+function applyMiniTitleMarquee() {
+  if (!miniTitle) return;
+
+  // 초기화
+  miniTitle.classList.remove("marquee-active");
+
+  // 다음 프레임에서 길이 비교 (렌더 후 측정)
+  requestAnimationFrame(() => {
+    if (miniTitle.scrollWidth > miniTitle.clientWidth) {
+      miniTitle.classList.add("marquee-active");
+    }
+  });
+}
+
+
 function updateNowPlaying(track) {
   if (!track) return;
 
@@ -1195,6 +1210,8 @@ function updateNowPlaying(track) {
   if (miniCurrentTime) miniCurrentTime.textContent = "00:00";
   if (miniDuration)    miniDuration.textContent    = "00:00";
   if (miniPlayer)      miniPlayer.style.display    = "flex";
+
+    applyMiniTitleMarquee(); // ✅ 제목 길이에 따라 마키 활성화
 }
 
 function playTrackOnYouTube(track) {
