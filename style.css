@@ -974,8 +974,8 @@ body {
   text-overflow: ellipsis;
 }
 
-/* 호버 시: 텍스트가 좌→우로 천천히 이동 */
-.mini-meta-title-amazon:hover {
+/* 길이가 넘치는 경우에만 JS가 이 클래스를 붙임 */
+.mini-meta-title-amazon.marquee-active:hover {
   animation: miniTitleMarquee 8s linear infinite;
 }
 
