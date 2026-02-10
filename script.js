@@ -68,6 +68,35 @@ const trackModalTitle = document.getElementById("trackModalTitle");
 const trackList = document.getElementById("trackList");
 const trackAddBtn = document.getElementById("trackAddBtn");
 
+async function openTrackModalForCurrentAlbum() {
+  if (!currentTrackAlbum) return; // 지금 재생 중인 앨범이 없으면 무시
+
+  trackModalTitle.textContent =
+    `${currentTrackAlbum.artist} - ${currentTrackAlbum.name}`;
+
+  // 앨범 트랙 로드 (이미 쓰고 있는 util 재사용)
+  const loaded = await loadTracksForAlbumFromFirestore(currentTrackAlbum);
+  tracks = loaded || [];
+
+  // 기존에 트랙 리스트 그리는 함수가 있다면 재사용
+  if (typeof renderTrackList === "function") {
+    renderTrackList();
+  } else {
+    // 임시 렌더 예시
+    trackList.innerHTML = "";
+    tracks.forEach(t => {
+      const li = document.createElement("li");
+      li.textContent = `${t.title} - ${t.artist}`;
+      trackList.appendChild(li);
+    });
+  }
+
+  trackModal.style.display = "flex";
+}
+
+
+
+
 // 앨범 옵션 모달
 const albumOptionModal = document.getElementById("albumOptionModal");
 const albumOptionTitle = document.getElementById("albumOptionTitle");
@@ -92,6 +121,12 @@ const miniTitle = document.getElementById("miniTitle");
 const miniArtist = document.getElementById("miniArtist");
 const miniToggle = document.getElementById("miniToggle");
 const miniHide = document.getElementById("miniHide");
+
+// ===== 9.x 미니 플레이어 이벤트 =====
+miniCover.addEventListener("click", () => {
+  openTrackModalForCurrentAlbum();
+});
+
 // 새로 추가: 이전/다음 버튼 캐싱
 const miniPrev = document.getElementById("miniPrev");
 const miniNext = document.getElementById("miniNext");
