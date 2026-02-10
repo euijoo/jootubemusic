@@ -660,28 +660,55 @@ body {
 }
 
 
-/* ===== 7. Track Modal ===== */
+/* ===== 7. Track Modal (글로우 스타일) ===== */
 #trackModal {
   font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+/* 백드롭은 살짝 어둡게만 */
 #trackModal .modal-backdrop {
-  background: radial-gradient(circle at top, rgba(0, 255, 80, 0.1), transparent 55%), #000000;
-  opacity: 0.96;
+  background: rgba(0, 0, 0, 0.85);
 }
 
+/* 모달 박스에 글로우 백라이트 주기 */
 #trackModal .modal-content {
-  background: #050505;
-  color: #CFCFCF;
-  border-radius: 0;
-  border: 0px solid #CFCFCF;
+  position: relative;
+  background: #151823;
+  color: #cfcfcf;
+  border-radius: 16px;
+  border: 1px solid rgba(207, 207, 207, 0.4);
   max-width: 420px;
   width: 90%;
   margin: 40px auto;
   padding: 16px 18px 14px;
+  overflow: hidden;
 }
 
+/* ::before 로 글로우 배경 */
+#trackModal .modal-content::before {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  background: linear-gradient(270deg, #0fffc1, #7e0fff);
+  background-size: 200% 200%;
+  filter: blur(40px);
+  animation: trackModalGlow 10s ease infinite;
+}
+
+/* 안쪽 내용은 어두운 패널로 다시 덮기 */
+#trackModal .modal-content > * {
+  position: relative;
+}
+
+@keyframes trackModalGlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 나머지 기존 구조는 유지 */
 #trackModal .modal-header {
   display: flex;
   align-items: center;
@@ -730,7 +757,7 @@ body {
 }
 
 #trackModal #trackList li:hover {
-  background: #050a05;
+  background: rgba(5, 10, 5, 0.7);
 }
 
 #trackModal #trackList .track-index {
@@ -772,7 +799,7 @@ body {
   align-items: center;
   justify-content: center;
   background: rgba(168, 255, 96, 0.12);
-  color: #CFCFCF;
+  color: #cfcfcf;
   cursor: pointer;
   font-size: 12px;
 }
@@ -782,17 +809,17 @@ body {
 }
 
 #trackModal #trackList li.selected-track {
-  background-color: #ff00ff;
+  background-color: rgba(255, 0, 255, 0.35);
 }
 
 .track-add-btn {
-  margin-top: 0px;
+  margin-top: 0;
   padding: 4px 8px;
   font-size: 10px;
   cursor: pointer;
-  border: 0px solid #00ff80;
+  border: 0;
   background: transparent;
-  color: #536D8C;
+  color: #536d8c;
   border-radius: 4px;
 }
 
