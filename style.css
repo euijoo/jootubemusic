@@ -660,11 +660,10 @@ body {
 }
 
 
-/* ===== 7. Track Modal (터미널 스타일) ===== */
-
+/* ===== 7. Track Modal ===== */
 #trackModal {
-  font-family: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui,
-               "Segoe UI", sans-serif;
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 #trackModal .modal-backdrop {
@@ -674,10 +673,9 @@ body {
 
 #trackModal .modal-content {
   background: #050505;
-  color: #a8ff60;
+  color: #CFCFCF;
   border-radius: 0;
-  border: 1px solid #00ff80;
-  box-shadow: 0 0 16px rgba(0, 255, 128, 0.7), 0 0 40px rgba(0, 255, 128, 0.3);
+  border: 0px solid #CFCFCF;
   max-width: 420px;
   width: 90%;
   margin: 40px auto;
@@ -703,17 +701,6 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-#trackModal #trackCoverChangeBtn {
-  border: 1px solid #00ff80;
-  background: transparent;
-  color: #a8ff60;
-  padding: 2px 8px;
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
 }
 
 #trackModal #trackModalClose {
@@ -785,7 +772,7 @@ body {
   align-items: center;
   justify-content: center;
   background: rgba(168, 255, 96, 0.12);
-  color: #a8ff60;
+  color: #CFCFCF;
   cursor: pointer;
   font-size: 12px;
 }
@@ -799,13 +786,13 @@ body {
 }
 
 .track-add-btn {
-  margin-top: 8px;
+  margin-top: 0px;
   padding: 4px 8px;
-  font-size: 12px;
+  font-size: 10px;
   cursor: pointer;
-  border: 1px solid #00ff80;
+  border: 0px solid #00ff80;
   background: transparent;
-  color: #a8ff60;
+  color: #536D8C;
   border-radius: 4px;
 }
 
