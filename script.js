@@ -68,6 +68,7 @@ const trackModalTitle = document.getElementById("trackModalTitle");
 const trackList = document.getElementById("trackList");
 const trackAddBtn = document.getElementById("trackAddBtn");
 
+// 현재 재생 중 앨범의 트랙 모달 열기
 async function openTrackModalForCurrentAlbum() {
   if (!currentTrackAlbum) return; // 지금 재생 중인 앨범이 없으면 무시
 
@@ -78,10 +79,10 @@ async function openTrackModalForCurrentAlbum() {
   const loaded = await loadTracksForAlbumFromFirestore(currentTrackAlbum);
   tracks = loaded || [];
 
-  // ✅ 공용 렌더 함수로 리스트 그리기
+  // 공용 렌더 함수로 리스트 그리기
   renderTrackList();
 
-  // ✅ 지금 재생 중인 트랙을 선택 상태로 표시
+  // 지금 재생 중인 트랙을 선택 상태로 표시
   if (currentTrackId) {
     selectTrackOnly(currentTrackId);
   }
@@ -974,27 +975,6 @@ function openTrackModal(album) {
           currentTrackId = tracks[0].id;
         }
       }
-    } catch (err) {
-      console.error(err);
-      trackList.innerHTML =
-        "<li>트랙 정보를 불러오는 중 오류가 발생했습니다.</li>";
-    }
-  })();
-}
-
-
-      tracks                = loadedTracks;
-      playedTrackIdsInAlbum = new Set();
-
-      renderTrackList();
-
-
-      if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
-  // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
-  if (tracks.length) {
-    currentTrackId = tracks[0].id;
-  }
-}
     } catch (err) {
       console.error(err);
       trackList.innerHTML =
