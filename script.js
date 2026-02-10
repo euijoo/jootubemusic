@@ -1181,13 +1181,14 @@ function updateMiniPlayerProgress() {
 function applyMiniTitleMarquee() {
   if (!miniTitle) return;
 
-  // 초기화
-  miniTitle.classList.remove("marquee-active");
+  const wrapper = miniTitle.parentElement; // .mini-meta-title-amazon
+  if (!wrapper) return;
 
-  // 다음 프레임에서 길이 비교 (렌더 후 측정)
+  wrapper.classList.remove("marquee-active");
+
   requestAnimationFrame(() => {
-    if (miniTitle.scrollWidth > miniTitle.clientWidth) {
-      miniTitle.classList.add("marquee-active");
+    if (miniTitle.scrollWidth > wrapper.clientWidth) {
+      wrapper.classList.add("marquee-active");
     }
   });
 }
