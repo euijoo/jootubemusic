@@ -959,7 +959,42 @@ body {
 .mini-meta-amazon {
   min-width: 0;
   flex: 1;
+  overflow: hidden; /* 래퍼에서 한 번 잘라줌 */
 }
+
+/* 기본 상태: 한 줄 + 말줄임 */
+.mini-meta-title-amazon {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 호버 시: 텍스트가 좌→우로 천천히 이동 */
+.mini-meta-title-amazon:hover {
+  animation: miniTitleMarquee 8s linear infinite;
+}
+
+/* 애니메이션 정의 */
+@keyframes miniTitleMarquee {
+  0% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(0); /* 잠깐 멈춤 */
+  }
+  90% {
+    transform: translateX(-50%); /* 필요하면 -100% 등으로 조절 */
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 
 .mini-meta-title-amazon {
   font-size: 14px;
