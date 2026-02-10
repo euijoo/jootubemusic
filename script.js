@@ -74,26 +74,20 @@ async function openTrackModalForCurrentAlbum() {
   trackModalTitle.textContent =
     `${currentTrackAlbum.artist} - ${currentTrackAlbum.name}`;
 
-  // 앨범 트랙 로드 (이미 쓰고 있는 util 재사용)
+  // 앨범 트랙 로드
   const loaded = await loadTracksForAlbumFromFirestore(currentTrackAlbum);
   tracks = loaded || [];
 
-  // 기존에 트랙 리스트 그리는 함수가 있다면 재사용
-  if (typeof renderTrackList === "function") {
-    renderTrackList();
-  } else {
-    // 임시 렌더 예시
-    trackList.innerHTML = "";
-    tracks.forEach(t => {
-      const li = document.createElement("li");
-      li.textContent = `${t.title} - ${t.artist}`;
-      trackList.appendChild(li);
-    });
+  // ✅ 공용 렌더 함수로 리스트 그리기
+  renderTrackList();
+
+  // ✅ 지금 재생 중인 트랙을 선택 상태로 표시
+  if (currentTrackId) {
+    selectTrackOnly(currentTrackId);
   }
 
   trackModal.style.display = "flex";
 }
-
 
 
 
@@ -941,6 +935,17 @@ function createTrackListItem(album, trackData, index) {
   return li;
 }
 
+// ===== 공용 트랙 리스트 렌더링 =====
+function renderTrackList() {
+  if (!trackList || !currentTrackAlbum) return;
+
+  trackList.innerHTML = "";
+  tracks.forEach((t, idx) => {
+    const li = createTrackListItem(currentTrackAlbum, t, idx);
+    trackList.appendChild(li);
+  });
+}
+
 function openTrackModal(album) {
   if (!trackModal || !trackList) return;
 
@@ -954,40 +959,35 @@ function openTrackModal(album) {
       let loadedTracks = await loadTracksForAlbumFromFirestore(album);
 
       if (!loadedTracks || !loadedTracks.length) {
-        const lfTracks = await fetchAlbumTracks(album.artist, album.name);
-        if (!lfTracks || (Array.isArray(lfTracks) && lfTracks.length === 0)) {
-          trackList.innerHTML =
-            "<li>트랙 정보를 찾을 수 없습니다. add tracks 버튼으로 직접 추가해 주세요.</li>";
-          tracks = [];
-          return;
-        }
-
-        const arr = Array.isArray(lfTracks) ? lfTracks : [lfTracks];
-        loadedTracks = arr.map((t) => {
-          const title =
-            typeof t.name === "string"
-              ? t.name
-              : t.name?.[0] || "제목 없음";
-
-          return {
-            id: crypto.randomUUID(),
-            title,
-            artist: album.artist,
-            albumName: album.name,
-            videoId: "",
-            coverUrl: album.image,
-          };
-        });
+        // ... Last.fm에서 트랙 만들기 ...
       }
 
       tracks                = loadedTracks;
       playedTrackIdsInAlbum = new Set();
 
-      trackList.innerHTML = "";
-      tracks.forEach((t, idx) => {
-        const li = createTrackListItem(album, t, idx);
-        trackList.appendChild(li);
-      });
+      // ✅ 공용 렌더 함수 사용
+      renderTrackList();
+
+      if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
+        // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
+        if (tracks.length) {
+          currentTrackId = tracks[0].id;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      trackList.innerHTML =
+        "<li>트랙 정보를 불러오는 중 오류가 발생했습니다.</li>";
+    }
+  })();
+}
+
+
+      tracks                = loadedTracks;
+      playedTrackIdsInAlbum = new Set();
+
+      renderTrackList();
+
 
       if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
   // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
