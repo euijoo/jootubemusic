@@ -687,13 +687,24 @@ body {
 #trackModal .modal-content::before {
   content: "";
   position: absolute;
-  inset: -16px; /* 박스 주변으로 여유를 줘서 퍼지게 */
+  inset: -24px; /* 조금 더 넉넉하게 */
   z-index: -2;
-  background: linear-gradient(270deg, #0fffc1, #7e0fff);
-  background-size: 200% 200%;
-  filter: blur(26px); /* blur로 경계 모호하게 */
-  opacity: 0.9;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(15, 255, 193, 0.9), transparent 60%),
+    radial-gradient(circle at 100% 0%, rgba(126, 15, 255, 0.9), transparent 60%);
+  /* 단일 linear-gradient + heavy blur 대신, 두 개의 radial 을 섞기 */
+  background-size: 120% 120%;
+  filter: blur(18px);           /* blur 강도 살짝 줄이기 */
+  -webkit-filter: blur(18px);   /* Safari용 명시 */
+  opacity: 0.8;
   animation: trackModalBorderGlow 10s ease infinite;
+}
+
+/* 애니메이션은 살짝만 움직이게 */
+@keyframes trackModalBorderGlow {
+  0%   { transform: translate3d(0, 0, 0); }
+  50%  { transform: translate3d(4px, -4px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 
 /* 실제 내부 패널 */
