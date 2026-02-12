@@ -1056,8 +1056,7 @@ body {
 .mini-prev-btn,
 .mini-next-btn {
   border: none;
-  background-color: transparent; /* 배경색만 */
-  color: #ffffff;
+  background-color: transparent;
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -1073,7 +1072,6 @@ body {
   background-size: 22px 22px;
 }
 
-/* 실제 경로에 맞춰 수정 */
 .mini-prev-btn {
   background-image: url("img/Previous.png");
 }
