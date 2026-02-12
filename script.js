@@ -1215,19 +1215,37 @@ function updateNowPlaying(track) {
     applyMiniTitleMarquee(); // ✅ 제목 길이에 따라 마키 활성화
 }
 
-function playTrackOnYouTube(track) {
+function playTrackOnYouTube(track, retryForIOS = false) {
   if (!track.videoId) {
     alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
     return;
   }
+
   if (!ytPlayer || typeof ytPlayer.loadVideoById !== "function") {
     alert("YouTube 플레이어가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
     return;
   }
 
+  // 기본 재생 시도 (동기적으로 바로 호출)
   ytPlayer.loadVideoById(track.videoId);
   ytPlayer.playVideo();
+
+  // iOS Safari에서 첫 호출이 먹지 않을 수 있어서, 아주 짧은 재시도 1회
+  if (!retryForIOS && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    setTimeout(() => {
+      if (!ytPlayer || typeof ytPlayer.getPlayerState !== "function") return;
+      try {
+        const state = ytPlayer.getPlayerState();
+        if (state !== window.YT?.PlayerState?.PLAYING) {
+          ytPlayer.playVideo();
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 150);
+  }
 }
+
 
 
 // ===== 15. 미니 플레이어 / 타임라인 이벤트 =====
