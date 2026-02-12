@@ -1218,6 +1218,7 @@ function updateNowPlaying(track) {
 }
 
 function playTrackOnYouTube(track) {
+   console.log("playTrackOnYouTube called with", track); // 임시 로그
   if (!track.videoId) {
     alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
     return;
