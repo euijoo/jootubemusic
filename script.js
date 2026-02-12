@@ -1215,36 +1215,21 @@ function updateNowPlaying(track) {
     applyMiniTitleMarquee(); // ✅ 제목 길이에 따라 마키 활성화
 }
 
-function playTrackOnYouTube(track, retryForIOS = false) {
-  if (!track.videoId) {
-    alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
-    return;
-  }
+// ===== iOS용 강제 재생 헬퍼 =====
+function forcePlayForIOS() {
+  if (!ytPlayer || typeof ytPlayer.playVideo !== "function") return;
+  if (!/iPhone|iPad|iPod/i.test(navigator.userAgent)) return;
 
-  if (!ytPlayer || typeof ytPlayer.loadVideoById !== "function") {
-    alert("YouTube 플레이어가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
-    return;
-  }
-
-  // 기본 재생 시도 (동기적으로 바로 호출)
-  ytPlayer.loadVideoById(track.videoId);
-  ytPlayer.playVideo();
-
-  // iOS Safari에서 첫 호출이 먹지 않을 수 있어서, 아주 짧은 재시도 1회
-  if (!retryForIOS && /iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    setTimeout(() => {
-      if (!ytPlayer || typeof ytPlayer.getPlayerState !== "function") return;
-      try {
-        const state = ytPlayer.getPlayerState();
-        if (state !== window.YT?.PlayerState?.PLAYING) {
-          ytPlayer.playVideo();
-        }
-      } catch (e) {
-        // ignore
-      }
-    }, 150);
+  try {
+    const state = ytPlayer.getPlayerState?.();
+    if (state !== window.YT?.PlayerState?.PLAYING) {
+      ytPlayer.playVideo();
+    }
+  } catch (e) {
+    // ignore
   }
 }
+
 
 
 
@@ -1263,13 +1248,14 @@ if (miniToggle) {
   });
 }
 
-// ✅ 다음곡 버튼: 기존 miniHide 로직 이동
+// ✅ 다음곡 버튼
 if (miniNext) {
   miniNext.addEventListener("click", () => {
     const nextTrack = getNextPlayableTrackInCurrentAlbum();
 
     if (nextTrack) {
-      playTrack(nextTrack.id); // 같은 앨범 다음 트랙
+      playTrack(nextTrack.id);   // 트랙/미니플레이어 상태 업데이트 + YouTube 재생
+      forcePlayForIOS();         // 🔹 아이폰에서 한 번 더 play 시도
     } else {
       const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
       playRandomTrackFromAllAlbums(excludeKey); // 다른 앨범 랜덤
@@ -1277,18 +1263,19 @@ if (miniNext) {
   });
 }
 
-// ✅ 이전곡 버튼: 현재 인덱스 기준으로 이전으로 이동
+// ✅ 이전곡 버튼
 if (miniPrev) {
   miniPrev.addEventListener("click", () => {
     if (!currentTrackId || !Array.isArray(tracks) || !tracks.length) return;
 
     const idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (idx <= 0) return; // 첫 곡이면 아무 것도 안 함 (원하면 루프 처리도 가능)
+    if (idx <= 0) return;
 
     for (let i = idx - 1; i >= 0; i -= 1) {
       const t = tracks[i];
       if (t.videoId && t.videoId.trim()) {
-        playTrack(t.id);
+        playTrack(t.id);   // 상태 업데이트 + YouTube 재생
+        forcePlayForIOS(); // 🔹 아이폰에서 한 번 더 play 시도
         break;
       }
     }
