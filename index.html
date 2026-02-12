@@ -216,37 +216,40 @@
 
   <!-- 미니 플레이어 (Amazon Music 스타일) -->
 <div id="miniPlayer" class="mini-player-amazon" style="display: none">
+  <!-- 왼쪽: 커버 + 메타 -->
   <div class="mini-left">
     <img id="miniCover" class="mini-cover-amazon" alt="cover" />
     <div class="mini-meta-amazon">
-  <div class="mini-meta-title-amazon">
-    <span id="miniTitle"></span>
-  </div>
-  <div class="mini-meta-artist-amazon" id="miniArtist"></div>
-</div>
+      <div class="mini-meta-title-amazon">
+        <span id="miniTitle"></span>
+      </div>
+      <div class="mini-meta-artist-amazon" id="miniArtist"></div>
+    </div>
+  </div> <!-- ✅ mini-left 닫기 -->
 
+  <!-- 가운데: 재생/이전/다음 + 타임라인 -->
   <div class="mini-center">
-  <div class="mini-controls-row">
-  <button id="miniPrev" class="mini-prev-btn">⏮</button>
-  <button id="miniToggle" class="mini-play-btn">▶</button>
-  <button id="miniNext" class="mini-next-btn">⏭</button>
-</div>
-  <div class="mini-timeline-amazon">
-    <span id="miniCurrentTime" class="mini-time-amazon">0:00</span>
-    <input
-      id="miniSeek"
-      class="mini-seek-amazon"
-      type="range"
-      min="0"
-      max="100"
-      step="0.1"
-      value="0"
-    />
-    <span id="miniDuration" class="mini-time-amazon">0:00</span>
+    <div class="mini-controls-row">
+      <button id="miniPrev" class="mini-prev-btn">⏮</button>
+      <button id="miniToggle" class="mini-play-btn">▶</button>
+      <button id="miniNext" class="mini-next-btn">⏭</button>
+    </div>
+    <div class="mini-timeline-amazon">
+      <span id="miniCurrentTime" class="mini-time-amazon">0:00</span>
+      <input
+        id="miniSeek"
+        class="mini-seek-amazon"
+        type="range"
+        min="0"
+        max="100"
+        step="0.1"
+        value="0"
+      />
+      <span id="miniDuration" class="mini-time-amazon">0:00</span>
+    </div>
   </div>
-</div>
 
-
+  <!-- 오른쪽: 닫기 버튼 -->
   <div class="mini-right">
     <button id="miniHide" class="mini-hide-btn">✕</button>
   </div>
