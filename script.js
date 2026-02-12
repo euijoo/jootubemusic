@@ -154,6 +154,8 @@ let currentTrackAlbum = null;
 
 let playedTrackIdsInAlbum = new Set();
 let playedAlbumKeys = new Set();
+let nextButtonPhase = "skip"; // "skip" → 곡만 변경, "play" → 재생
+let prevButtonPhase = "skip";
 
 function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
@@ -1245,37 +1247,80 @@ if (miniToggle) {
   });
 }
 
-// ✅ 다음곡 버튼: 기존 miniHide 로직 이동
+// ✅ 다음곡 버튼: 클릭 1회 = 곡만 변경, 클릭 2회 = 재생
 if (miniNext) {
   miniNext.addEventListener("click", () => {
-    const nextTrack = getNextPlayableTrackInCurrentAlbum();
+    if (!Array.isArray(tracks) || !tracks.length) return;
 
-    if (nextTrack) {
-      playTrack(nextTrack.id); // 같은 앨범 다음 트랙
+    if (nextButtonPhase === "skip") {
+      // 1단계: 다음 곡으로만 이동 (대기 상태)
+      const nextTrack = getNextPlayableTrackInCurrentAlbum();
+      if (!nextTrack) return;
+
+      // 선택/현재 트랙만 바꾸고, 미니플레이어 UI 업데이트
+      selectTrackOnly(nextTrack.id);
+      updateNowPlaying(nextTrack);
+      if (miniPlayer) miniPlayer.style.display = "flex";
+
+      // 재생은 하지 않음
+      nextButtonPhase = "play";  // 다음 클릭부터는 재생
     } else {
-      const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
-      playRandomTrackFromAllAlbums(excludeKey); // 다른 앨범 랜덤
+      // 2단계: 현재 선택된 곡 재생
+      if (!currentTrackId) return;
+      const track = tracks.find(t => t.id === currentTrackId);
+      if (!track || !track.videoId || !track.videoId.trim()) return;
+
+      playTrackOnYouTube(track);
+      nextButtonPhase = "skip";  // 다시 곡 변경 모드로
     }
+
+    // 이전 버튼 단계는 초기화
+    prevButtonPhase = "skip";
   });
 }
 
-// ✅ 이전곡 버튼: 현재 인덱스 기준으로 이전으로 이동
+
+// ✅ 이전곡 버튼: 클릭 1회 = 곡만 변경, 클릭 2회 = 재생
 if (miniPrev) {
   miniPrev.addEventListener("click", () => {
     if (!currentTrackId || !Array.isArray(tracks) || !tracks.length) return;
 
-    const idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (idx <= 0) return; // 첫 곡이면 아무 것도 안 함 (원하면 루프 처리도 가능)
+    if (prevButtonPhase === "skip") {
+      // 1단계: 이전 곡으로만 이동 (대기 상태)
+      const idx = tracks.findIndex(t => t.id === currentTrackId);
+      if (idx <= 0) return;
 
-    for (let i = idx - 1; i >= 0; i -= 1) {
-      const t = tracks[i];
-      if (t.videoId && t.videoId.trim()) {
-        playTrack(t.id);
-        break;
+      let target = null;
+      for (let i = idx - 1; i >= 0; i -= 1) {
+        const t = tracks[i];
+        if (t.videoId && t.videoId.trim()) {
+          target = t;
+          break;
+        }
       }
+      if (!target) return;
+
+      selectTrackOnly(target.id);
+      updateNowPlaying(target);
+      if (miniPlayer) miniPlayer.style.display = "flex";
+
+      // 재생은 하지 않음
+      prevButtonPhase = "play";
+    } else {
+      // 2단계: 현재 선택된 곡 재생
+      if (!currentTrackId) return;
+      const track = tracks.find(t => t.id === currentTrackId);
+      if (!track || !track.videoId || !track.videoId.trim()) return;
+
+      playTrackOnYouTube(track);
+      prevButtonPhase = "skip";
     }
+
+    // 다음 버튼 단계는 초기화
+    nextButtonPhase = "skip";
   });
 }
+
 
 if (miniHide) {
   miniHide.textContent = "✕";
