@@ -857,27 +857,28 @@ body {
   padding: 12px 40px;
   display: grid;
   grid-template-columns: 280px minmax(420px, 1fr) 160px;
-  /*  왼쪽 280px 고정, 가운데는 나머지, 오른쪽 160px 고정  */
   align-items: center;
   gap: 24px;
   backdrop-filter: blur(20px);
   z-index: 99;
 }
 
-/* 중앙 영역 안에서 버튼+타임라인 정렬 */
+/* 가운데: 재생버튼 + 타임라인 */
 .mini-center {
   display: flex;
   flex-direction: column;
-  align-items: center;   /* 버튼 가운데 */
+  align-items: center;   /* 가운데 정렬 유지 */
   justify-content: center;
   gap: 8px;
-  max-width: 700px;      /* 너무 길어지지 않도록 상한선 */
-  margin: 0 auto;        /* 중앙 열 자체도 가운데로 */
+  max-width: 700px;
+  margin: 0 auto;
 }
 
+/* 타임라인 줄 */
 .mini-timeline-amazon {
   display: flex;
   align-items: center;
+  justify-content: center;   /* 타임라인도 가운데 */
   gap: 10px;
   width: 100%;
 }
