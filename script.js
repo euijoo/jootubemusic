@@ -154,10 +154,8 @@ let currentTrackAlbum = null;
 
 let playedTrackIdsInAlbum = new Set();
 let playedAlbumKeys = new Set();
-
-let nextButtonPhase = "skip";
+let nextButtonPhase = "skip"; // "skip" → 곡만 변경, "play" → 재생
 let prevButtonPhase = "skip";
-
 
 function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
@@ -1220,13 +1218,10 @@ function updateNowPlaying(track) {
 }
 
 function playTrackOnYouTube(track) {
-  console.log("playTrackOnYouTube called with", track);
-
   if (!track.videoId) {
     alert("먼저 이 트랙의 YouTube videoId 또는 링크를 입력해 주세요.");
     return;
   }
-
   if (!ytPlayer || typeof ytPlayer.loadVideoById !== "function") {
     alert("YouTube 플레이어가 아직 준비되지 않았습니다. 잠시 후 다시 시도해 주세요.");
     return;
@@ -1235,6 +1230,7 @@ function playTrackOnYouTube(track) {
   ytPlayer.loadVideoById(track.videoId);
   ytPlayer.playVideo();
 }
+
 
 // ===== 15. 미니 플레이어 / 타임라인 이벤트 =====
 
@@ -1257,38 +1253,40 @@ if (miniNext) {
     if (!Array.isArray(tracks) || !tracks.length) return;
 
     if (nextButtonPhase === "skip") {
-      // 1단계: playTrack으로 한 번에 처리 (재생까지 해 보는 버전)
+      // 1단계: 다음 곡으로만 이동 (대기 상태)
       const nextTrack = getNextPlayableTrackInCurrentAlbum();
       if (!nextTrack) return;
 
-      // 기존 동작 그대로 사용
-      playTrack(nextTrack.id);
+      // 선택/현재 트랙만 바꾸고, 미니플레이어 UI 업데이트
+      selectTrackOnly(nextTrack.id);
+      updateNowPlaying(nextTrack);
+      if (miniPlayer) miniPlayer.style.display = "flex";
 
-      // 아이폰 문제를 보면, 일단 여기서는 바로 재생까지 하고,
-      // 두 번째 클릭 때도 같은 곡을 다시 재생 시도하게만 만들어 둔다.
-      nextButtonPhase = "play";
+      // 재생은 하지 않음
+      nextButtonPhase = "play";  // 다음 클릭부터는 재생
     } else {
-      // 2단계: 현재 곡 다시 재생 시도
+      // 2단계: 현재 선택된 곡 재생
       if (!currentTrackId) return;
       const track = tracks.find(t => t.id === currentTrackId);
       if (!track || !track.videoId || !track.videoId.trim()) return;
 
       playTrackOnYouTube(track);
-      nextButtonPhase = "skip";
+      nextButtonPhase = "skip";  // 다시 곡 변경 모드로
     }
 
+    // 이전 버튼 단계는 초기화
     prevButtonPhase = "skip";
   });
 }
 
 
-
-// ✅ 이전곡 버튼: 클릭 1회 = 곡 변경+재생, 클릭 2회 = 재생 재시도
+// ✅ 이전곡 버튼: 클릭 1회 = 곡만 변경, 클릭 2회 = 재생
 if (miniPrev) {
   miniPrev.addEventListener("click", () => {
     if (!currentTrackId || !Array.isArray(tracks) || !tracks.length) return;
 
     if (prevButtonPhase === "skip") {
+      // 1단계: 이전 곡으로만 이동 (대기 상태)
       const idx = tracks.findIndex(t => t.id === currentTrackId);
       if (idx <= 0) return;
 
@@ -1302,12 +1300,14 @@ if (miniPrev) {
       }
       if (!target) return;
 
-      // 기존 동작 그대로: 곡 변경 + 재생
-      playTrack(target.id);
+      selectTrackOnly(target.id);
+      updateNowPlaying(target);
+      if (miniPlayer) miniPlayer.style.display = "flex";
 
+      // 재생은 하지 않음
       prevButtonPhase = "play";
     } else {
-      // 2단계: 현재 곡 재생 재시도
+      // 2단계: 현재 선택된 곡 재생
       if (!currentTrackId) return;
       const track = tracks.find(t => t.id === currentTrackId);
       if (!track || !track.videoId || !track.videoId.trim()) return;
@@ -1316,10 +1316,10 @@ if (miniPrev) {
       prevButtonPhase = "skip";
     }
 
+    // 다음 버튼 단계는 초기화
     nextButtonPhase = "skip";
   });
 }
-
 
 
 if (miniHide) {
