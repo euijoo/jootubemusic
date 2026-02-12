@@ -228,21 +228,33 @@
   </div> <!-- ✅ mini-left 닫기 -->
 
   <!-- 가운데: 재생/이전/다음 + 타임라인 -->
-  <div class="mini-center">
-    <div class="mini-timeline-amazon">
-      <span id="miniCurrentTime" class="mini-time-amazon">0:00</span>
-      <input
-        id="miniSeek"
-        class="mini-seek-amazon"
-        type="range"
-        min="0"
-        max="100"
-        step="0.1"
-        value="0"
-      />
-      <span id="miniDuration" class="mini-time-amazon">0:00</span>
-    </div>
+<div class="mini-center">
+  <div class="mini-controls-row">
+    <button id="miniPrev" class="mini-prev-btn" aria-label="이전 곡">
+      ⏮
+    </button>
+    <button id="miniToggle" class="mini-play-btn" aria-label="재생/일시정지">
+      ▶
+    </button>
+    <button id="miniNext" class="mini-next-btn" aria-label="다음 곡">
+      ⏭
+    </button>
   </div>
+  <div class="mini-timeline-amazon">
+    <span id="miniCurrentTime" class="mini-time-amazon">0:00</span>
+    <input
+      id="miniSeek"
+      class="mini-seek-amazon"
+      type="range"
+      min="0"
+      max="100"
+      step="0.1"
+      value="0"
+    />
+    <span id="miniDuration" class="mini-time-amazon">0:00</span>
+  </div>
+</div>
+
 
   <!-- 오른쪽: 닫기 버튼 -->
   <div class="mini-right">
