@@ -1053,11 +1053,10 @@ body {
   gap: 10px;
 }
 
-/* 공통 버튼 스타일 */
 .mini-prev-btn,
 .mini-next-btn {
   border: none;
-  background: transparent;
+  background-color: transparent; /* 배경색만 */
   color: #ffffff;
   width: 32px;
   height: 32px;
@@ -1069,13 +1068,12 @@ body {
   opacity: 0.9;
   transition: background 0.2s ease, opacity 0.2s ease, transform 0.15s ease;
 
-  /* 텍스트 대신 이미지 아이콘 */
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 22px 22px; /* 아이콘 크기 조정 */
+  background-size: 22px 22px;
 }
 
-/* GitHub Pages 기준 아이콘 경로 (예시) */
+/* 실제 경로에 맞춰 수정 */
 .mini-prev-btn {
   background-image: url("img/Previous.png");
 }
