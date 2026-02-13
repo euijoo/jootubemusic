@@ -159,7 +159,7 @@ function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
 }
 
-let customCategories = ["kpop", "pop", "ost", "etc"];
+let customCategories = ["kpop", "indie", "pop", "jazz", "classic", "ost", "etc"];
 const LOCAL_KEY_ALBUMS = "jootubemusic.myAlbums";
 const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 
@@ -643,7 +643,7 @@ function renderCategoryChips() {
 
   categoryListEl.appendChild(select);
 
-  // 버튼 칩
+    // 버튼 칩
   const buttonContainer = document.createElement("div");
   buttonContainer.style.cssText =
     "display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;";
@@ -662,7 +662,22 @@ function renderCategoryChips() {
     }
 
     btn.addEventListener("click", () => {
-      updateAlbumCategory(categoryTargetIndex, cat);
+      const selectedCat = cat;
+
+      // 1) 필터 상태도 같이 이동
+      currentCategory = selectedCat;
+
+      if (categoryBar) {
+        categoryBar.querySelectorAll(".category-btn").forEach((b) => {
+          const c = b.dataset.category || "all";
+          b.classList.toggle("active", c === selectedCat);
+        });
+      }
+
+      // 2) 앨범 category 업데이트
+      updateAlbumCategory(categoryTargetIndex, selectedCat);
+
+      // 3) 모달 닫기
       closeCategoryModal();
     });
 
@@ -671,6 +686,7 @@ function renderCategoryChips() {
 
   categoryListEl.appendChild(buttonContainer);
 }
+
 
 function renderMyAlbums() {
   if (!myGrid || !empty) return;
@@ -1251,13 +1267,15 @@ if (miniNext) {
     const nextTrack = getNextPlayableTrackInCurrentAlbum();
 
     if (nextTrack) {
-      playTrack(nextTrack.id); // 같은 앨범 다음 트랙
+      playTrack(nextTrack.id); // 같은 앨범 다음 트랙 재생
     } else {
       const excludeKey = currentTrackAlbum ? getAlbumKey(currentTrackAlbum) : null;
-      playRandomTrackFromAllAlbums(excludeKey); // 다른 앨범 랜덤
+      playRandomTrackFromAllAlbums(excludeKey); // 다른 앨범 랜덤 재생
     }
   });
 }
+
+
 
 // ✅ 이전곡 버튼: 현재 인덱스 기준으로 이전으로 이동
 if (miniPrev) {
@@ -1265,7 +1283,7 @@ if (miniPrev) {
     if (!currentTrackId || !Array.isArray(tracks) || !tracks.length) return;
 
     const idx = tracks.findIndex(t => t.id === currentTrackId);
-    if (idx <= 0) return; // 첫 곡이면 아무 것도 안 함 (원하면 루프 처리도 가능)
+    if (idx <= 0) return; // 첫 곡이면 아무 것도 안 함
 
     for (let i = idx - 1; i >= 0; i -= 1) {
       const t = tracks[i];
@@ -1276,6 +1294,8 @@ if (miniPrev) {
     }
   });
 }
+
+
 
 if (miniHide) {
   miniHide.textContent = "✕";
@@ -1309,21 +1329,30 @@ if (miniSeek) {
 
 // ===== 16. 카테고리 / 공통 버튼 =====
 
-if (categoryBar) {
-  categoryBar.addEventListener("click", (e) => {
-    const btn = e.target.closest(".category-btn");
-    if (!btn) return;
-
+// 사이드바에서 카테고리 필터
+document.querySelectorAll(".sidebar-link[data-category]").forEach((btn) => {
+  btn.addEventListener("click", () => {
     const cat = btn.dataset.category || "all";
     currentCategory = cat;
 
-    categoryBar.querySelectorAll(".category-btn").forEach((b) => {
-      b.classList.toggle("active", b === btn);
+    // 사이드바 active 표시
+    document.querySelectorAll(".sidebar-link[data-category]").forEach((b) => {
+      b.classList.toggle("sidebar-link-active", b === btn);
     });
+
+    // 기존 category-bar 버튼 active 상태도 맞춰 주고 싶으면:
+    if (categoryBar) {
+      categoryBar.querySelectorAll(".category-btn").forEach((b) => {
+        b.classList.toggle("active", b.dataset.category === cat);
+      });
+    }
 
     renderMyAlbums();
   });
-}
+});
+
+
+
 
 if (trackAddBtn) {
   trackAddBtn.addEventListener("click", () => {
@@ -1549,7 +1578,7 @@ onAuthStateChanged(auth, async (user) => {
 // ===== 22. 초기 로드 =====
 
 loadMyAlbumsFromStorage();
-
+ 
 // ===== 모바일 검색 모달 =====
 const mobileSearchBtn = document.querySelector('.mobile-search-btn');
 const mobileSearchModal = document.getElementById('mobileSearchModal');
