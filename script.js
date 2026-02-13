@@ -1594,7 +1594,7 @@ onAuthStateChanged(auth, async (user) => {
 // ===== 22. 초기 로드 =====
 
 loadMyAlbumsFromStorage();
-
+ 
 // ===== 모바일 검색 모달 =====
 const mobileSearchBtn = document.querySelector('.mobile-search-btn');
 const mobileSearchModal = document.getElementById('mobileSearchModal');
