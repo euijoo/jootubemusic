@@ -159,7 +159,7 @@ function getAlbumKey(album) {
   return `${album.artist} - ${album.name}`;
 }
 
-let customCategories = ["kpop", "pop", "ost", "etc"];
+let customCategories = ["kpop", "indie", "pop", "jazz", "classic", "ost", "etc"];
 const LOCAL_KEY_ALBUMS = "jootubemusic.myAlbums";
 const LOCAL_KEY_CATEGORIES = "jootubemusic.categories";
 
