@@ -643,7 +643,7 @@ function renderCategoryChips() {
 
   categoryListEl.appendChild(select);
 
-  // 버튼 칩
+    // 버튼 칩
   const buttonContainer = document.createElement("div");
   buttonContainer.style.cssText =
     "display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;";
@@ -662,7 +662,22 @@ function renderCategoryChips() {
     }
 
     btn.addEventListener("click", () => {
-      updateAlbumCategory(categoryTargetIndex, cat);
+      const selectedCat = cat;
+
+      // 1) 필터 상태도 같이 이동
+      currentCategory = selectedCat;
+
+      if (categoryBar) {
+        categoryBar.querySelectorAll(".category-btn").forEach((b) => {
+          const c = b.dataset.category || "all";
+          b.classList.toggle("active", c === selectedCat);
+        });
+      }
+
+      // 2) 앨범 category 업데이트
+      updateAlbumCategory(categoryTargetIndex, selectedCat);
+
+      // 3) 모달 닫기
       closeCategoryModal();
     });
 
@@ -671,6 +686,7 @@ function renderCategoryChips() {
 
   categoryListEl.appendChild(buttonContainer);
 }
+
 
 function renderMyAlbums() {
   if (!myGrid || !empty) return;
