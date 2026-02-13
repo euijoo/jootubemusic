@@ -1313,21 +1313,30 @@ if (miniSeek) {
 
 // ===== 16. 카테고리 / 공통 버튼 =====
 
-if (categoryBar) {
-  categoryBar.addEventListener("click", (e) => {
-    const btn = e.target.closest(".category-btn");
-    if (!btn) return;
-
+// 사이드바에서 카테고리 필터
+document.querySelectorAll(".sidebar-link[data-category]").forEach((btn) => {
+  btn.addEventListener("click", () => {
     const cat = btn.dataset.category || "all";
     currentCategory = cat;
 
-    categoryBar.querySelectorAll(".category-btn").forEach((b) => {
-      b.classList.toggle("active", b === btn);
+    // 사이드바 active 표시
+    document.querySelectorAll(".sidebar-link[data-category]").forEach((b) => {
+      b.classList.toggle("sidebar-link-active", b === btn);
     });
+
+    // 기존 category-bar 버튼 active 상태도 맞춰 주고 싶으면:
+    if (categoryBar) {
+      categoryBar.querySelectorAll(".category-btn").forEach((b) => {
+        b.classList.toggle("active", b.dataset.category === cat);
+      });
+    }
 
     renderMyAlbums();
   });
-}
+});
+
+
+
 
 if (trackAddBtn) {
   trackAddBtn.addEventListener("click", () => {
