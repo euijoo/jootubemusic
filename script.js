@@ -695,8 +695,6 @@ function renderCategoryChips() {
   categoryListEl.appendChild(buttonContainer);
 }
 
-
-function renderMyAlbums() {
   if (!myGrid || !empty) return;
   myGrid.innerHTML = '';
   
