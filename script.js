@@ -192,15 +192,14 @@ function pickAlbumImage(album) {
     }
   }
 
-  if (!imgUrl) {
-    imgUrl =
-      "https://via.placeholder.com/300x300.png?text=%EC%9D%B4%EB%AF%B8%EC%A7%80+%EC%97%86%EC%9D%8C";
-  }
-  if (imgUrl.startsWith("http://")) {
-    imgUrl = imgUrl.replace("http://", "https://");
-  }
-  return imgUrl;
+ if (!imgUrl) {
+  // ① 직접 프로젝트에 넣은 더미 이미지 경로 (추천)
+  imgUrl = "./assets/cover-placeholder.png";
+
+  // 또는 ② 다른 placeholder 서비스 사용 (먼저 브라우저에서 접속 잘 되는지 테스트)
+  // imgUrl = "https://placehold.co/300x300?text=No+Image";
 }
+
 
 function hasRealCover(album) {
   const images = Array.isArray(album.image) ? album.image : [];
@@ -956,48 +955,87 @@ function createTrackListItem(album, trackData, index) {
 function renderTrackList() {
   if (!trackList || !currentTrackAlbum) return;
 
+  // ✅ tracks가 null/undefined이면 항상 배열로 초기화
+  if (!Array.isArray(tracks)) {
+    tracks = [];
+  }
+
   trackList.innerHTML = "";
+
+  // ✅ 트랙이 0개일 때 안내 문구라도 보여주기
+  if (!tracks.length) {
+    const li = document.createElement("li");
+    li.className = "track-empty";
+    li.textContent = "저장된 트랙이 없습니다.";
+    trackList.appendChild(li);
+    return;
+  }
+
   tracks.forEach((t, idx) => {
     const li = createTrackListItem(currentTrackAlbum, t, idx);
     trackList.appendChild(li);
   });
 }
 
-function openTrackModal(album) {
+
+async function openTrackModal(album) {
   if (!trackModal || !trackList) return;
 
-  currentTrackAlbum           = album;
+  currentTrackAlbum = album;
   trackModalTitle.textContent = `${album.artist} - ${album.name}`;
-  trackList.innerHTML         = "<li>트랙 불러오는 중...</li>";
-  trackModal.style.display    = "flex";
+  trackList.innerHTML = "";
 
-  (async () => {
-    try {
-      let loadedTracks = await loadTracksForAlbumFromFirestore(album);
+  trackModal.style.display = "flex";
 
-      if (!loadedTracks || !loadedTracks.length) {
-        // ... Last.fm에서 트랙 만들기 ...
-      }
+  try {
+    // 1) Firestore에서 먼저 시도
+    let loadedTracks = await loadTracksForAlbumFromFirestore(album);
 
-      tracks                = loadedTracks;
-      playedTrackIdsInAlbum = new Set();
+    // 2) 없으면 Last.fm에서 가져와서 가공
+    if (!loadedTracks || !loadedTracks.length) {
+      const lfTracks = await fetchAlbumTracks(album.artist, album.name);
+      const arr = Array.isArray(lfTracks) ? lfTracks : [];
 
-      // ✅ 공용 렌더 함수 사용
-      renderTrackList();
+      loadedTracks = arr.map((t) => {
+        // Last.fm 응답이 문자열/객체 섞여 있을 수 있어서 안전하게 파싱
+        const nameRaw = t && typeof t === "object" ? t.name : t;
+        const title =
+          typeof nameRaw === "string"
+            ? nameRaw
+            : nameRaw?.["#text"] || "제목 없음";
 
-      if (!currentTrackId || !tracks.some(t => t.id === currentTrackId)) {
-        // 현재 트랙이 이 앨범 트랙 목록에 없을 때만 첫 곡으로 초기화
-        if (tracks.length) {
-          currentTrackId = tracks[0].id;
-        }
-      }
-    } catch (err) {
-      console.error(err);
-      trackList.innerHTML =
-        "<li>트랙 정보를 불러오는 중 오류가 발생했습니다.</li>";
+        return {
+          id: crypto.randomUUID(),
+          title,
+          artist: album.artist,
+          albumName: album.name,
+          videoId: "",
+          coverUrl: album.image || "",
+        };
+      });
     }
-  })();
+
+    // ✅ 여기서 한 번 더 방어: 항상 배열 보장
+    tracks = Array.isArray(loadedTracks) ? loadedTracks : [];
+    playedTrackIdsInAlbum = new Set();
+
+    // 공용 렌더 함수 호출
+    renderTrackList();
+
+    // 현재 선택 트랙이 없거나, id가 리스트에 없으면 첫 곡으로
+    if (!currentTrackId || !tracks.some((t) => t.id === currentTrackId)) {
+      if (tracks.length) currentTrackId = tracks[0].id;
+    }
+  } catch (err) {
+    console.error(err);
+    trackList.innerHTML = `
+      <li class="track-error">
+        <span>트랙 정보를 불러오는 중 오류가 발생했습니다.</span>
+      </li>
+    `;
+  }
 }
+
 
 async function autoPlayRandomTrackFromAlbum(album) {
   try {
