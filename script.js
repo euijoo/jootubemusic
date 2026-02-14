@@ -192,13 +192,22 @@ function pickAlbumImage(album) {
     }
   }
 
- if (!imgUrl) {
-  // ① 직접 프로젝트에 넣은 더미 이미지 경로 (추천)
-  imgUrl = "./assets/cover-placeholder.png";
+  if (!imgUrl) {
+    // ① 직접 프로젝트에 넣은 더미 이미지 경로 (추천)
+    imgUrl = "./assets/cover-placeholder.png";
 
-  // 또는 ② 다른 placeholder 서비스 사용 (먼저 브라우저에서 접속 잘 되는지 테스트)
-  // imgUrl = "https://placehold.co/300x300?text=No+Image";
+    // 또는 ② 다른 placeholder 서비스 사용 (먼저 브라우저에서 접속 잘 되는지 테스트)
+    // imgUrl = "https://placehold.co/300x300?text=No+Image";
+  }
+
+  // (원래 있었던 http → https 변환도 다시 넣고 싶으면 여기 추가)
+  // if (imgUrl.startsWith("http://")) {
+  //   imgUrl = imgUrl.replace("http://", "https://");
+  // }
+
+  return imgUrl;
 }
+
 
 
 function hasRealCover(album) {
