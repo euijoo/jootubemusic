@@ -695,6 +695,9 @@ function renderCategoryChips() {
   categoryListEl.appendChild(buttonContainer);
 }
 
+// ===== 9. 내 앨범 그리드 =====
+
+function renderMyAlbums() {
   if (!myGrid || !empty) return;
   myGrid.innerHTML = '';
   
@@ -754,10 +757,6 @@ function renderCategoryChips() {
     myGrid.appendChild(card);
   });
 }
-
-// ===== 9. 내 앨범 그리드 =====
-
-function renderMyAlbums() { ...위 코드 전체... }
 
 // ★ 여기 아래에 붙이기
 if (addAlbumBtn) {
