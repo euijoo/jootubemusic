@@ -48,7 +48,7 @@ const authToggleBtn = document.getElementById("authToggleBtn");
 // 내 앨범
 const myGrid = document.getElementById("myGrid");
 const empty = document.getElementById("empty");
-
+const addAlbumBtn = document.getElementById("addAlbumBtn");
 // 카테고리 바
 const categoryBar = document.getElementById("categoryBar");
 let currentCategory = "all";
@@ -757,6 +757,53 @@ function renderMyAlbums() {
   });
 }
 
+// ===== 9. 내 앨범 그리드 =====
+
+function renderMyAlbums() { ...위 코드 전체... }
+
+// ★ 여기 아래에 붙이기
+if (addAlbumBtn) {
+  addAlbumBtn.addEventListener("click", () => {
+    const name = prompt("앨범 제목을 입력해 주세요.");
+    if (!name || !name.trim()) return;
+
+    const artist = prompt("아티스트를 입력해 주세요.");
+    if (!artist || !artist.trim()) return;
+
+    const image = prompt("커버 이미지 URL을 입력해 주세요. (없으면 엔터)", "");
+    const coverUrl = (image || "").trim();
+
+    const newAlbum = {
+      name: name.trim(),
+      artist: artist.trim(),
+      image: coverUrl || "./assets/cover-placeholder.png",
+      hasCover: !!coverUrl,
+      category: "etc",
+      createdAt: Date.now(),
+    };
+
+    const exists = myAlbums.some(
+      (a) => a.name === newAlbum.name && a.artist === newAlbum.artist
+    );
+    if (exists) {
+      alert("이미 같은 이름/아티스트의 앨범이 있습니다.");
+      return;
+    }
+
+    myAlbums.unshift(newAlbum);
+    renderMyAlbums();
+    saveMyAlbumsToStorage();
+
+    if (currentUser) {
+      syncMyAlbumsToFirestore().catch((err) =>
+        console.error("syncMyAlbumsToFirestore (add album) error", err)
+      );
+    }
+
+    openTrackModal(newAlbum);
+  });
+}
+
 
 // ===== 10. 커버 입력 모달 =====
 
@@ -899,13 +946,40 @@ function createTrackListItem(album, trackData, index) {
       <span class="track-title-text">${trackData.title}</span>
       <span class="track-dots"></span>
       <button class="track-edit-btn">${trackData.videoId ? "✎✓" : "✎"}</button>
+      <button class="track-delete-btn">🗑</button>   <!-- ★ 추가 -->
     </div>
   `;
 
   const line      = li.querySelector(".track-line");
   const editBtn   = li.querySelector(".track-edit-btn");
   const titleSpan = li.querySelector(".track-title-text");
+  const deleteBtn = li.querySelector(".track-delete-btn");
 
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", () => {
+      const idx = tracks.findIndex((t) => t.id === id);
+      if (idx === -1) return;
+
+      const ok = confirm("이 트랙을 삭제할까요?");
+      if (!ok) return;
+
+      tracks.splice(idx, 1);
+      renderTrackList();
+
+      if (currentUser && currentTrackAlbum) {
+        saveTracksForAlbumToFirestore(currentTrackAlbum, tracks).catch((err) =>
+          console.error("saveTracksForAlbumToFirestore (delete track) error", err)
+        );
+      }
+
+      if (currentTrackId === id) {
+        currentTrackId = tracks[0]?.id || null;
+      }
+    });
+  }
+
+
+  
   if (line) {
     line.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1432,7 +1506,7 @@ if (trackAddBtn) {
     };
 
     tracks.push(newTrack);
-
+    renderTrackList();   // ★ 추가
     if (trackList) {
       const li = createTrackListItem(
         currentTrackAlbum,
