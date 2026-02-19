@@ -556,6 +556,12 @@ body {
   margin-bottom: 12px;
 }
 
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 새 앨범 만들기 버튼과 닫기 버튼 간격 */
+}
+
 .modal-header span {
   font-size: 14px;
   font-weight: 600;
