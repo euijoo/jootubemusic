@@ -82,7 +82,6 @@ const coverUrlInput   = document.getElementById("coverUrlInput");
 const coverPreview    = document.getElementById("coverPreview");
 const coverSaveBtn    = document.getElementById("coverSaveBtn");
 
-if (miniCover) miniCover.addEventListener("click", openTrackModalForCurrentAlbum);
 // 3. 상태 변수
 let isPlaying       = false;
 let myAlbums        = [];
@@ -208,7 +207,9 @@ async function syncMyAlbumsToFirestore() {
     return setDoc(docRef, {
       name:      album.name,
       artist:    album.artist,
-      image:     album.image,
+      image:     typeof album.image === "string"
+                   ? album.image
+                   : pickAlbumImage(album),  // ✅ 항상 문자열 URL로 변환
       hasCover:  album.hasCover ?? true,
       category:  album.category || "etc",
       createdAt: album.createdAt || Date.now(),
@@ -483,27 +484,40 @@ function renderCategoryChips() {
     }
 
     btn.addEventListener("click", () => {
-      const selectedCat = cat;
+  const selectedCat = cat;
 
-      if (categorySelectMode === "create") {
-        // ── STEP 2 완료: 카테고리 저장 → coverModal로 이동 ──
-        pendingAlbum.category = selectedCat;
-        closeCategoryModal();
-        openNewAlbumInfoModal();
+  if (categorySelectMode === "create") {
+    // 새 앨범 만들기 흐름
+    pendingAlbum.category = selectedCat;
+    closeCategoryModal();
+    openNewAlbumInfoModal();
 
-      } else {
-        // ── 기존 카테고리 변경 ──
-        currentCategory = selectedCat;
-        if (categoryBar) {
-          categoryBar.querySelectorAll(".category-btn").forEach(b => {
-            b.classList.toggle("active", b.dataset.category === selectedCat);
-          });
-        }
-        updateAlbumCategory(categoryTargetIndex, selectedCat);
-        closeCategoryModal();
-        categorySelectMode = null;
-      }
-    });
+  } else if (categorySelectMode === "edit" && categoryTargetIndex !== null) {
+    // ✅ edit 모드이고 유효한 index일 때만 실행
+    const targetAlbum = myAlbums[categoryTargetIndex];
+
+    updateAlbumCategory(categoryTargetIndex, selectedCat);
+
+    // 카테고리바 active 상태 동기화
+    if (categoryBar) {
+      categoryBar.querySelectorAll(".category-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.category === selectedCat);
+      });
+    }
+
+    closeCategoryModal();
+    categorySelectMode = null;
+
+    // ✅ 경고 7 동시 해결: 카테고리 선택 후 트랙 모달 자동 열기
+    if (targetAlbum) openTrackModal(targetAlbum);
+
+  } else {
+    // 예외 상황 — 그냥 닫기
+    closeCategoryModal();
+    categorySelectMode = null;
+    pendingAlbum = null;
+  }
+});
 
     buttonContainer.appendChild(btn);
   });
@@ -526,24 +540,37 @@ if (addAlbumBtn) {
 // ── 새 앨범 만들기 — STEP 2: 앨범 정보 입력 (coverModal 재활용) ──
 function openNewAlbumInfoModal() {
   if (!coverModal) return;
-
   coverModalTitle.textContent = "새 앨범 정보 입력";
-  coverInfo.textContent       = "앨범 이름과 커버 이미지 URL을 입력하세요.";
-  coverUrlInput.value         = "";
-  coverPreview.src            = "";
+  coverInfo.textContent = "앨범 정보와 커버 이미지 URL을 입력하세요.";
+  coverUrlInput.value = "";
+  coverPreview.src = "";
 
-  // 앨범 이름 input 동적 삽입 (없으면 생성)
+  // 앨범 이름 input
   let nameInput = document.getElementById("newAlbumNameInput");
   if (!nameInput) {
-    nameInput           = document.createElement("input");
-    nameInput.id        = "newAlbumNameInput";
+    nameInput = document.createElement("input");
+    nameInput.id = "newAlbumNameInput";
     nameInput.className = "cover-input";
-    nameInput.type      = "text";
-    nameInput.placeholder = "앨범 이름을 입력하세요";
+    nameInput.type = "text";
+    nameInput.placeholder = "앨범 이름";
     coverUrlInput.parentNode.insertBefore(nameInput, coverUrlInput);
   }
-  nameInput.value        = "";
+  nameInput.value = "";
   nameInput.style.display = "block";
+
+  // ✅ 아티스트 input 추가
+  let artistInput = document.getElementById("newAlbumArtistInput");
+  if (!artistInput) {
+    artistInput = document.createElement("input");
+    artistInput.id = "newAlbumArtistInput";
+    artistInput.className = "cover-input";
+    artistInput.type = "text";
+    artistInput.placeholder = "아티스트 이름";
+    // 이름 input 아래, coverUrlInput 위에 삽입
+    coverUrlInput.parentNode.insertBefore(artistInput, coverUrlInput);
+  }
+  artistInput.value = "";
+  artistInput.style.display = "block";
 
   coverModal.style.display = "flex";
 }
@@ -611,8 +638,17 @@ function openCoverModal(album) {
   coverUrlInput.value = "";
   coverPreview.src = album.image || "";
 
+  // ✅ 기존 앨범 커버 수정 시 name/artist input 숨기기
   const nameInput = document.getElementById("newAlbumNameInput");
-  if (nameInput) nameInput.style.display = "none";
+  if (nameInput) {
+    nameInput.style.display = "none";
+    nameInput.value = "";
+  }
+  const artistInput = document.getElementById("newAlbumArtistInput");
+  if (artistInput) {
+    artistInput.style.display = "none";
+    artistInput.value = "";
+  }
 
   coverModal.style.display = "flex";
 }
@@ -620,19 +656,26 @@ function openCoverModal(album) {
 function closeCoverModal() {
   if (!coverModal) return;
   coverModal.style.display = "none";
-  pendingCoverAlbum = null;
+  pendingCoverAlbum  = null;
   categorySelectMode = null;
-  pendingAlbum = null;
+  pendingAlbum       = null;
 
   coverModalTitle.textContent = "커버 이미지 수정";
-  coverInfo.textContent = "앨범 커버 이미지 URL을 입력하세요.";
+  coverInfo.textContent       = "앨범 커버 이미지 URL을 입력하세요.";
+
   const nameInput = document.getElementById("newAlbumNameInput");
   if (nameInput) {
     nameInput.style.display = "none";
     nameInput.value = "";
   }
+  const artistInput = document.getElementById("newAlbumArtistInput");
+  if (artistInput) {
+    artistInput.style.display = "none";
+    artistInput.value = "";
+  }
+
   coverUrlInput.value = "";
-  coverPreview.src = "";
+  coverPreview.src    = "";
 }
 
 if (coverUrlInput) {
@@ -649,18 +692,24 @@ if (coverSaveBtn) {
 
     // ── 새 앨범 만들기 STEP 3 ──────────────────────────
     if (categorySelectMode === "create") {
-      const nameInput = document.getElementById("newAlbumNameInput");
-      const name = nameInput?.value.trim();
-      const coverUrl = coverUrlInput.value.trim();
+      const nameInput   = document.getElementById("newAlbumNameInput");
+      const artistInput = document.getElementById("newAlbumArtistInput");
+      const name        = nameInput?.value.trim();
+      const artist      = artistInput?.value.trim() || name;
+      const coverUrl    = coverUrlInput.value.trim();
 
       if (!name) {
         alert("앨범 이름을 입력하세요.");
         return;
       }
+      if (!artist) {
+        alert("아티스트 이름을 입력하세요.");
+        return;
+      }
 
       const newAlbum = {
-        name:      name,
-        artist:    name,
+        name,
+        artist,
         image:     coverUrl || "./assets/cover-placeholder.png",
         hasCover:  !!coverUrl,
         category:  pendingAlbum.category || "etc",
@@ -671,7 +720,7 @@ if (coverSaveBtn) {
         a => a.name === newAlbum.name && a.artist === newAlbum.artist
       );
       if (exists) {
-        alert("동일한 이름의 앨범이 이미 있습니다.");
+        alert("동일한 앨범이 이미 있습니다.");
         return;
       }
 
@@ -683,7 +732,6 @@ if (coverSaveBtn) {
           console.error("syncMyAlbumsToFirestore error", err)
         );
       }
-
       const created = newAlbum;
       closeCoverModal();
       openTrackModal(created);
@@ -697,7 +745,7 @@ if (coverSaveBtn) {
       alert("올바른 이미지 URL을 입력하세요.");
       return;
     }
-    pendingCoverAlbum.image = url;
+    pendingCoverAlbum.image    = url;
     pendingCoverAlbum.hasCover = true;
     renderMyAlbums();
     saveMyAlbumsToStorage();
@@ -710,6 +758,7 @@ if (coverSaveBtn) {
 
 if (coverModalClose) coverModalClose.addEventListener("click", closeCoverModal);
 if (coverBackdrop)   coverBackdrop.addEventListener("click", closeCoverModal);
+
 // 11. 트랙 모달
 function getCurrentTrack() {
   return tracks.find(t => t.id === currentTrackId) || null;
@@ -898,6 +947,8 @@ async function openTrackModalForCurrentAlbum() {
   trackModal.style.display = "flex";
 }
 
+// ✅ 함수 선언 이후에 이벤트 등록
+if (miniCover) miniCover.addEventListener("click", openTrackModalForCurrentAlbum);
 async function autoPlayRandomTrackFromAlbum(album) {
   try {
     let loadedTracks = await loadTracksForAlbumFromFirestore(album);
@@ -1407,20 +1458,14 @@ if (mobileSearchInput) {
   });
 }
 
-// 네비게이션 아이콘 버튼 (home / albums / library)
+// ✅ active 클래스 토글만 담당 — albums 분기 완전 제거
 document.querySelectorAll(".icon-nav-btn[data-view]").forEach(btn => {
   btn.addEventListener("click", () => {
-    document.querySelectorAll(".icon-nav-btn[data-view]").forEach(b => {
-      b.classList.remove("icon-nav-active");
-    });
+    document.querySelectorAll(".icon-nav-btn[data-view]").forEach(b =>
+      b.classList.remove("icon-nav-active")
+    );
     btn.classList.add("icon-nav-active");
-    const view = btn.dataset.view;
-    if (view === "albums") {
-      // albums 아이콘 = 새 앨범 만들기 흐름 트리거
-      categorySelectMode = "create";
-      pendingAlbum = {};
-      openCategoryModal(null);
-    }
+    // albums 뷰의 실제 동작은 addAlbumBtn이 전담
   });
 });
 
