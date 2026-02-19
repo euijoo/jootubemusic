@@ -131,7 +131,6 @@
 
         <section class="section-my">
   <h2 class="section-title">내 앨범</h2>
-  <button id="addAlbumBtn" class="add-album-btn">새 앨범 만들기</button>
   <div id="myGrid" class="grid"></div>
   <div id="empty" class="empty">앨범이 없습니다.</div>
 </section>
@@ -154,16 +153,21 @@
   </div>
 
   <!-- 검색 결과 모달 -->
-  <div id="searchModal" class="modal" style="display: none">
-    <div id="modalBackdrop" class="modal-backdrop"></div>
-    <div class="modal-content">
-      <div class="modal-header">
-        <span id="modalTitle"></span>
+<div id="searchModal" class="modal" style="display: none">
+  <div id="modalBackdrop" class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="modalTitle"></span>
+
+      <!-- 새 앨범 만들기 버튼 (왼쪽) + 닫기 버튼 (오른쪽) -->
+      <div class="modal-header-actions">
+        <button id="addAlbumBtn" class="add-album-btn">새 앨범 만들기</button>
         <button id="modalClose" class="modal-close">&times;</button>
       </div>
-      <div id="modalGrid" class="grid"></div>
     </div>
+    <div id="modalGrid" class="grid"></div>
   </div>
+</div>
 
   <!-- 트랙 모달 -->
   <div id="trackModal" class="modal" style="display: none">
